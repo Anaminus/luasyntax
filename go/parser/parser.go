@@ -10,11 +10,11 @@ import (
 	"io/ioutil"
 )
 
-type lookstate struct {
+type tokenstate struct {
 	off   int
 	tok   token.Type
 	lit   []byte
-	space int
+	space int // Offset of previous whitespace.
 }
 
 type parser struct {
@@ -22,12 +22,9 @@ type parser struct {
 	err     error //scanner.Error
 	scanner scanner.Scanner
 
-	off   int
-	tok   token.Type
-	lit   []byte
-	space int // Offset of previous whitespace.
+	tokenstate // Current token state.
 
-	look *lookstate // Store state for single-token lookaheads.
+	look *tokenstate // Store state for single-token lookaheads.
 }
 
 func (p *parser) init(filename string, src []byte) {
@@ -41,10 +38,7 @@ func (p *parser) init(filename string, src []byte) {
 func (p *parser) next() {
 	if p.look != nil {
 		// Consume stored state.
-		p.off = p.look.off
-		p.tok = p.look.tok
-		p.lit = p.look.lit
-		p.space = p.look.space
+		p.tokenstate = *p.look
 		p.look = nil
 		return
 	}
@@ -69,16 +63,14 @@ func (p *parser) next() {
 // stored in p.look, and is consumed on the next call to p.next().
 func (p *parser) lookahead() {
 	// Save current state.
-	prev := lookstate{p.off, p.tok, p.lit, p.space}
+	prev := p.tokenstate
 	// Get next state.
 	p.next()
 	// Store next state for lookahead.
-	p.look = &lookstate{p.off, p.tok, p.lit, p.space}
+	next := p.tokenstate
+	p.look = &next
 	// Restore previous state.
-	p.off = prev.off
-	p.tok = prev.tok
-	p.lit = prev.lit
-	p.space = prev.space
+	p.tokenstate = prev
 }
 
 type bailout struct{}
