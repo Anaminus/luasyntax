@@ -14,7 +14,7 @@ type Node interface {
 type Token struct {
 	Space  int
 	Offset int
-	Type   token.Token
+	Type   token.Type
 }
 
 func (t Token) IsValid() bool {

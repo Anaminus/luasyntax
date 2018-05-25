@@ -147,7 +147,7 @@ func (s *Scanner) scanString(off int) {
 	s.next()
 }
 
-func (s *Scanner) scanLongString(off int, t token.Token) {
+func (s *Scanner) scanLongString(off int, t token.Type) {
 	eq := 0
 	for s.ch == '=' {
 		eq++
@@ -186,7 +186,7 @@ loop:
 	}
 }
 
-func (s *Scanner) scanComment(off int) token.Token {
+func (s *Scanner) scanComment(off int) token.Type {
 	s.next()
 	if s.ch == '[' {
 		s.next()
@@ -199,7 +199,7 @@ func (s *Scanner) scanComment(off int) token.Token {
 	return token.COMMENT
 }
 
-func (s *Scanner) Scan() (off int, tok token.Token, lit []byte) {
+func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {
 	off = s.offset
 	switch ch := s.ch; {
 	case isSpace(ch):

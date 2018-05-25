@@ -12,7 +12,7 @@ import (
 
 type lookstate struct {
 	off   int
-	tok   token.Token
+	tok   token.Type
 	lit   []byte
 	space int
 }
@@ -23,7 +23,7 @@ type parser struct {
 	scanner scanner.Scanner
 
 	off   int
-	tok   token.Token
+	tok   token.Type
 	lit   []byte
 	space int // Offset of previous whitespace.
 
@@ -91,7 +91,7 @@ func (p *parser) error(off int, msg string) {
 	panic(bailout{})
 }
 
-func (p *parser) expect(tok token.Token) {
+func (p *parser) expect(tok token.Type) {
 	if p.tok != tok {
 		p.error(p.off, "'"+tok.String()+"' expected")
 	}
@@ -111,7 +111,7 @@ func (p *parser) tokenNext() ast.Token {
 	return tok
 }
 
-func (p *parser) expectToken(t token.Token) ast.Token {
+func (p *parser) expectToken(t token.Type) ast.Token {
 	p.expect(t)
 	return p.tokenNext()
 }
@@ -213,7 +213,7 @@ func (p *parser) parseExpList() *ast.ExpList {
 	return list
 }
 
-func (p *parser) parseBlockBody(term token.Token) *ast.Block {
+func (p *parser) parseBlockBody(term token.Type) *ast.Block {
 	block := p.parseBlock()
 	if p.tok != term {
 		p.error(p.off, term.String()+" expected")

@@ -4,83 +4,83 @@ import (
 	"strconv"
 )
 
-type Token int
+type Type int
 
 const (
-	INVALID      Token = iota
-	valid_start        // [ VALID
-	EOF                // End of file
-	space_start        // [ SPACES
-	SPACE              // All whitespace
-	comm_start         // [ COMMENTS
-	COMMENT            // Line-style comment
-	LONGCOMMENT        // Block-style comment
-	comm_end           // COMMENTS ]
-	space_end          // SPACES ]
-	NAME               // Identifier
-	NUMBER             // Number
-	str_start          // [ STRINGS
-	STRING             // Quote-style string
-	LONGSTRING         // Block-style string
-	str_end            // STRINGS ]
-	op_start           // [ OPERATORS
-	SEMICOLON          // `;`
-	ASSIGN             // `=`
-	COMMA              // `,`
-	DOT                // `.`
-	COLON              // `:`
-	LBRACK             // `[`
-	RBRACK             // `]`
-	VARARG             // `...`
-	LPAREN             // `(`
-	RPAREN             // `)`
-	LBRACE             // `{`
-	RBRACE             // `}`
-	binop_start        // [ BINARY OPERATORS
-	ADD                // `+`
-	MUL                // `*`
-	DIV                // `/`
-	MOD                // `%`
-	EXP                // `^`
-	CONCAT             // `..`
-	LT                 // `<`
-	LEQ                // `<=`
-	GT                 // `>`
-	GEQ                // `>=`
-	EQ                 // `==`
-	NEQ                // `~=`
-	unop_start         // [ UNARY
-	SUB                // `-`
-	binop_end          // BINARY OPERATORS ]
-	LENGTH             // `#`
-	op_end             /// OPERATORS ]
-	key_start          // [ KEYWORDS
-	NOT                // `not`
-	unop_end           // UNARY ]
-	DO                 // `do`
-	END                // `end`
-	WHILE              // `while`
-	REPEAT             // `repeat`
-	UNTIL              // `until`
-	IF                 // `if`
-	THEN               // `then`
-	ELSEIF             // `elseif`
-	ELSE               // `else`
-	FOR                // `for`
-	IN                 // `in`
-	LOCAL              // `local`
-	FUNCTION           // `function`
-	RETURN             // `return`
-	BREAK              // `break`
-	NIL                // `nil`
-	FALSE              // `false`
-	TRUE               // `true`
-	binkey_start       // [ BINARY KEYWORDS
-	AND                // `and`
-	OR                 // `or`
-	binkey_end         // BINARY KEYWORDS ]
-	key_end            // KEYWORDS ]
-	valid_end          // VALID ]
+	INVALID      Type = iota
+	valid_start       // [ VALID
+	EOF               // End of file
+	space_start       // [ SPACES
+	SPACE             // All whitespace
+	comm_start        // [ COMMENTS
+	COMMENT           // Line-style comment
+	LONGCOMMENT       // Block-style comment
+	comm_end          // COMMENTS ]
+	space_end         // SPACES ]
+	NAME              // Identifier
+	NUMBER            // Number
+	str_start         // [ STRINGS
+	STRING            // Quote-style string
+	LONGSTRING        // Block-style string
+	str_end           // STRINGS ]
+	op_start          // [ OPERATORS
+	SEMICOLON         // `;`
+	ASSIGN            // `=`
+	COMMA             // `,`
+	DOT               // `.`
+	COLON             // `:`
+	LBRACK            // `[`
+	RBRACK            // `]`
+	VARARG            // `...`
+	LPAREN            // `(`
+	RPAREN            // `)`
+	LBRACE            // `{`
+	RBRACE            // `}`
+	binop_start       // [ BINARY OPERATORS
+	ADD               // `+`
+	MUL               // `*`
+	DIV               // `/`
+	MOD               // `%`
+	EXP               // `^`
+	CONCAT            // `..`
+	LT                // `<`
+	LEQ               // `<=`
+	GT                // `>`
+	GEQ               // `>=`
+	EQ                // `==`
+	NEQ               // `~=`
+	unop_start        // [ UNARY
+	SUB               // `-`
+	binop_end         // BINARY OPERATORS ]
+	LENGTH            // `#`
+	op_end            /// OPERATORS ]
+	key_start         // [ KEYWORDS
+	NOT               // `not`
+	unop_end          // UNARY ]
+	DO                // `do`
+	END               // `end`
+	WHILE             // `while`
+	REPEAT            // `repeat`
+	UNTIL             // `until`
+	IF                // `if`
+	THEN              // `then`
+	ELSEIF            // `elseif`
+	ELSE              // `else`
+	FOR               // `for`
+	IN                // `in`
+	LOCAL             // `local`
+	FUNCTION          // `function`
+	RETURN            // `return`
+	BREAK             // `break`
+	NIL               // `nil`
+	FALSE             // `false`
+	TRUE              // `true`
+	binkey_start      // [ BINARY KEYWORDS
+	AND               // `and`
+	OR                // `or`
+	binkey_end        // BINARY KEYWORDS ]
+	key_end           // KEYWORDS ]
+	valid_end         // VALID ]
 )
 
 var tokens = [...]string{
@@ -145,8 +145,8 @@ var tokens = [...]string{
 	binkey_end:   "",
 }
 
-func (t Token) String() (s string) {
-	if 0 <= t && t < Token(len(tokens)) {
+func (t Type) String() (s string) {
+	if 0 <= t && t < Type(len(tokens)) {
 		s = tokens[t]
 	}
 	if s == "" {
@@ -155,39 +155,39 @@ func (t Token) String() (s string) {
 	return
 }
 
-func (t Token) IsValid() bool {
+func (t Type) IsValid() bool {
 	return valid_start < t && t < valid_end
 }
 
-func (t Token) IsSpace() bool {
+func (t Type) IsSpace() bool {
 	return space_start < t && t < space_end
 }
 
-func (t Token) IsComment() bool {
+func (t Type) IsComment() bool {
 	return comm_start < t && t < comm_end
 }
 
-func (t Token) IsString() bool {
+func (t Type) IsString() bool {
 	return str_start < t && t < str_end
 }
 
-func (t Token) IsOperator() bool {
+func (t Type) IsOperator() bool {
 	return key_start < t && t < key_end
 }
 
-func (t Token) IsUnary() bool {
+func (t Type) IsUnary() bool {
 	return unop_start < t && t < unop_end
 }
 
-func (t Token) IsKeyword() bool {
+func (t Type) IsKeyword() bool {
 	return key_start < t && t < key_end
 }
 
-func (t Token) IsBinary() bool {
+func (t Type) IsBinary() bool {
 	return (binop_start < t && t < binop_end) || (binkey_start < t && t < binkey_end)
 }
 
-func (t Token) Precedence() [2]int {
+func (t Type) Precedence() [2]int {
 	switch t {
 	case EXP:
 		return [2]int{10, 9}
@@ -209,16 +209,16 @@ func (t Token) Precedence() [2]int {
 
 const UnaryPrecedence = 8
 
-var keywords map[string]Token
+var keywords map[string]Type
 
 func init() {
-	keywords = make(map[string]Token)
+	keywords = make(map[string]Type)
 	for i := key_start + 1; i < key_end; i++ {
 		keywords[tokens[i]] = i
 	}
 }
 
-func Lookup(name string) Token {
+func Lookup(name string) Type {
 	if t, ok := keywords[name]; ok {
 		return t
 	}
