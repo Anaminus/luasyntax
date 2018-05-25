@@ -9,10 +9,11 @@ type Node interface {
 	End() int
 }
 
-// Represents a token within a file. Leading whitespace and comments are
-// merged into the token, represented by the Space field.
+// Represents a token within a file. The location is indicated by the Offset
+// field. Leading whitespace and comments are merged into the token,
+// represented by the Prefix field.
 type Token struct {
-	Space  int
+	Prefix int
 	Offset int
 	Type   token.Type
 }
@@ -22,14 +23,14 @@ func (t Token) IsValid() bool {
 }
 
 func (t Token) HasSpace() bool {
-	return t.IsValid() && t.Space > 0
+	return t.IsValid() && t.Prefix > 0
 }
 
 func (t Token) Start() int {
 	if !t.IsValid() {
 		return 0
 	}
-	return t.Space
+	return t.Prefix
 }
 func (t Token) End() int {
 	if !t.IsValid() {
@@ -105,7 +106,7 @@ type Name struct {
 }
 
 func (Name) expNode()     {}
-func (e Name) Start() int { return e.Space }
+func (e Name) Start() int { return e.Prefix }
 func (e Name) End() int   { return e.Offset + len(e.Value) }
 
 type NameList struct {
@@ -152,7 +153,7 @@ type Number struct {
 }
 
 func (Number) expNode()     {}
-func (e Number) Start() int { return e.Space }
+func (e Number) Start() int { return e.Prefix }
 func (e Number) End() int   { return e.Offset + len(e.Value) }
 
 type String struct {
@@ -161,7 +162,7 @@ type String struct {
 }
 
 func (String) expNode()     {}
-func (e String) Start() int { return e.Space }
+func (e String) Start() int { return e.Prefix }
 func (e String) End() int   { return e.Offset + len(e.Value) }
 
 type Nil struct {
@@ -169,7 +170,7 @@ type Nil struct {
 }
 
 func (Nil) expNode()     {}
-func (e Nil) Start() int { return e.Space }
+func (e Nil) Start() int { return e.Prefix }
 func (e Nil) End() int   { return e.Offset + len(e.Type.String()) }
 
 type Bool struct {
@@ -178,7 +179,7 @@ type Bool struct {
 }
 
 func (Bool) expNode()     {}
-func (e Bool) Start() int { return e.Space }
+func (e Bool) Start() int { return e.Prefix }
 func (e Bool) End() int   { return e.Offset + len(e.Type.String()) }
 
 type VarArg struct {
@@ -186,7 +187,7 @@ type VarArg struct {
 }
 
 func (VarArg) expNode()     {}
-func (e VarArg) Start() int { return e.Space }
+func (e VarArg) Start() int { return e.Prefix }
 func (e VarArg) End() int   { return e.Offset + len(e.Type.String()) }
 
 type UnopExp struct {

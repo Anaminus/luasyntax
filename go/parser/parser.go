@@ -11,10 +11,10 @@ import (
 )
 
 type tokenstate struct {
-	off   int
-	tok   token.Type
-	lit   []byte
-	space int // Offset of previous whitespace.
+	off int
+	tok token.Type
+	lit []byte
+	pre int // Offset of preceding tokens.
 }
 
 type parser struct {
@@ -47,10 +47,10 @@ func (p *parser) next() {
 
 	if p.tok == token.SPACE || p.tok.IsComment() {
 		// Mark position where spaces start.
-		p.space = p.off
+		p.pre = p.off
 	} else {
 		// Indicate no spaces by marking as invalid.
-		p.space = -1
+		p.pre = -1
 	}
 	// Skip over spaces and comments.
 	for p.tok == token.SPACE || p.tok.IsComment() {
@@ -90,7 +90,7 @@ func (p *parser) expect(tok token.Type) {
 
 func (p *parser) token() ast.Token {
 	return ast.Token{
-		Space:  p.space,
+		Prefix: p.pre,
 		Offset: p.off,
 		Type:   p.tok,
 	}
