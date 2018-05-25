@@ -38,6 +38,24 @@ func (t Token) End() int {
 	return t.Offset + len(t.Type.String())
 }
 
+type File struct {
+	Name  string
+	Block *Block
+}
+
+func (f *File) Start() int {
+	if f == nil || f.Block == nil {
+		return 0
+	}
+	return f.Block.Start()
+}
+func (f *File) End() int {
+	if f == nil || f.Block == nil {
+		return 0
+	}
+	return f.Block.End()
+}
+
 type Exp interface {
 	Node
 	expNode()
@@ -550,24 +568,6 @@ func (c *StringCall) End() int {
 		return 0
 	}
 	return c.StringExp.End()
-}
-
-type File struct {
-	Name  string
-	Block *Block
-}
-
-func (f *File) Start() int {
-	if f == nil || f.Block == nil {
-		return 0
-	}
-	return f.Block.Start()
-}
-func (f *File) End() int {
-	if f == nil || f.Block == nil {
-		return 0
-	}
-	return f.Block.End()
 }
 
 type Block struct {
