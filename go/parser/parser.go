@@ -42,19 +42,18 @@ func (p *parser) next() {
 		p.look = nil
 		return
 	}
-	// Mark as invalid for when there are no spaces.
-	p.space = -1
 
-	// TODO: Handle comments. Currently they are just treated as whitespace.
-	prevTok := p.tok
 	p.off, p.tok, p.lit = p.scanner.Scan()
-	// Skip over space tokens, setting p.space to the offset of the first
-	// space.
-	for p.tok.IsSpace() {
-		if !prevTok.IsSpace() {
-			p.space = p.off
-		}
-		prevTok = p.tok
+
+	if p.tok == token.SPACE || p.tok.IsComment() {
+		// Mark position where spaces start.
+		p.space = p.off
+	} else {
+		// Indicate no spaces by marking as invalid.
+		p.space = -1
+	}
+	// Skip over spaces and comments.
+	for p.tok == token.SPACE || p.tok.IsComment() {
 		p.off, p.tok, p.lit = p.scanner.Scan()
 	}
 }

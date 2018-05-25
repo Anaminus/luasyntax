@@ -10,13 +10,11 @@ const (
 	INVALID      Type = iota
 	valid_start       // [ VALID
 	EOF               // End of file
-	space_start       // [ SPACES
 	SPACE             // All whitespace
 	comm_start        // [ COMMENTS
 	COMMENT           // Line-style comment
 	LONGCOMMENT       // Block-style comment
 	comm_end          // COMMENTS ]
-	space_end         // SPACES ]
 	NAME              // Identifier
 	NUMBER            // Number
 	str_start         // [ STRINGS
@@ -157,10 +155,6 @@ func (t Type) String() (s string) {
 
 func (t Type) IsValid() bool {
 	return valid_start < t && t < valid_end
-}
-
-func (t Type) IsSpace() bool {
-	return space_start < t && t < space_end
 }
 
 func (t Type) IsComment() bool {
