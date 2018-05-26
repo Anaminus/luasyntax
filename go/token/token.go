@@ -10,11 +10,13 @@ const (
 	INVALID      Type = iota
 	valid_start       // [ VALID
 	EOF               // End of file
+	pre_start         // [ PREFIXES
 	SPACE             // All whitespace
 	comm_start        // [ COMMENTS
 	COMMENT           // Line-style comment
 	LONGCOMMENT       // Block-style comment
 	comm_end          // COMMENTS ]
+	pre_end           // PREFIXES ]
 	NAME              // Identifier
 	NUMBER            // Number
 	str_start         // [ STRINGS
@@ -155,6 +157,10 @@ func (t Type) String() (s string) {
 
 func (t Type) IsValid() bool {
 	return valid_start < t && t < valid_end
+}
+
+func (t Type) IsPrefix() bool {
+	return pre_start < t && t < pre_end
 }
 
 func (t Type) IsComment() bool {

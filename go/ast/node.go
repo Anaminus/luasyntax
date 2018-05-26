@@ -13,30 +13,42 @@ type Node interface {
 // field. Leading whitespace and comments are merged into the token,
 // represented by the Prefix field.
 type Token struct {
-	Prefix int
+	Prefix []Prefix
 	Offset int
+	Bytes  []byte
 	Type   token.Type
+}
+
+type Prefix struct {
+	Bytes []byte
+	Type  token.Type
 }
 
 func (t Token) IsValid() bool {
 	return t.Type != token.INVALID
 }
 
-func (t Token) HasSpace() bool {
-	return t.IsValid() && t.Prefix > 0
+// PrefixOffset returns the offset of the first, left-most prefix.
+func (t Token) PrefixOffset() int {
+	n := t.Offset
+	for _, p := range t.Prefix {
+		n -= len(p.Bytes)
+	}
+	return n
 }
 
 func (t Token) Start() int {
 	if !t.IsValid() {
 		return 0
 	}
-	return t.Prefix
+	return t.PrefixOffset()
 }
+
 func (t Token) End() int {
 	if !t.IsValid() {
 		return 0
 	}
-	return t.Offset + len(t.Type.String())
+	return t.Offset + len(t.Bytes)
 }
 
 type File struct {
@@ -102,12 +114,10 @@ func (l *ExpList) End() int {
 
 type Name struct {
 	Token
-	Value []byte
+	Value string
 }
 
-func (Name) expNode()     {}
-func (e Name) Start() int { return e.Prefix }
-func (e Name) End() int   { return e.Offset + len(e.Value) }
+func (Name) expNode() {}
 
 type NameList struct {
 	Names []Name
@@ -149,46 +159,36 @@ func (l *NameList) End() int {
 
 type Number struct {
 	Token
-	Value []byte
+	Value float64
 }
 
-func (Number) expNode()     {}
-func (e Number) Start() int { return e.Prefix }
-func (e Number) End() int   { return e.Offset + len(e.Value) }
+func (Number) expNode() {}
 
 type String struct {
 	Token
-	Value []byte
+	Value string
 }
 
-func (String) expNode()     {}
-func (e String) Start() int { return e.Prefix }
-func (e String) End() int   { return e.Offset + len(e.Value) }
+func (String) expNode() {}
 
 type Nil struct {
 	Token
 }
 
-func (Nil) expNode()     {}
-func (e Nil) Start() int { return e.Prefix }
-func (e Nil) End() int   { return e.Offset + len(e.Type.String()) }
+func (Nil) expNode() {}
 
 type Bool struct {
 	Token
 	Value bool
 }
 
-func (Bool) expNode()     {}
-func (e Bool) Start() int { return e.Prefix }
-func (e Bool) End() int   { return e.Offset + len(e.Type.String()) }
+func (Bool) expNode() {}
 
 type VarArg struct {
 	Token
 }
 
-func (VarArg) expNode()     {}
-func (e VarArg) Start() int { return e.Prefix }
-func (e VarArg) End() int   { return e.Offset + len(e.Type.String()) }
+func (VarArg) expNode() {}
 
 type UnopExp struct {
 	UnopToken Token

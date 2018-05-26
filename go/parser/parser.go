@@ -8,13 +8,15 @@ import (
 	"github.com/anaminus/luasyntax/go/token"
 	"io"
 	"io/ioutil"
+	"math"
+	"strconv"
 )
 
 type tokenstate struct {
 	off int
 	tok token.Type
 	lit []byte
-	pre int // Offset of preceding tokens.
+	pre []ast.Prefix
 }
 
 type parser struct {
@@ -45,15 +47,10 @@ func (p *parser) next() {
 
 	p.off, p.tok, p.lit = p.scanner.Scan()
 
-	if p.tok == token.SPACE || p.tok.IsComment() {
-		// Mark position where spaces start.
-		p.pre = p.off
-	} else {
-		// Indicate no spaces by marking as invalid.
-		p.pre = -1
-	}
-	// Skip over spaces and comments.
-	for p.tok == token.SPACE || p.tok.IsComment() {
+	p.pre = nil
+	// Skip over spaces and comments, accumulating them in p.pre.
+	for p.tok.IsPrefix() {
+		p.pre = append(p.pre, ast.Prefix{Bytes: p.lit, Type: p.tok})
 		p.off, p.tok, p.lit = p.scanner.Scan()
 	}
 }
@@ -92,6 +89,7 @@ func (p *parser) token() ast.Token {
 	return ast.Token{
 		Prefix: p.pre,
 		Offset: p.off,
+		Bytes:  p.lit,
 		Type:   p.tok,
 	}
 }
@@ -121,23 +119,101 @@ func (p *parser) isBlockFollow() bool {
 
 func (p *parser) parseName() (name ast.Name) {
 	p.expect(token.NAME)
-	name = ast.Name{Token: p.token(), Value: p.lit}
+	name = ast.Name{Token: p.token(), Value: string(p.lit)}
 	p.next()
 	return
 }
 
 func (p *parser) parseNumber() (num ast.Number) {
 	p.expect(token.NUMBER)
-	num = ast.Number{Token: p.token(), Value: p.lit}
+	var n float64
+	var err error
+	if len(p.lit) > 1 && p.lit[0] == '0' && p.lit[1] == 'x' { // Hex
+		var i uint64
+		i, err = strconv.ParseUint(string(p.lit[2:]), 16, 32)
+		n = float64(i)
+	} else { // Float
+		// Actual parsing of the number depends on the compiler (strtod), so
+		// technically it's correct to just use Go's parser.
+		n, err = strconv.ParseFloat(string(p.lit), 64)
+	}
+	if err != nil {
+		n = math.NaN()
+	}
+	num = ast.Number{Token: p.token(), Value: n}
 	p.next()
 	return
 }
 
+func parseQuotedString(b []byte) string {
+	b = b[1 : len(b)-1]          // Trim quotes.
+	c := make([]byte, 0, len(b)) // Result will never be larger than source.
+	for i := 0; i < len(b); i++ {
+		ch := b[i]
+		if ch == '\\' {
+			i++
+			ch = b[i]
+			switch ch {
+			case 'a':
+				ch = '\a'
+			case 'b':
+				ch = '\b'
+			case 'f':
+				ch = '\f'
+			case 'n':
+				ch = '\n'
+			case 'r':
+				ch = '\r'
+			case 't':
+				ch = '\t'
+			case 'v':
+				ch = '\v'
+			default:
+				if '0' <= ch && ch <= '9' {
+					var n byte
+					for j := 0; j < 3 && '0' <= b[i] && b[i] <= '9'; j++ {
+						n = n*10 + (b[i] - '0')
+						i++
+					}
+					// Size of number was already checked by scanner.
+					ch = n
+				}
+			}
+		}
+		c = append(c, ch)
+	}
+	return string(c)
+}
+
+func parseBlockString(b []byte) string {
+	// Assumes string is wrapped in a `[==[]==]`-like block.
+	b = b[1:] // Trim first `[`
+	for i, c := range b {
+		if c == '[' {
+			// Trim to second '[', as well as trailing block.
+			b = b[i+1 : len(b)-i-2]
+		}
+	}
+	// Skip first newline.
+	if len(b) > 0 && (b[0] == '\n' || b[0] == '\r') {
+		if len(b) > 1 && (b[1] == '\n' || b[1] == '\r') && b[1] != b[0] {
+			b = b[2:]
+		} else {
+			b = b[1:]
+		}
+	}
+	return string(b)
+}
+
 func (p *parser) parseString() (str ast.String) {
-	if p.tok != token.STRING && p.tok != token.LONGSTRING {
+	switch p.tok {
+	case token.STRING:
+		str = ast.String{Token: p.token(), Value: parseQuotedString(p.lit)}
+	case token.LONGSTRING:
+		str = ast.String{Token: p.token(), Value: parseBlockString(p.lit)}
+	default:
 		p.error(p.off, "'"+token.STRING.String()+"' expected")
 	}
-	str = ast.String{Token: p.token(), Value: p.lit}
 	p.next()
 	return
 }
