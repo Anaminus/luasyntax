@@ -125,17 +125,20 @@ func (p *parser) parseName() (name ast.Name) {
 }
 
 func (p *parser) parseNumber() (num ast.Number) {
-	p.expect(token.NUMBER)
 	var n float64
 	var err error
-	if len(p.lit) > 1 && p.lit[0] == '0' && p.lit[1] == 'x' { // Hex
-		var i uint64
-		i, err = strconv.ParseUint(string(p.lit[2:]), 16, 32)
-		n = float64(i)
-	} else { // Float
+	switch p.tok {
+	case token.NUMBERFLOAT:
 		// Actual parsing of the number depends on the compiler (strtod), so
 		// technically it's correct to just use Go's parser.
 		n, err = strconv.ParseFloat(string(p.lit), 64)
+	case token.NUMBERHEX:
+		var i uint64
+		// Trim leading `0x`.
+		i, err = strconv.ParseUint(string(p.lit[2:]), 16, 32)
+		n = float64(i)
+	default:
+		p.error(p.off, "'"+token.NUMBERFLOAT.String()+"' expected")
 	}
 	if err != nil {
 		n = math.NaN()
@@ -220,7 +223,7 @@ func (p *parser) parseString() (str ast.String) {
 
 func (p *parser) parseSimpleExp() (exp ast.Exp) {
 	switch p.tok {
-	case token.NUMBER:
+	case token.NUMBERFLOAT, token.NUMBERHEX:
 		exp = p.parseNumber()
 	case token.STRING, token.LONGSTRING:
 		exp = p.parseString()

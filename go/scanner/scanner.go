@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"bytes"
 	"github.com/anaminus/luasyntax/go/token"
 )
 
@@ -87,7 +88,8 @@ func (s *Scanner) scanName() []byte {
 	return s.src[off:s.offset]
 }
 
-func (s *Scanner) scanNumber() {
+func (s *Scanner) scanNumber() token.Type {
+	off := s.offset
 	for isDigit(s.ch) || s.ch == '.' {
 		s.next()
 	}
@@ -98,6 +100,10 @@ func (s *Scanner) scanNumber() {
 		}
 	}
 	s.scanName()
+	if bytes.HasPrefix(s.src[off:s.offset], []byte{'0', 'x'}) {
+		return token.NUMBERHEX
+	}
+	return token.NUMBERFLOAT
 }
 
 func (s *Scanner) scanString(off int) {
@@ -208,8 +214,7 @@ func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {
 	case isLetter(ch):
 		tok = token.Lookup(string(s.scanName()))
 	case isDigit(ch):
-		s.scanNumber()
-		tok = token.NUMBER
+		tok = s.scanNumber()
 	case ch == '"', ch == '\'':
 		s.scanString(off)
 		tok = token.STRING
@@ -232,8 +237,7 @@ func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {
 			tok = token.MOD
 		case '.':
 			if isDigit(s.ch) {
-				s.scanNumber()
-				tok = token.NUMBER
+				tok = s.scanNumber()
 			} else if s.ch == '.' {
 				s.next()
 				if s.ch == '.' {

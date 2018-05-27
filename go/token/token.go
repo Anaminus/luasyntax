@@ -18,7 +18,10 @@ const (
 	comm_end          // COMMENTS ]
 	pre_end           // PREFIXES ]
 	NAME              // Identifier
-	NUMBER            // Number
+	num_start         // [ NUMBER
+	NUMBERFLOAT       // Float
+	NUMBERHEX         // Hexadecimal
+	num_end           // NUMBER ]
 	str_start         // [ STRINGS
 	STRING            // Quote-style string
 	LONGSTRING        // Block-style string
@@ -90,7 +93,8 @@ var tokens = [...]string{
 	COMMENT:      "<comment>",
 	LONGCOMMENT:  "<comment>",
 	NAME:         "<name>",
-	NUMBER:       "<number>",
+	NUMBERFLOAT:  "<number>",
+	NUMBERHEX:    "<number>",
 	STRING:       "<string>",
 	LONGSTRING:   "<string>",
 	ADD:          "+",
@@ -165,6 +169,10 @@ func (t Type) IsPrefix() bool {
 
 func (t Type) IsComment() bool {
 	return comm_start < t && t < comm_end
+}
+
+func (t Type) IsNumber() bool {
+	return num_start < t && t < num_end
 }
 
 func (t Type) IsString() bool {
