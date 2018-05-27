@@ -653,8 +653,9 @@ func (p *parser) parseBlock() (block *ast.Block) {
 
 func (p *parser) parseFile() *ast.File {
 	return &ast.File{
-		Name:  p.file.Name(),
-		Block: p.parseBlock(),
+		Name:     p.file.Name(),
+		Block:    p.parseBlock(),
+		EOFToken: p.tokenNext(),
 	}
 }
 

@@ -52,8 +52,9 @@ func (t Token) End() int {
 }
 
 type File struct {
-	Name  string
-	Block *Block
+	Name     string
+	Block    *Block
+	EOFToken Token
 }
 
 func (f *File) Start() int {
@@ -66,7 +67,7 @@ func (f *File) End() int {
 	if f == nil || f.Block == nil {
 		return 0
 	}
-	return f.Block.End()
+	return f.EOFToken.End()
 }
 
 type Exp interface {
