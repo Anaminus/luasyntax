@@ -24,7 +24,8 @@ type Node interface {
 	// LastToken returns the last Token in the node. Assumes that the node is
 	// valid.
 	LastToken() *Token
-	// Implements the WriteTo interface. Assumes that the node is valid.
+	// Implements the WriteTo interface by writing the source-code equivalent
+	// of the node. Assumes that the node is valid.
 	io.WriterTo
 }
 
