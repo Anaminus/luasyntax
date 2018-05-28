@@ -80,9 +80,6 @@ type Block struct {
 }
 
 func (b *Block) Len() int {
-	if b == nil {
-		return 0
-	}
 	return len(b.Stats) + len(b.Seps)
 }
 
