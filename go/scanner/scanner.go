@@ -19,21 +19,29 @@ func isSpace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' || ch == '\v' || ch == '\f'
 }
 
+// An ErrorHandler may be provided to Scanner.Init. If an error occurs while
+// there is a handler, the handler is called with the position of the
+// offending token and an error message.
 type ErrorHandler func(pos token.Position, msg string)
 
+// Scanner holds the scanner's state while processing a source file. It must
+// be initialized with Init before using.
 type Scanner struct {
 	file *token.File
 	src  []byte
 	err  ErrorHandler
 
-	ch         rune
-	offset     int
-	rdOffset   int
-	lineOffset int
+	ch         rune // Current character.
+	offset     int  // Offset of current character.
+	rdOffset   int  // Offset of next character to read.
+	lineOffset int  // Offset of the current line.
 
+	// ErrorCount is the number of errors encountered by the scanner.
 	ErrorCount int
 }
 
+// Next scans the next character, updating ch and offset, and tracking any new
+// lines encountered.
 func (s *Scanner) next() {
 	if s.rdOffset < len(s.src) {
 		s.offset = s.rdOffset
@@ -53,6 +61,9 @@ func (s *Scanner) next() {
 	}
 }
 
+// Init prepares the scanner to tokenize a given source. The file argument
+// sets the file to use for position information, and src sets the source to
+// tokenize. The option err argument is used to handle errors.
 func (s *Scanner) Init(file *token.File, src []byte, err ErrorHandler) {
 	s.file = file
 	s.src = src
@@ -66,6 +77,7 @@ func (s *Scanner) Init(file *token.File, src []byte, err ErrorHandler) {
 	s.next()
 }
 
+// Error calls the error handler, if available, and increments ErrorCount.
 func (s *Scanner) error(off int, msg string) {
 	if s.err != nil {
 		s.err(s.file.Position(off), msg)
@@ -73,12 +85,14 @@ func (s *Scanner) error(off int, msg string) {
 	s.ErrorCount++
 }
 
+// ScanSpace scans for a sequence of space characters.
 func (s *Scanner) scanSpace() {
 	for isSpace(s.ch) {
 		s.next()
 	}
 }
 
+// ScanName scans for a name of the form `[A-Za-z_][0-9A-Za-z_]*`.
 func (s *Scanner) scanName() []byte {
 	off := s.offset
 	for isLetter(s.ch) || isDigit(s.ch) {
@@ -87,6 +101,8 @@ func (s *Scanner) scanName() []byte {
 	return s.src[off:s.offset]
 }
 
+// ScanNumber scans for a number. The result may not evaluate to a valid
+// number.
 func (s *Scanner) scanNumber() token.Type {
 	off := s.offset
 	for isDigit(s.ch) || s.ch == '.' {
@@ -105,6 +121,7 @@ func (s *Scanner) scanNumber() token.Type {
 	return token.NUMBERFLOAT
 }
 
+// ScanString scans for a quoted string.
 func (s *Scanner) scanString(off int) {
 	quote := s.ch
 	s.next()
@@ -152,6 +169,7 @@ func (s *Scanner) scanString(off int) {
 	s.next()
 }
 
+// ScanLongString scans for a long, bracket-enclosed string.
 func (s *Scanner) scanLongString(off int, t token.Type) {
 	eq := 0
 	for s.ch == '=' {
@@ -191,6 +209,7 @@ loop:
 	}
 }
 
+// ScanComment scans for a short or long comment.
 func (s *Scanner) scanComment(off int) token.Type {
 	s.next()
 	if s.ch == '[' {
@@ -204,6 +223,11 @@ func (s *Scanner) scanComment(off int) token.Type {
 	return token.COMMENT
 }
 
+// Scan scans the next token and returns its offset, type, and the bytes
+// represented by the token. The end of the source is indicated by token.EOF
+// as the type.
+//
+// Scan adds line information to the token.File specified by Init.
 func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {
 	off = s.offset
 	switch ch := s.ch; {
