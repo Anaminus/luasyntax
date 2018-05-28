@@ -1,3 +1,4 @@
+// The scanner package implements a tokenizer for Lua source text.
 package scanner
 
 import (
