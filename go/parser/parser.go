@@ -124,7 +124,7 @@ func (p *parser) parseName() (name ast.Name) {
 	return
 }
 
-func (p *parser) parseNumber() (num ast.Number) {
+func (p *parser) parseNumber() (num *ast.Number) {
 	var n float64
 	var err error
 	switch p.tok {
@@ -143,7 +143,7 @@ func (p *parser) parseNumber() (num ast.Number) {
 	if err != nil {
 		n = math.NaN()
 	}
-	num = ast.Number{Token: p.token(), Value: n}
+	num = &ast.Number{Token: p.token(), Value: n}
 	p.next()
 	return
 }
@@ -208,12 +208,12 @@ func parseBlockString(b []byte) string {
 	return string(b)
 }
 
-func (p *parser) parseString() (str ast.String) {
+func (p *parser) parseString() (str *ast.String) {
 	switch p.tok {
 	case token.STRING:
-		str = ast.String{Token: p.token(), Value: parseQuotedString(p.lit)}
+		str = &ast.String{Token: p.token(), Value: parseQuotedString(p.lit)}
 	case token.LONGSTRING:
-		str = ast.String{Token: p.token(), Value: parseBlockString(p.lit)}
+		str = &ast.String{Token: p.token(), Value: parseBlockString(p.lit)}
 	default:
 		p.error(p.off, "'"+token.STRING.String()+"' expected")
 	}
@@ -228,17 +228,17 @@ func (p *parser) parseSimpleExp() (exp ast.Exp) {
 	case token.STRING, token.LONGSTRING:
 		exp = p.parseString()
 	case token.NIL:
-		exp = ast.Nil{Token: p.tokenNext()}
+		exp = &ast.Nil{Token: p.tokenNext()}
 	case token.TRUE:
-		exp = ast.Bool{Token: p.tokenNext(), Value: true}
+		exp = &ast.Bool{Token: p.tokenNext(), Value: true}
 	case token.FALSE:
-		exp = ast.Bool{Token: p.tokenNext(), Value: false}
+		exp = &ast.Bool{Token: p.tokenNext(), Value: false}
 	case token.VARARG:
-		exp = ast.VarArg{Token: p.tokenNext()}
+		exp = &ast.VarArg{Token: p.tokenNext()}
 	case token.LBRACE:
 		exp = p.parseTableCtor()
 	case token.FUNCTION:
-		exp = p.parseFunction(funcExp)
+		exp, _ = p.parseFunction(funcExp)
 	default:
 		exp = p.parsePrimaryExp()
 	}
@@ -283,7 +283,7 @@ func (p *parser) parseExpList() *ast.ExpList {
 	return list
 }
 
-func (p *parser) parseBlockBody(term token.Type) *ast.Block {
+func (p *parser) parseBlockBody(term token.Type) ast.Block {
 	block := p.parseBlock()
 	if p.tok != term {
 		p.error(p.off, term.String()+" expected")
@@ -325,7 +325,7 @@ func (p *parser) parseIfStat() ast.Stat {
 	stat.ThenToken = p.expectToken(token.THEN)
 	stat.Block = p.parseBlock()
 	for p.tok == token.ELSEIF {
-		clause := &ast.ElseIfClause{}
+		clause := ast.ElseIfClause{}
 		clause.ElseIfToken = p.expectToken(token.ELSEIF)
 		clause.Exp = p.parseExp()
 		clause.ThenToken = p.expectToken(token.THEN)
@@ -364,13 +364,13 @@ func (p *parser) parseForStat() (stat ast.Stat) {
 	case token.COMMA, token.IN:
 		st := &ast.GenericForStat{}
 		st.ForToken = forToken
-		st.NameList = &ast.NameList{Names: []ast.Name{name}}
+		st.NameList.Names = append(st.NameList.Names, name)
 		for p.tok == token.COMMA {
 			st.NameList.Seps = append(st.NameList.Seps, p.tokenNext())
 			st.NameList.Names = append(st.NameList.Names, p.parseName())
 		}
 		st.InToken = p.expectToken(token.IN)
-		st.ExpList = p.parseExpList()
+		st.ExpList = *p.parseExpList()
 		st.DoToken = p.expectToken(token.DO)
 		st.Block = p.parseBlockBody(token.END)
 		st.EndToken = p.expectToken(token.END)
@@ -387,58 +387,57 @@ const (
 	funcStat
 )
 
-func (p *parser) parseFunction(typ uint8) *ast.Function {
-	stat := &ast.Function{}
-	stat.FuncToken = p.expectToken(token.FUNCTION)
+func (p *parser) parseFunction(typ uint8) (exp *ast.FunctionExp, names ast.FuncNameList) {
+	exp = &ast.FunctionExp{}
+	exp.FuncToken = p.expectToken(token.FUNCTION)
 	if typ > funcExp {
-		stat.FuncName = &ast.NameList{
-			Names: []ast.Name{p.parseName()},
-		}
+		names.Names = append(names.Names, p.parseName())
 		if typ > funcLocal {
 			for p.tok == token.DOT {
-				stat.FuncName.Seps = append(stat.FuncName.Seps, p.tokenNext())
-				stat.FuncName.Names = append(stat.FuncName.Names, p.parseName())
+				names.Seps = append(names.Seps, p.tokenNext())
+				names.Names = append(names.Names, p.parseName())
 			}
 			if p.tok == token.COLON {
-				stat.FuncName.Seps = append(stat.FuncName.Seps, p.tokenNext())
-				stat.FuncName.Names = append(stat.FuncName.Names, p.parseName())
+				names.Seps = append(names.Seps, p.tokenNext())
+				names.Names = append(names.Names, p.parseName())
 			}
 		}
 	}
-	stat.LParenToken = p.expectToken(token.LPAREN)
+	exp.LParenToken = p.expectToken(token.LPAREN)
 	if p.tok == token.NAME {
-		stat.ParList = &ast.NameList{Names: []ast.Name{p.parseName()}}
+		exp.ParList = &ast.NameList{Names: []ast.Name{p.parseName()}}
 		for p.tok == token.COMMA {
 			sepToken := p.tokenNext()
 			if p.tok == token.VARARG {
-				stat.VarArgSepToken = sepToken
-				stat.VarArgToken = p.tokenNext()
+				exp.VarArgSepToken = sepToken
+				exp.VarArgToken = p.tokenNext()
 				break
 			}
-			stat.ParList.Seps = append(stat.ParList.Seps, sepToken)
-			stat.ParList.Names = append(stat.ParList.Names, p.parseName())
+			exp.ParList.Seps = append(exp.ParList.Seps, sepToken)
+			exp.ParList.Names = append(exp.ParList.Names, p.parseName())
 		}
 	} else if p.tok == token.VARARG {
-		stat.VarArgToken = p.tokenNext()
+		exp.VarArgToken = p.tokenNext()
 	}
-	stat.RParenToken = p.expectToken(token.RPAREN)
-	stat.Block = p.parseBlockBody(token.END)
-	stat.EndToken = p.expectToken(token.END)
-	return stat
+	exp.RParenToken = p.expectToken(token.RPAREN)
+	exp.Block = p.parseBlockBody(token.END)
+	exp.EndToken = p.expectToken(token.END)
+	return exp, names
 }
 
 func (p *parser) parseLocalStat() ast.Stat {
 	localToken := p.expectToken(token.LOCAL)
 	if p.tok == token.FUNCTION {
+		exp, names := p.parseFunction(funcLocal)
 		return &ast.LocalFunctionStat{
 			LocalToken: localToken,
-			Function:   *p.parseFunction(funcLocal),
+			Name:       names.Names[0],
+			Exp:        *exp,
 		}
 	}
-	stat := &ast.LocalVarStat{
-		LocalToken: localToken,
-		NameList:   &ast.NameList{Names: []ast.Name{p.parseName()}},
-	}
+	stat := &ast.LocalVarStat{}
+	stat.LocalToken = localToken
+	stat.NameList.Names = append(stat.NameList.Names, p.parseName())
 	for p.tok == token.COMMA {
 		stat.NameList.Seps = append(stat.NameList.Seps, p.tokenNext())
 		stat.NameList.Names = append(stat.NameList.Names, p.parseName())
@@ -448,6 +447,14 @@ func (p *parser) parseLocalStat() ast.Stat {
 		stat.ExpList = p.parseExpList()
 	}
 	return stat
+}
+
+func (p *parser) parseFunctionStat() ast.Stat {
+	exp, names := p.parseFunction(funcStat)
+	return &ast.FunctionStat{
+		Name: names,
+		Exp:  *exp,
+	}
 }
 
 func (p *parser) parseReturnStat() ast.Stat {
@@ -487,9 +494,6 @@ func (p *parser) parsePrefixExp() (exp ast.Exp) {
 func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 	ctor = &ast.TableCtor{}
 	ctor.LBraceToken = p.expectToken(token.LBRACE)
-	if p.tok != token.RBRACE {
-		ctor.Fields = &ast.FieldList{}
-	}
 	for p.tok != token.RBRACE {
 		var entry ast.Entry
 		if p.tok == token.LBRACK {
@@ -542,11 +546,11 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 		args = a
 	case token.LBRACE:
 		a := &ast.TableCall{}
-		a.TableExp = p.parseTableCtor()
+		a.TableExp = *p.parseTableCtor()
 		args = a
 	case token.STRING, token.LONGSTRING:
 		a := &ast.StringCall{}
-		a.StringExp = p.parseString()
+		a.StringExp = *p.parseString()
 		args = a
 	default:
 		p.error(p.off, "function arguments expected")
@@ -597,7 +601,7 @@ func (p *parser) parseExpStat() ast.Stat {
 		return &ast.CallExprStat{Exp: exp}
 	}
 
-	stat := &ast.AssignStat{Left: &ast.ExpList{Exps: []ast.Exp{exp}}}
+	stat := &ast.AssignStat{Left: ast.ExpList{Exps: []ast.Exp{exp}}}
 	for p.tok == token.COMMA {
 		stat.Left.Seps = append(stat.Left.Seps, p.tokenNext())
 		switch exp := p.parsePrimaryExp().(type) {
@@ -608,7 +612,7 @@ func (p *parser) parseExpStat() ast.Stat {
 		}
 	}
 	stat.AssignToken = p.expectToken(token.ASSIGN)
-	stat.Right = p.parseExpList()
+	stat.Right = *p.parseExpList()
 	return stat
 }
 
@@ -625,7 +629,7 @@ func (p *parser) parseStat() (stat ast.Stat, last bool) {
 	case token.FOR:
 		return p.parseForStat(), false
 	case token.FUNCTION:
-		return p.parseFunction(funcStat), false
+		return p.parseFunctionStat(), false
 	case token.LOCAL:
 		return p.parseLocalStat(), false
 	case token.RETURN:
@@ -636,8 +640,7 @@ func (p *parser) parseStat() (stat ast.Stat, last bool) {
 	return p.parseExpStat(), false
 }
 
-func (p *parser) parseBlock() (block *ast.Block) {
-	block = &ast.Block{}
+func (p *parser) parseBlock() (block ast.Block) {
 	for last := false; !last && !p.isBlockFollow(); {
 		var stat ast.Stat
 		stat, last = p.parseStat()

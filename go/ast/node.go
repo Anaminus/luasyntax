@@ -1,952 +1,160 @@
 package ast
 
-import (
-	"github.com/anaminus/luasyntax/go/token"
-)
+func (f *File) FirstToken() *Token { return f.Block.FirstToken() }
+func (f *File) LastToken() *Token  { return &f.EOFToken }
 
-type Node interface {
-	Start() int
-	End() int
-}
-
-// Represents a token within a file. The location is indicated by the Offset
-// field. Leading whitespace and comments are merged into the token,
-// represented by the Prefix field.
-type Token struct {
-	Prefix []Prefix
-	Offset int
-	Bytes  []byte
-	Type   token.Type
-}
-
-type Prefix struct {
-	Bytes []byte
-	Type  token.Type
-}
-
-// PrefixOffset returns the offset of the first, left-most prefix.
-func (t Token) PrefixOffset() int {
-	n := t.Offset
-	for _, p := range t.Prefix {
-		n -= len(p.Bytes)
-	}
-	return n
-}
-
-func (t Token) Start() int {
-	if !t.Type.IsValid() {
-		return 0
-	}
-	return t.PrefixOffset()
-}
-
-func (t Token) End() int {
-	if !t.Type.IsValid() {
-		return 0
-	}
-	return t.Offset + len(t.Bytes)
-}
-
-type File struct {
-	Name     string
-	Block    *Block
-	EOFToken Token
-}
-
-func (f *File) Start() int {
-	if f == nil || f.Block == nil {
-		return 0
-	}
-	return f.Block.Start()
-}
-func (f *File) End() int {
-	if f == nil || f.Block == nil {
-		return 0
-	}
-	return f.EOFToken.End()
-}
-
-type Exp interface {
-	Node
-	expNode()
-}
-
-type ExpList struct {
-	Exps []Exp
-	Seps []Token // Commas between expressions.
-}
-
-func (l *ExpList) Len() int {
-	if l == nil {
-		return 0
-	}
-	return len(l.Exps) + len(l.Seps)
-}
-func (l *ExpList) Start() int {
-	if l == nil {
-		return 0
-	}
-	if len(l.Exps) == 0 {
-		if len(l.Seps) == 0 {
-			return 0
-		}
-		return l.Seps[0].Start()
-	}
-	return l.Exps[0].Start()
-}
-func (l *ExpList) End() int {
-	if l == nil {
-		return 0
-	}
-	j := len(l.Seps)
-	i := len(l.Exps)
-	if j == 0 && i == 0 {
-		return 0
-	}
-	if j >= i {
-		return l.Seps[j-1].End()
-	}
-	return l.Exps[i-1].End()
-}
-
-type Name struct {
-	Token
-	Value string
-}
-
-func (Name) expNode() {}
-
-type NameList struct {
-	Names []Name
-	Seps  []Token // Separators between names (COMMA, DOT, COLON).
-}
-
-func (l *NameList) Len() int {
-	if l == nil {
-		return 0
-	}
-	return len(l.Names) + len(l.Seps)
-}
-func (l *NameList) Start() int {
-	if l == nil {
-		return 0
-	}
-	if len(l.Names) == 0 {
-		if len(l.Seps) == 0 {
-			return 0
-		}
-		return l.Seps[0].Start()
-	}
-	return l.Names[0].Start()
-}
-func (l *NameList) End() int {
-	if l == nil {
-		return 0
-	}
-	j := len(l.Seps)
-	i := len(l.Names)
-	if j == 0 && i == 0 {
-		return 0
-	}
-	if j >= i {
-		return l.Seps[j-1].End()
-	}
-	return l.Names[i-1].End()
-}
-
-type Number struct {
-	Token
-	Value float64
-}
-
-func (Number) expNode() {}
-
-type String struct {
-	Token
-	Value string
-}
-
-func (String) expNode() {}
-
-type Nil struct {
-	Token
-}
-
-func (Nil) expNode() {}
-
-type Bool struct {
-	Token
-	Value bool
-}
-
-func (Bool) expNode() {}
-
-type VarArg struct {
-	Token
-}
-
-func (VarArg) expNode() {}
-
-type UnopExp struct {
-	UnopToken Token
-	Exp       Exp
-}
-
-func (UnopExp) expNode() {}
-func (e *UnopExp) Start() int {
-	if e == nil {
-		return 0
-	}
-	return e.UnopToken.Start()
-}
-func (e *UnopExp) End() int {
-	if e == nil {
-		return 0
-	}
-	if e.Exp == nil {
-		return e.UnopToken.End()
-	}
-	return e.Exp.End()
-}
-
-type BinopExp struct {
-	Left       Exp
-	BinopToken Token
-	Right      Exp
-}
-
-func (BinopExp) expNode() {}
-func (e *BinopExp) Start() int {
-	if e == nil {
-		return 0
-	}
-	if e.Left == nil {
-		return e.BinopToken.Start()
-	}
-	return e.Left.Start()
-}
-func (e *BinopExp) End() int {
-	if e == nil {
-		return 0
-	}
-	if e.Right == nil {
-		return e.BinopToken.End()
-	}
-	return e.Right.End()
-}
-
-type ParenExp struct {
-	LParenToken Token
-	Exp         Exp
-	RParenToken Token
-}
-
-func (ParenExp) expNode() {}
-func (e *ParenExp) Start() int {
-	if e == nil {
-		return 0
-	}
-	return e.LParenToken.Start()
-}
-func (e *ParenExp) End() int {
-	if e == nil {
-		return 0
-	}
-	return e.RParenToken.End()
-}
-
-type VariableExp struct {
-	NameToken Name
-}
-
-func (VariableExp) expNode() {}
-func (e *VariableExp) Start() int {
-	if e == nil {
-		return 0
-	}
-	return e.NameToken.Start()
-}
-func (e *VariableExp) End() int {
-	if e == nil {
-		return 0
-	}
-	return e.NameToken.End()
-}
-
-type TableCtor struct {
-	LBraceToken Token
-	Fields      *FieldList
-	RBraceToken Token
-}
-
-func (TableCtor) expNode() {}
-func (e *TableCtor) Start() int {
-	if e == nil {
-		return 0
-	}
-	return e.LBraceToken.Start()
-}
-func (e *TableCtor) End() int {
-	if e == nil {
-		return 0
-	}
-	return e.RBraceToken.End()
-}
-
-type FieldList struct {
-	Entries []Entry
-	Seps    []Token
-}
-
-func (l *FieldList) Len() int {
-	if l == nil {
-		return 0
-	}
-	return len(l.Entries) + len(l.Seps)
-}
-func (l *FieldList) Start() int {
-	if l == nil {
-		return 0
-	}
-	if len(l.Entries) == 0 {
-		if len(l.Seps) == 0 {
-			return 0
-		}
-		return l.Seps[0].Start()
-	}
-	return l.Entries[0].Start()
-}
-func (l *FieldList) End() int {
-	if l == nil {
-		return 0
-	}
-	j := len(l.Seps)
-	i := len(l.Entries)
-	if j == 0 && i == 0 {
-		return 0
-	}
-	if j >= i {
-		return l.Seps[j-1].End()
-	}
-	return l.Entries[i-1].End()
-}
-
-type Entry interface {
-	Node
-	entryNode()
-}
-
-type IndexEntry struct {
-	LBrackToken Token
-	KeyExp      Exp
-	RBrackToken Token
-	AssignToken Token
-	ValueExp    Exp
-}
-
-func (IndexEntry) entryNode() {}
-func (e *IndexEntry) Start() int {
-	if e == nil {
-		return 0
-	}
-	return e.LBrackToken.Start()
-}
-func (e *IndexEntry) End() int {
-	if e == nil {
-		return 0
-	}
-	if e.ValueExp == nil {
-		return e.AssignToken.End()
-	}
-	return e.ValueExp.End()
-}
-
-type FieldEntry struct {
-	Name        Name
-	AssignToken Token
-	Value       Exp
-}
-
-func (FieldEntry) entryNode() {}
-func (e *FieldEntry) Start() int {
-	if e == nil {
-		return 0
-	}
-	return e.Name.Start()
-}
-func (e *FieldEntry) End() int {
-	if e == nil {
-		return 0
-	}
-	if e.Value == nil {
-		return e.AssignToken.End()
-	}
-	return e.Value.End()
-}
-
-type ValueEntry struct {
-	Value Exp
-}
-
-func (ValueEntry) entryNode() {}
-func (e *ValueEntry) Start() int {
-	if e == nil || e.Value == nil {
-		return 0
-	}
-	return e.Value.Start()
-}
-func (e *ValueEntry) End() int {
-	if e == nil || e.Value == nil {
-		return 0
-	}
-	return e.Value.End()
-}
-
-type FieldExp struct {
-	Exp      Exp
-	DotToken Token
-	Field    Name
-}
-
-func (FieldExp) expNode() {}
-func (e *FieldExp) Start() int {
-	if e == nil {
-		return 0
-	}
-	if e.Exp == nil {
-		return e.DotToken.Start()
-	}
-	return e.Exp.Start()
-}
-func (e *FieldExp) End() int {
-	if e == nil {
-		return 0
-	}
-	return e.Field.End()
-}
-
-type IndexExp struct {
-	Exp         Exp
-	LBrackToken Token
-	Index       Exp
-	RBrackToken Token
-}
-
-func (IndexExp) expNode() {}
-func (e *IndexExp) Start() int {
-	if e == nil {
-		return 0
-	}
-	if e.Exp == nil {
-		return e.LBrackToken.Start()
-	}
-	return e.Exp.Start()
-}
-func (e *IndexExp) End() int {
-	if e == nil {
-		return 0
-	}
-	return e.RBrackToken.End()
-}
-
-type MethodExp struct {
-	Exp        Exp
-	ColonToken Token
-	Name       Name
-	Args       CallArgs
-}
-
-func (MethodExp) expNode() {}
-func (e *MethodExp) Start() int {
-	if e == nil {
-		return 0
-	}
-	if e.Exp == nil {
-		return e.ColonToken.Start()
-	}
-	return e.Exp.End()
-}
-func (e *MethodExp) End() int {
-	if e == nil {
-		return 0
-	}
-	if e.Args == nil {
-		return e.Name.End()
-	}
-	return e.Args.End()
-}
-
-type CallExp struct {
-	Exp  Exp
-	Args CallArgs
-}
-
-func (CallExp) expNode() {}
-func (e *CallExp) Start() int {
-	if e == nil {
-		return 0
-	}
-	if e.Exp == nil {
-		if e.Args == nil {
-			return 0
-		}
-		return e.Args.Start()
-	}
-	return e.Exp.Start()
-}
-func (e *CallExp) End() int {
-	if e == nil {
-		return 0
-	}
-	if e.Args == nil {
-		if e.Exp == nil {
-			return 0
-		}
-		return e.Exp.End()
-	}
-	return e.Args.End()
-}
-
-type CallArgs interface {
-	Node
-	callArgsNode()
-}
-
-type ArgsCall struct {
-	LParenToken Token
-	ExpList     *ExpList // nil if not present
-	RParenToken Token
-}
-
-func (ArgsCall) callArgsNode() {}
-func (c *ArgsCall) Start() int {
-	if c == nil {
-		return 0
-	}
-	return c.LParenToken.Start()
-}
-func (c *ArgsCall) End() int {
-	if c == nil {
-		return 0
-	}
-	return c.RParenToken.End()
-}
-
-type TableCall struct {
-	TableExp *TableCtor
-}
-
-func (TableCall) callArgsNode() {}
-func (c *TableCall) Start() int {
-	if c == nil || c.TableExp == nil {
-		return 0
-	}
-	return c.TableExp.Start()
-}
-func (c *TableCall) End() int {
-	if c == nil || c.TableExp == nil {
-		return 0
-	}
-	return c.TableExp.End()
-}
-
-type StringCall struct {
-	StringExp String
-}
-
-func (StringCall) callArgsNode() {}
-func (c *StringCall) Start() int {
-	if c == nil {
-		return 0
-	}
-	return c.StringExp.Start()
-}
-func (c *StringCall) End() int {
-	if c == nil {
-		return 0
-	}
-	return c.StringExp.End()
-}
-
-type Block struct {
-	Stats []Stat
-	Seps  []Token // Whether statement is followed by a semicolon.
-}
-
-func (b *Block) Len() int {
-	if b == nil {
-		return 0
-	}
-	return len(b.Stats) + len(b.Seps)
-}
-func (b *Block) Start() int {
-	if b == nil {
-		return 0
-	}
+func (b *Block) FirstToken() *Token {
 	if len(b.Stats) == 0 {
-		if len(b.Seps) == 0 {
-			return 0
-		}
-		return b.Seps[0].Start()
+		return nil
 	}
-	return b.Stats[0].Start()
+	return b.Stats[0].FirstToken()
 }
-func (b *Block) End() int {
-	if b == nil {
-		return 0
+func (b *Block) LastToken() *Token {
+	if len(b.Stats) == 0 {
+		return nil
 	}
-	j := len(b.Seps)
-	i := len(b.Stats)
-	if j == 0 && i == 0 {
-		return 0
+	if len(b.Seps) == len(b.Stats) {
+		return &b.Seps[len(b.Seps)-1]
 	}
-	if j >= i {
-		return b.Seps[j-1].End()
-	}
-	return b.Stats[i-1].End()
+	return b.Stats[len(b.Stats)-1].LastToken()
 }
 
-type Stat interface {
-	Node
-	statNode()
+func (l *ExpList) FirstToken() *Token { return l.Exps[0].FirstToken() }
+func (l *ExpList) LastToken() *Token  { return l.Exps[len(l.Exps)-1].LastToken() }
+
+func (e *Name) FirstToken() *Token { return &e.Token }
+func (e *Name) LastToken() *Token  { return &e.Token }
+
+func (l *NameList) FirstToken() *Token { return &l.Names[0].Token }
+func (l *NameList) LastToken() *Token  { return &l.Names[len(l.Names)-1].Token }
+
+func (e *Number) FirstToken() *Token { return &e.Token }
+func (e *Number) LastToken() *Token  { return &e.Token }
+
+func (e *String) FirstToken() *Token { return &e.Token }
+func (e *String) LastToken() *Token  { return &e.Token }
+
+func (e *Nil) FirstToken() *Token { return &e.Token }
+func (e *Nil) LastToken() *Token  { return &e.Token }
+
+func (e *Bool) FirstToken() *Token { return &e.Token }
+func (e *Bool) LastToken() *Token  { return &e.Token }
+
+func (e *VarArg) FirstToken() *Token { return &e.Token }
+func (e *VarArg) LastToken() *Token  { return &e.Token }
+
+func (e *UnopExp) FirstToken() *Token { return &e.UnopToken }
+func (e *UnopExp) LastToken() *Token  { return e.Exp.LastToken() }
+
+func (e *BinopExp) FirstToken() *Token { return e.Left.FirstToken() }
+func (e *BinopExp) LastToken() *Token  { return e.Right.LastToken() }
+
+func (e *ParenExp) FirstToken() *Token { return &e.LParenToken }
+func (e *ParenExp) LastToken() *Token  { return &e.RParenToken }
+
+func (e *VariableExp) FirstToken() *Token { return &e.NameToken.Token }
+func (e *VariableExp) LastToken() *Token  { return &e.NameToken.Token }
+
+func (e *TableCtor) FirstToken() *Token { return &e.LBraceToken }
+func (e *TableCtor) LastToken() *Token  { return &e.RBraceToken }
+
+func (l *FieldList) FirstToken() *Token {
+	if len(l.Entries) == 0 {
+		return nil
+	}
+	return l.Entries[0].FirstToken()
+}
+func (l *FieldList) LastToken() *Token {
+	if len(l.Seps) == len(l.Entries) {
+		return &l.Seps[len(l.Seps)-1]
+	}
+	return l.Entries[len(l.Entries)-1].LastToken()
 }
 
-type DoStat struct {
-	DoToken  Token
-	Block    *Block
-	EndToken Token
+func (e *IndexEntry) FirstToken() *Token { return &e.LBrackToken }
+func (e *IndexEntry) LastToken() *Token  { return e.ValueExp.LastToken() }
+
+func (e *FieldEntry) FirstToken() *Token { return &e.Name.Token }
+func (e *FieldEntry) LastToken() *Token  { return e.Value.LastToken() }
+
+func (e *ValueEntry) FirstToken() *Token { return e.Value.FirstToken() }
+func (e *ValueEntry) LastToken() *Token  { return e.Value.LastToken() }
+
+func (s *FunctionExp) FirstToken() *Token { return &s.FuncToken }
+func (s *FunctionExp) LastToken() *Token  { return &s.EndToken }
+
+func (e *FieldExp) FirstToken() *Token { return e.Exp.FirstToken() }
+func (e *FieldExp) LastToken() *Token  { return &e.Field.Token }
+
+func (e *IndexExp) FirstToken() *Token { return e.Exp.FirstToken() }
+func (e *IndexExp) LastToken() *Token  { return &e.RBrackToken }
+
+func (e *MethodExp) FirstToken() *Token { return e.Exp.FirstToken() }
+func (e *MethodExp) LastToken() *Token  { return e.Args.LastToken() }
+
+func (e *CallExp) FirstToken() *Token { return e.Exp.FirstToken() }
+func (e *CallExp) LastToken() *Token  { return e.Args.LastToken() }
+
+func (c *ArgsCall) FirstToken() *Token { return &c.LParenToken }
+func (c *ArgsCall) LastToken() *Token  { return &c.RParenToken }
+
+func (c *TableCall) FirstToken() *Token { return c.TableExp.FirstToken() }
+func (c *TableCall) LastToken() *Token  { return c.TableExp.LastToken() }
+
+func (c *StringCall) FirstToken() *Token { return &c.StringExp.Token }
+func (c *StringCall) LastToken() *Token  { return &c.StringExp.Token }
+
+func (s *DoStat) FirstToken() *Token { return &s.DoToken }
+func (s *DoStat) LastToken() *Token  { return &s.EndToken }
+
+func (s *AssignStat) FirstToken() *Token { return s.Left.FirstToken() }
+func (s *AssignStat) LastToken() *Token  { return s.Right.LastToken() }
+
+func (s *CallExprStat) FirstToken() *Token { return s.Exp.FirstToken() }
+func (s *CallExprStat) LastToken() *Token  { return s.Exp.LastToken() }
+
+func (s *IfStat) FirstToken() *Token { return &s.IfToken }
+func (s *IfStat) LastToken() *Token  { return &s.EndToken }
+
+func (c *ElseIfClause) FirstToken() *Token { return &c.ElseIfToken }
+func (c *ElseIfClause) LastToken() *Token  { return c.Block.LastToken() }
+
+func (c *ElseClause) FirstToken() *Token { return &c.ElseToken }
+func (c *ElseClause) LastToken() *Token  { return c.Block.LastToken() }
+
+func (s *NumericForStat) FirstToken() *Token { return &s.ForToken }
+func (s *NumericForStat) LastToken() *Token  { return &s.EndToken }
+
+func (s *GenericForStat) FirstToken() *Token { return &s.ForToken }
+func (s *GenericForStat) LastToken() *Token  { return &s.EndToken }
+
+func (s *WhileStat) FirstToken() *Token { return &s.WhileToken }
+func (s *WhileStat) LastToken() *Token  { return &s.EndToken }
+
+func (s *RepeatStat) FirstToken() *Token { return &s.RepeatToken }
+func (s *RepeatStat) LastToken() *Token  { return s.Exp.LastToken() }
+
+func (s *LocalVarStat) FirstToken() *Token { return &s.LocalToken }
+func (s *LocalVarStat) LastToken() *Token {
+	if !s.AssignToken.Type.IsValid() {
+		return s.NameList.LastToken()
+	}
+	return s.ExpList.LastToken()
 }
 
-func (DoStat) statNode() {}
-func (s *DoStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.DoToken.Start()
-}
-func (s *DoStat) End() int {
-	if s == nil {
-		return 0
-	}
-	return s.EndToken.End()
-}
+func (s *LocalFunctionStat) FirstToken() *Token { return &s.LocalToken }
+func (s *LocalFunctionStat) LastToken() *Token  { return s.Exp.LastToken() }
 
-type AssignStat struct {
-	Left        *ExpList
-	AssignToken Token
-	Right       *ExpList
-}
+func (s *FunctionStat) FirstToken() *Token { return s.Exp.FirstToken() }
+func (s *FunctionStat) LastToken() *Token  { return s.Exp.LastToken() }
 
-func (AssignStat) statNode() {}
-func (s *AssignStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	if s.Left.Len() == 0 {
-		return s.AssignToken.Start()
-	}
-	return s.Left.Start()
-}
-func (s *AssignStat) End() int {
-	if s == nil {
-		return 0
-	}
-	if s.Right.Len() == 0 {
-		return s.AssignToken.End()
-	}
-	return s.Right.End()
-}
+func (s *BreakStat) FirstToken() *Token { return &s.BreakToken }
+func (s *BreakStat) LastToken() *Token  { return &s.BreakToken }
 
-type CallExprStat struct {
-	Exp Exp
-}
-
-func (CallExprStat) statNode() {}
-func (s *CallExprStat) Start() int {
-	if s == nil || s.Exp == nil {
-		return 0
-	}
-	return s.Exp.Start()
-}
-func (s *CallExprStat) End() int {
-	if s == nil || s.Exp == nil {
-		return 0
-	}
-	return s.Exp.End()
-}
-
-type IfStat struct {
-	IfToken       Token
-	Exp           Exp
-	ThenToken     Token
-	Block         *Block
-	ElseIfClauses []*ElseIfClause
-	ElseClause    *ElseClause
-	EndToken      Token
-}
-
-func (IfStat) statNode() {}
-func (s *IfStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.IfToken.Start()
-}
-func (s *IfStat) End() int {
-	if s == nil {
-		return 0
-	}
-	return s.EndToken.End()
-}
-
-type ElseIfClause struct {
-	ElseIfToken Token
-	Exp         Exp
-	ThenToken   Token
-	Block       *Block
-}
-
-func (c *ElseIfClause) Start() int {
-	if c == nil {
-		return 0
-	}
-	return c.ElseIfToken.Start()
-}
-func (c *ElseIfClause) End() int {
-	if c == nil {
-		return 0
-	}
-	if c.Block.Len() == 0 {
-		return c.ThenToken.End()
-	}
-	return c.Block.End()
-}
-
-type ElseClause struct {
-	ElseToken Token
-	Block     *Block
-}
-
-func (c *ElseClause) Start() int {
-	if c == nil {
-		return 0
-	}
-	return c.ElseToken.Start()
-}
-func (c *ElseClause) End() int {
-	if c == nil {
-		return 0
-	}
-	if c.Block.Len() == 0 {
-		return c.ElseToken.End()
-	}
-	return c.Block.End()
-}
-
-type NumericForStat struct {
-	ForToken     Token
-	Name         Name
-	AssignToken  Token
-	MinExp       Exp
-	MaxSepToken  Token
-	MaxExp       Exp
-	StepSepToken Token // INVALID if not present
-	StepExp      Exp   // nil if not present
-	DoToken      Token
-	Block        *Block
-	EndToken     Token
-}
-
-func (NumericForStat) statNode() {}
-func (s *NumericForStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.ForToken.Start()
-}
-func (s *NumericForStat) End() int {
-	if s == nil {
-		return 0
-	}
-	return s.EndToken.End()
-}
-
-type GenericForStat struct {
-	ForToken Token
-	NameList *NameList
-	InToken  Token
-	ExpList  *ExpList
-	DoToken  Token
-	Block    *Block
-	EndToken Token
-}
-
-func (GenericForStat) statNode() {}
-func (s *GenericForStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.ForToken.Start()
-}
-func (s *GenericForStat) End() int {
-	if s == nil {
-		return 0
-	}
-	return s.EndToken.End()
-}
-
-type WhileStat struct {
-	WhileToken Token
-	Exp        Exp
-	DoToken    Token
-	Block      *Block
-	EndToken   Token
-}
-
-func (WhileStat) statNode() {}
-func (s *WhileStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.WhileToken.Start()
-}
-func (s *WhileStat) End() int {
-	if s == nil {
-		return 0
-	}
-	return s.EndToken.End()
-}
-
-type RepeatStat struct {
-	RepeatToken Token
-	Block       *Block
-	UntilToken  Token
-	Exp         Exp
-}
-
-func (RepeatStat) statNode() {}
-func (s *RepeatStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.RepeatToken.Start()
-}
-func (s *RepeatStat) End() int {
-	if s == nil {
-		return 0
-	}
-	if s.Exp == nil {
-		return s.UntilToken.End()
-	}
-	return s.Exp.End()
-}
-
-type LocalVarStat struct {
-	LocalToken  Token
-	NameList    *NameList
-	AssignToken Token    // INVALID if not present
-	ExpList     *ExpList // nil if not present
-}
-
-func (LocalVarStat) statNode() {}
-func (s *LocalVarStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.LocalToken.Start()
-}
-func (s *LocalVarStat) End() int {
-	if s == nil {
-		return 0
-	}
+func (s *ReturnStat) FirstToken() *Token { return &s.ReturnToken }
+func (s *ReturnStat) LastToken() *Token {
 	if s.ExpList.Len() == 0 {
-		return s.AssignToken.End()
+		return &s.ReturnToken
 	}
-	return s.ExpList.End()
-}
-
-type LocalFunctionStat struct {
-	LocalToken Token
-	Function   Function
-}
-
-func (LocalFunctionStat) statNode() {}
-func (s *LocalFunctionStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.LocalToken.Start()
-}
-func (s *LocalFunctionStat) End() int {
-	if s == nil {
-		return 0
-	}
-	return s.Function.End()
-}
-
-type Function struct {
-	FuncToken      Token
-	FuncName       *NameList // nil if anonymous.
-	LParenToken    Token
-	ParList        *NameList
-	VarArgSepToken Token // INVALID if not present
-	VarArgToken    Token // INVALID if not present
-	RParenToken    Token
-	Block          *Block
-	EndToken       Token
-}
-
-func (Function) statNode() {}
-func (Function) expNode()  {}
-func (s *Function) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.FuncToken.Start()
-}
-func (s *Function) End() int {
-	if s == nil {
-		return 0
-	}
-	return s.EndToken.End()
-}
-
-type BreakStat struct {
-	BreakToken Token
-}
-
-func (BreakStat) statNode() {}
-func (s *BreakStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.BreakToken.Start()
-}
-func (s *BreakStat) End() int {
-	if s == nil {
-		return 0
-	}
-	return s.BreakToken.End()
-}
-
-type ReturnStat struct {
-	ReturnToken Token
-	ExpList     *ExpList // nil if not present
-}
-
-func (ReturnStat) statNode() {}
-func (s *ReturnStat) Start() int {
-	if s == nil {
-		return 0
-	}
-	return s.ReturnToken.Start()
-}
-func (s *ReturnStat) End() int {
-	if s == nil {
-		return 0
-	}
-	if s.ExpList.Len() == 0 {
-		return s.ReturnToken.End()
-	}
-	return s.ExpList.End()
+	return s.ExpList.LastToken()
 }

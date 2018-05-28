@@ -76,8 +76,10 @@ const (
 	RETURN            // `return`
 	BREAK             // `break`
 	NIL               // `nil`
+	bool_start        // [ BOOLEANS
 	FALSE             // `false`
 	TRUE              // `true`
+	bool_end          // BOOLEANS ]
 	binkey_start      // [ BINARY KEYWORDS
 	AND               // `and`
 	OR                // `or`
@@ -145,6 +147,8 @@ var tokens = [...]string{
 	OR:           "or",
 	NOT:          "not",
 	unop_end:     "",
+	bool_start:   "",
+	bool_end:     "",
 	binkey_start: "",
 	binkey_end:   "",
 }
@@ -189,6 +193,10 @@ func (t Type) IsUnary() bool {
 
 func (t Type) IsKeyword() bool {
 	return key_start < t && t < key_end
+}
+
+func (t Type) IsBool() bool {
+	return bool_start < t && t < bool_end
 }
 
 func (t Type) IsBinary() bool {
