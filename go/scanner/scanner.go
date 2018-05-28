@@ -28,7 +28,6 @@ type Scanner struct {
 
 	ch         rune
 	offset     int
-	lit        []byte
 	rdOffset   int
 	lineOffset int
 
