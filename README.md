@@ -1,3 +1,5 @@
+[![GoDoc](https://godoc.org/github.com/Anaminus/luasyntax?status.svg)](https://godoc.org/github.com/Anaminus/luasyntax)
+
 # Lua Syntax
 
 A parser for the syntax of the Lua programming language. For the purpose of
