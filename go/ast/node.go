@@ -24,10 +24,6 @@ type Prefix struct {
 	Type  token.Type
 }
 
-func (t Token) IsValid() bool {
-	return t.Type != token.INVALID
-}
-
 // PrefixOffset returns the offset of the first, left-most prefix.
 func (t Token) PrefixOffset() int {
 	n := t.Offset
@@ -38,14 +34,14 @@ func (t Token) PrefixOffset() int {
 }
 
 func (t Token) Start() int {
-	if !t.IsValid() {
+	if !t.Type.IsValid() {
 		return 0
 	}
 	return t.PrefixOffset()
 }
 
 func (t Token) End() int {
-	if !t.IsValid() {
+	if !t.Type.IsValid() {
 		return 0
 	}
 	return t.Offset + len(t.Bytes)
