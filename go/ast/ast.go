@@ -2,6 +2,7 @@ package ast
 
 import (
 	"github.com/anaminus/luasyntax/go/token"
+	"io"
 )
 
 // Notes
@@ -21,6 +22,8 @@ type Node interface {
 	// LastToken returns the last Token in the node. Assumes that the node is
 	// valid.
 	LastToken() *Token
+	// Implements the WriteTo interface. Assumes that the node is valid.
+	io.WriterTo
 }
 
 // A Token represents a token within a file. The location is indicated by the
