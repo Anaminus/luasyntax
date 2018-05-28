@@ -50,7 +50,7 @@ func (p *parser) next() {
 	p.pre = nil
 	// Skip over spaces and comments, accumulating them in p.pre.
 	for p.tok.IsPrefix() {
-		p.pre = append(p.pre, ast.Prefix{Bytes: p.lit, Type: p.tok})
+		p.pre = append(p.pre, ast.Prefix{Type: p.tok, Bytes: p.lit})
 		p.off, p.tok, p.lit = p.scanner.Scan()
 	}
 }
@@ -87,10 +87,10 @@ func (p *parser) expect(tok token.Type) {
 
 func (p *parser) token() ast.Token {
 	return ast.Token{
+		Type:   p.tok,
 		Prefix: p.pre,
 		Offset: p.off,
 		Bytes:  p.lit,
-		Type:   p.tok,
 	}
 }
 

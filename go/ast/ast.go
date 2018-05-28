@@ -30,15 +30,15 @@ type Node interface {
 // Offset field. Leading whitespace and comments are merged into the token,
 // represented by the Prefix field.
 type Token struct {
+	Type   token.Type
 	Prefix []Prefix
 	Offset int
 	Bytes  []byte
-	Type   token.Type
 }
 
 type Prefix struct {
-	Bytes []byte
 	Type  token.Type
+	Bytes []byte
 }
 
 // StartOffset returns the offset at the start of the token, which includes
