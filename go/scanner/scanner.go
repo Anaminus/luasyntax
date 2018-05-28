@@ -5,7 +5,7 @@ import (
 	"github.com/anaminus/luasyntax/go/token"
 )
 
-const EOF = -1
+const eof = -1
 
 func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
@@ -50,7 +50,7 @@ func (s *Scanner) next() {
 			s.lineOffset = s.offset
 			s.file.AddLine(s.offset)
 		}
-		s.ch = EOF
+		s.ch = eof
 	}
 }
 
@@ -111,7 +111,7 @@ func (s *Scanner) scanString(off int) {
 	s.next()
 	for s.ch != quote {
 		switch s.ch {
-		case EOF:
+		case eof:
 			s.error(off, "unfinished string (EOF)")
 			return
 		case '\n', '\r':
@@ -127,7 +127,7 @@ func (s *Scanner) scanString(off int) {
 					s.next()
 				}
 				continue
-			case EOF:
+			case eof:
 				// handled in next loop
 				continue
 			default:
@@ -167,7 +167,7 @@ func (s *Scanner) scanLongString(off int, t token.Type) {
 	s.next()
 loop:
 	for {
-		if s.ch == EOF {
+		if s.ch == eof {
 			// TODO: EOF error
 			if t == token.LONGCOMMENT {
 				s.error(off, "unfinished long comment near '<eof>'")
@@ -199,7 +199,7 @@ func (s *Scanner) scanComment(off int) token.Type {
 		s.scanLongString(off, token.LONGCOMMENT)
 		return token.LONGCOMMENT
 	}
-	for s.ch != '\n' && s.ch != EOF {
+	for s.ch != '\n' && s.ch != eof {
 		s.next()
 	}
 	return token.COMMENT
@@ -302,7 +302,7 @@ func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {
 			tok = token.RBRACE
 		case '#':
 			tok = token.LENGTH
-		case EOF:
+		case eof:
 			tok = token.EOF
 		default:
 			tok = token.INVALID
