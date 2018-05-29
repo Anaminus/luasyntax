@@ -218,7 +218,7 @@ func (s *AssignStmt) IsValid() bool {
 }
 
 func (s *CallExprStmt) IsValid() bool {
-	return isv(s.Expr)
+	return isv(s.Call)
 }
 
 func (s *IfStmt) IsValid() bool {

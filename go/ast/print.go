@@ -269,7 +269,7 @@ func (s *AssignStmt) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 func (s *CallExprStmt) WriteTo(w io.Writer) (n int64, err error) {
-	return s.Expr.WriteTo(w)
+	return s.Call.WriteTo(w)
 }
 
 func (s *IfStmt) WriteTo(w io.Writer) (n int64, err error) {

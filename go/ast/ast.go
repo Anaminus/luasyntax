@@ -364,6 +364,12 @@ type IndexExpr struct {
 
 func (IndexExpr) exprNode() {}
 
+// Call is the interface that all function call expressions implement.
+type Call interface {
+	Node
+	callNode()
+}
+
 // MethodExpr represents an expression that gets and calls a method on another
 // expression.
 type MethodExpr struct {
@@ -378,6 +384,7 @@ type MethodExpr struct {
 }
 
 func (MethodExpr) exprNode() {}
+func (MethodExpr) callNode() {}
 
 // CallExpr represents an expression that calls another expression as a
 // function.
@@ -389,6 +396,7 @@ type CallExpr struct {
 }
 
 func (CallExpr) exprNode() {}
+func (CallExpr) callNode() {}
 
 // Args is the interface that all function call argument nodes implement.
 type Args interface {
@@ -463,8 +471,8 @@ func (AssignStmt) stmtNode() {}
 
 // CallExprStmt represents a call expression as a statement.
 type CallExprStmt struct {
-	// Expr is the call expression.
-	Expr Expr
+	// Call is the call expression.
+	Call Call
 }
 
 func (CallExprStmt) stmtNode() {}

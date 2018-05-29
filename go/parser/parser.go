@@ -668,9 +668,8 @@ loop:
 // parseExprStmt creates an expression statement node.
 func (p *parser) parseExprStmt() ast.Stmt {
 	expr := p.parsePrimaryExpr()
-	switch expr.(type) {
-	case *ast.MethodExpr, *ast.CallExpr:
-		return &ast.CallExprStmt{Expr: expr}
+	if call, ok := expr.(ast.Call); ok {
+		return &ast.CallExprStmt{Call: call}
 	}
 
 	stmt := &ast.AssignStmt{Left: ast.ExprList{Items: []ast.Expr{expr}}}

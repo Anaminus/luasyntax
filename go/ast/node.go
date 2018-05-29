@@ -110,8 +110,8 @@ func (s *DoStmt) LastToken() *Token  { return &s.EndToken }
 func (s *AssignStmt) FirstToken() *Token { return s.Left.FirstToken() }
 func (s *AssignStmt) LastToken() *Token  { return s.Right.LastToken() }
 
-func (s *CallExprStmt) FirstToken() *Token { return s.Expr.FirstToken() }
-func (s *CallExprStmt) LastToken() *Token  { return s.Expr.LastToken() }
+func (s *CallExprStmt) FirstToken() *Token { return s.Call.FirstToken() }
+func (s *CallExprStmt) LastToken() *Token  { return s.Call.LastToken() }
 
 func (s *IfStmt) FirstToken() *Token { return &s.IfToken }
 func (s *IfStmt) LastToken() *Token  { return &s.EndToken }
