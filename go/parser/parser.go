@@ -543,10 +543,10 @@ func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 		if p.tok == token.LBRACK {
 			e := &ast.IndexEntry{}
 			e.LBrackToken = p.tokenNext()
-			e.KeyExpr = p.parseExpr()
+			e.Key = p.parseExpr()
 			e.RBrackToken = p.expectToken(token.RBRACK)
 			e.AssignToken = p.expectToken(token.ASSIGN)
-			e.ValueExpr = p.parseExpr()
+			e.Value = p.parseExpr()
 			entry = e
 		} else if p.lookahead(); p.tok == token.NAME && p.look.tok == token.ASSIGN {
 			e := &ast.FieldEntry{}

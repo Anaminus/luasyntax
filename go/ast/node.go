@@ -72,7 +72,7 @@ func (l *EntryList) LastToken() *Token {
 }
 
 func (e *IndexEntry) FirstToken() *Token { return &e.LBrackToken }
-func (e *IndexEntry) LastToken() *Token  { return e.ValueExpr.LastToken() }
+func (e *IndexEntry) LastToken() *Token  { return e.Value.LastToken() }
 
 func (e *FieldEntry) FirstToken() *Token { return &e.Name.Token }
 func (e *FieldEntry) LastToken() *Token  { return e.Value.LastToken() }

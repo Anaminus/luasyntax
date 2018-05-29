@@ -270,14 +270,14 @@ type Entry interface {
 type IndexEntry struct {
 	// LBrackToken is the LBRACK token that begins the entry key.
 	LBrackToken Token
-	// KeyExpr is the expression evaluating to the key of the entry.
-	KeyExpr Expr
+	// Key is the expression evaluating to the key of the entry.
+	Key Expr
 	// RBrackToken is the RBRACK token that ends the entry key.
 	RBrackToken Token
 	// AssignToken is the ASSIGN token that begins the entry value.
 	AssignToken Token
-	// ValueExpr is the expression evaluating to the value of the entry.
-	ValueExpr Expr
+	// Value is the expression evaluating to the value of the entry.
+	Value Expr
 }
 
 func (IndexEntry) entryNode() {}

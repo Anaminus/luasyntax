@@ -136,10 +136,10 @@ func (l *EntryList) IsValid() bool {
 
 func (e *IndexEntry) IsValid() bool {
 	return ist(e.LBrackToken, token.LBRACK) &&
-		isv(e.KeyExpr) &&
+		isv(e.Key) &&
 		ist(e.RBrackToken, token.RBRACK) &&
 		ist(e.AssignToken, token.ASSIGN) &&
-		isv(e.ValueExpr)
+		isv(e.Value)
 }
 
 func (e *FieldEntry) IsValid() bool {

@@ -148,10 +148,10 @@ func (l *EntryList) WriteTo(w io.Writer) (n int64, err error) {
 func (e *IndexEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.LBrackToken)
-	c.writeTo(w, e.KeyExpr)
+	c.writeTo(w, e.Key)
 	c.writeTo(w, e.RBrackToken)
 	c.writeTo(w, e.AssignToken)
-	c.writeTo(w, e.ValueExpr)
+	c.writeTo(w, e.Value)
 	return c.finish()
 }
 
