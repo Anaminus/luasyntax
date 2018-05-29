@@ -597,7 +597,7 @@ func (RepeatStmt) stmtNode() {}
 type LocalVarStmt struct {
 	// LocalToken is the LOCAL token that begins the local statement.
 	LocalToken Token
-	// Names contains the names of each variable in the local statement.
+	// Names contains the name of each variable in the local statement.
 	Names NameList
 	// AssignToken is the ASSIGN token that separates the variables from the
 	// values. It is INVALID if not present.
