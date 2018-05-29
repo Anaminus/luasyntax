@@ -15,6 +15,17 @@ import (
 	"strconv"
 )
 
+// Mode defines flags that control how the parser behaves.
+type Mode int
+
+const (
+	// (0) Default behavior.
+	None Mode = iota
+	// Evaluate constant expression nodes, setting the Value field of the
+	// node.
+	EvalConst
+)
+
 // tokenstate holds information about the current token.
 type tokenstate struct {
 	off int          // Offset of token.
@@ -29,6 +40,7 @@ type parser struct {
 	file    *token.File
 	err     error //scanner.Error
 	scanner scanner.Scanner
+	mode    Mode
 
 	tokenstate // Current token state.
 
@@ -36,9 +48,11 @@ type parser struct {
 }
 
 // init prepares the parser to parse a source. The info sets the file to use
-// for positional information. The src is the text to be parsed.
-func (p *parser) init(info *token.File, src []byte) {
+// for positional information. The src is the text to be parsed. The mode
+// configures how the parser behaves.
+func (p *parser) init(info *token.File, src []byte, mode Mode) {
 	p.file = info
+	p.mode = mode
 	p.scanner.Init(p.file, src, func(pos token.Position, msg string) {
 		p.err = scanner.Error{Position: pos, Message: msg}
 	})
@@ -140,32 +154,36 @@ func (p *parser) isBlockFollow() bool {
 // parseName creates a name node from the current state.
 func (p *parser) parseName() (name ast.Name) {
 	p.expect(token.NAME)
-	name = ast.Name{Token: p.token(), Value: string(p.lit)}
+	name = ast.Name{Token: p.token()}
+	if p.mode&EvalConst != 0 {
+		name.Value = string(p.lit)
+	}
 	p.next()
 	return
 }
 
 // parseNumber creates a number node from the current state.
 func (p *parser) parseNumber() (num *ast.Number) {
-	var n float64
-	var err error
-	switch p.tok {
-	case token.NUMBERFLOAT:
-		// Actual parsing of the number depends on the compiler (strtod), so
-		// technically it's correct to just use Go's parser.
-		n, err = strconv.ParseFloat(string(p.lit), 64)
-	case token.NUMBERHEX:
-		var i uint64
-		// Trim leading `0x`.
-		i, err = strconv.ParseUint(string(p.lit[2:]), 16, 32)
-		n = float64(i)
-	default:
-		p.error(p.off, "'"+token.NUMBERFLOAT.String()+"' expected")
+	num = &ast.Number{Token: p.token()}
+	if p.mode&EvalConst != 0 {
+		var err error
+		switch p.tok {
+		case token.NUMBERFLOAT:
+			// Actual parsing of the number depends on the compiler (strtod), so
+			// technically it's correct to just use Go's parser.
+			num.Value, err = strconv.ParseFloat(string(p.lit), 64)
+		case token.NUMBERHEX:
+			var i uint64
+			// Trim leading `0x`.
+			i, err = strconv.ParseUint(string(p.lit[2:]), 16, 32)
+			num.Value = float64(i)
+		default:
+			p.error(p.off, "'"+token.NUMBERFLOAT.String()+"' expected")
+		}
+		if err != nil {
+			num.Value = math.NaN()
+		}
 	}
-	if err != nil {
-		n = math.NaN()
-	}
-	num = &ast.Number{Token: p.token(), Value: n}
 	p.next()
 	return
 }
@@ -236,9 +254,15 @@ func parseBlockString(b []byte) string {
 func (p *parser) parseString() (str *ast.String) {
 	switch p.tok {
 	case token.STRING:
-		str = &ast.String{Token: p.token(), Value: parseQuotedString(p.lit)}
+		str = &ast.String{Token: p.token()}
+		if p.mode&EvalConst != 0 {
+			str.Value = parseQuotedString(p.lit)
+		}
 	case token.LONGSTRING:
-		str = &ast.String{Token: p.token(), Value: parseBlockString(p.lit)}
+		str = &ast.String{Token: p.token()}
+		if p.mode&EvalConst != 0 {
+			str.Value = parseBlockString(p.lit)
+		}
 	default:
 		p.error(p.off, "'"+token.STRING.String()+"' expected")
 	}
@@ -256,7 +280,7 @@ func (p *parser) parseSimpleExpr() (expr ast.Expr) {
 	case token.NIL:
 		expr = &ast.Nil{Token: p.tokenNext()}
 	case token.TRUE:
-		expr = &ast.Bool{Token: p.tokenNext(), Value: true}
+		expr = &ast.Bool{Token: p.tokenNext(), Value: p.mode&EvalConst != 0}
 	case token.FALSE:
 		expr = &ast.Bool{Token: p.tokenNext(), Value: false}
 	case token.VARARG:
@@ -746,7 +770,9 @@ func readSource(filename string, src interface{}) ([]byte, error) {
 // these cases, the filename is used only when recording positional
 // information. If src is nil, the source is read from the file specified by
 // filename.
-func ParseFile(filename string, src interface{}) (f *ast.File, err error) {
+//
+// The mode argument controls how the parser behaves.
+func ParseFile(filename string, src interface{}, mode Mode) (f *ast.File, err error) {
 	text, err := readSource(filename, src)
 	if err != nil {
 		return nil, err
@@ -768,7 +794,7 @@ func ParseFile(filename string, src interface{}) (f *ast.File, err error) {
 		err = p.err
 	}()
 
-	p.init(info, text)
+	p.init(info, text, mode)
 	f = p.parseFile()
 	return f, err
 }

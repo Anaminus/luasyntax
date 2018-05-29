@@ -126,7 +126,8 @@ func (l *ExprList) Len() int {
 type Name struct {
 	// Token is the underlying NAME token.
 	Token
-	// Value is the parsed form of the token. It is not used when printing.
+	// Value is the evaluated form of the token. It is set only if the parser
+	// has the EvalConst mode set, and is not used when printing.
 	Value string
 }
 
@@ -150,7 +151,8 @@ func (l *NameList) Len() int {
 type Number struct {
 	// Token is the underlying number token.
 	Token
-	// Value is the parsed form of the token. It is not used when printing.
+	// Value is the evaluated form of the token. It is set only if the parser
+	// has the EvalConst mode set, and is not used when printing.
 	Value float64
 }
 
@@ -160,7 +162,8 @@ func (Number) exprNode() {}
 type String struct {
 	// Token is the underlying string token.
 	Token
-	// Value is the parsed form of the token. It is not used when printing.
+	// Value is the evaluated form of the token. It is set only if the parser
+	// has the EvalConst mode set, and is not used when printing.
 	Value string
 }
 
@@ -178,7 +181,8 @@ func (Nil) exprNode() {}
 type Bool struct {
 	// Token is the underlying boolean token.
 	Token
-	// Value is the parsed form of the token. It is not used when printing.
+	// Value is the evaluated form of the token. It is set only if the parser
+	// has the EvalConst mode set, and is not used when printing.
 	Value bool
 }
 
