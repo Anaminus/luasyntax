@@ -137,9 +137,9 @@ func (s *RepeatStmt) LastToken() *Token  { return s.Cond.LastToken() }
 func (s *LocalVarStmt) FirstToken() *Token { return &s.LocalToken }
 func (s *LocalVarStmt) LastToken() *Token {
 	if !s.AssignToken.Type.IsValid() {
-		return s.NameList.LastToken()
+		return s.Names.LastToken()
 	}
-	return s.ExprList.LastToken()
+	return s.Values.LastToken()
 }
 
 func (s *LocalFunctionStmt) FirstToken() *Token { return &s.LocalToken }

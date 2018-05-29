@@ -399,10 +399,10 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 	case token.COMMA, token.IN:
 		st := &ast.GenericForStmt{}
 		st.ForToken = forToken
-		st.NameList.Items = append(st.NameList.Items, name)
+		st.Names.Items = append(st.Names.Items, name)
 		for p.tok == token.COMMA {
-			st.NameList.Seps = append(st.NameList.Seps, p.tokenNext())
-			st.NameList.Items = append(st.NameList.Items, p.parseName())
+			st.Names.Seps = append(st.Names.Seps, p.tokenNext())
+			st.Names.Items = append(st.Names.Items, p.parseName())
 		}
 		st.InToken = p.expectToken(token.IN)
 		st.Iterator = *p.parseExprList()
@@ -442,7 +442,7 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 	}
 	expr.LParenToken = p.expectToken(token.LPAREN)
 	if p.tok == token.NAME {
-		expr.ParamList = &ast.NameList{Items: []ast.Name{p.parseName()}}
+		expr.Params = &ast.NameList{Items: []ast.Name{p.parseName()}}
 		for p.tok == token.COMMA {
 			sepToken := p.tokenNext()
 			if p.tok == token.VARARG {
@@ -450,8 +450,8 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 				expr.VarArgToken = p.tokenNext()
 				break
 			}
-			expr.ParamList.Seps = append(expr.ParamList.Seps, sepToken)
-			expr.ParamList.Items = append(expr.ParamList.Items, p.parseName())
+			expr.Params.Seps = append(expr.Params.Seps, sepToken)
+			expr.Params.Items = append(expr.Params.Items, p.parseName())
 		}
 	} else if p.tok == token.VARARG {
 		expr.VarArgToken = p.tokenNext()
@@ -475,14 +475,14 @@ func (p *parser) parseLocalStmt() ast.Stmt {
 	}
 	stmt := &ast.LocalVarStmt{}
 	stmt.LocalToken = localToken
-	stmt.NameList.Items = append(stmt.NameList.Items, p.parseName())
+	stmt.Names.Items = append(stmt.Names.Items, p.parseName())
 	for p.tok == token.COMMA {
-		stmt.NameList.Seps = append(stmt.NameList.Seps, p.tokenNext())
-		stmt.NameList.Items = append(stmt.NameList.Items, p.parseName())
+		stmt.Names.Seps = append(stmt.Names.Seps, p.tokenNext())
+		stmt.Names.Items = append(stmt.Names.Items, p.parseName())
 	}
 	if p.tok == token.ASSIGN {
 		stmt.AssignToken = p.tokenNext()
-		stmt.ExprList = p.parseExprList()
+		stmt.Values = p.parseExprList()
 	}
 	return stmt
 }
@@ -559,9 +559,9 @@ func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 			e.Value = p.parseExpr()
 			entry = e
 		}
-		ctor.EntryList.Items = append(ctor.EntryList.Items, entry)
+		ctor.Entries.Items = append(ctor.Entries.Items, entry)
 		if p.tok == token.COMMA || p.tok == token.SEMICOLON {
-			ctor.EntryList.Seps = append(ctor.EntryList.Seps, p.tokenNext())
+			ctor.Entries.Seps = append(ctor.Entries.Seps, p.tokenNext())
 		} else {
 			break
 		}
@@ -577,12 +577,12 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 		a := &ast.ArgsCall{}
 		a.LParenToken = p.tokenNext()
 		for p.tok != token.RPAREN {
-			if a.ExprList == nil {
-				a.ExprList = &ast.ExprList{}
+			if a.Args == nil {
+				a.Args = &ast.ExprList{}
 			}
-			a.ExprList.Items = append(a.ExprList.Items, p.parseExpr())
+			a.Args.Items = append(a.Args.Items, p.parseExpr())
 			if p.tok == token.COMMA {
-				a.ExprList.Seps = append(a.ExprList.Seps, p.tokenNext())
+				a.Args.Seps = append(a.Args.Seps, p.tokenNext())
 			} else {
 				break
 			}

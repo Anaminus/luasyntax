@@ -125,7 +125,7 @@ func (e *VariableExpr) WriteTo(w io.Writer) (n int64, err error) {
 func (e *TableCtor) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.LBraceToken)
-	c.writeTo(w, &e.EntryList)
+	c.writeTo(w, &e.Entries)
 	c.writeTo(w, e.RBraceToken)
 	return c.finish()
 }
@@ -171,8 +171,8 @@ func (e *FunctionExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.FuncToken)
 	c.writeTo(w, e.LParenToken)
-	if e.ParamList != nil {
-		c.writeTo(w, e.ParamList)
+	if e.Params != nil {
+		c.writeTo(w, e.Params)
 		if e.VarArgSepToken.Type.IsValid() {
 			c.writeTo(w, e.VarArgSepToken)
 			c.writeTo(w, e.VarArgToken)
@@ -222,8 +222,8 @@ func (e *CallExpr) WriteTo(w io.Writer) (n int64, err error) {
 func (ac *ArgsCall) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, ac.LParenToken)
-	if ac.ExprList != nil {
-		c.writeTo(w, ac.ExprList)
+	if ac.Args != nil {
+		c.writeTo(w, ac.Args)
 	}
 	c.writeTo(w, ac.RParenToken)
 	return c.finish()
@@ -327,7 +327,7 @@ func (s *NumericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *GenericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.ForToken)
-	c.writeTo(w, &s.NameList)
+	c.writeTo(w, &s.Names)
 	c.writeTo(w, s.InToken)
 	c.writeTo(w, &s.Iterator)
 	c.writeTo(w, s.DoToken)
@@ -358,10 +358,10 @@ func (s *RepeatStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *LocalVarStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.LocalToken)
-	c.writeTo(w, &s.NameList)
+	c.writeTo(w, &s.Names)
 	if s.AssignToken.Type.IsValid() {
 		c.writeTo(w, s.AssignToken)
-		c.writeTo(w, s.ExprList)
+		c.writeTo(w, s.Values)
 	}
 	return c.finish()
 }
@@ -372,8 +372,8 @@ func (s *LocalFunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.Func.FuncToken)
 	c.writeTo(w, s.Name)
 	c.writeTo(w, s.Func.LParenToken)
-	if s.Func.ParamList != nil {
-		c.writeTo(w, s.Func.ParamList)
+	if s.Func.Params != nil {
+		c.writeTo(w, s.Func.Params)
 		if s.Func.VarArgSepToken.Type.IsValid() {
 			c.writeTo(w, s.Func.VarArgSepToken)
 			c.writeTo(w, s.Func.VarArgToken)
@@ -392,8 +392,8 @@ func (s *FunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.Func.FuncToken)
 	c.writeTo(w, &s.Name)
 	c.writeTo(w, s.Func.LParenToken)
-	if s.Func.ParamList != nil {
-		c.writeTo(w, s.Func.ParamList)
+	if s.Func.Params != nil {
+		c.writeTo(w, s.Func.Params)
 		if s.Func.VarArgSepToken.Type.IsValid() {
 			c.writeTo(w, s.Func.VarArgSepToken)
 			c.writeTo(w, s.Func.VarArgToken)

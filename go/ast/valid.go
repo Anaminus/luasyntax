@@ -160,7 +160,7 @@ func (e *FunctionExpr) IsValid() bool {
 		return false
 	}
 	if ist(e.VarArgToken, token.VARARG) {
-		if e.ParamList != nil {
+		if e.Params != nil {
 			return ist(e.VarArgSepToken, token.COMMA)
 		}
 		return ist(e.VarArgSepToken, token.INVALID)
@@ -283,9 +283,9 @@ func (s *LocalVarStmt) IsValid() bool {
 		return false
 	}
 	if ist(s.AssignToken, token.ASSIGN) {
-		return s.ExprList != nil
+		return s.Values != nil
 	} else if ist(s.AssignToken, token.INVALID) {
-		return s.ExprList == nil
+		return s.Values == nil
 	}
 	return false
 }

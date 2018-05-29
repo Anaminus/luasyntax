@@ -237,8 +237,8 @@ func (VariableExpr) exprNode() {}
 type TableCtor struct {
 	// LBraceToken is the LBRACE token that opens the table.
 	LBraceToken Token
-	// EntryList a list of entries in the table.
-	EntryList EntryList
+	// Entries a list of entries in the table.
+	Entries EntryList
 	// RBraceToken is the RBRACE token that closes the table.
 	RBraceToken Token
 }
@@ -311,9 +311,9 @@ type FunctionExpr struct {
 	FuncToken Token
 	// LParenToken is the LPAREN token that opens the function's parameters.
 	LParenToken Token
-	// ParamList is a list of named parameters of the function. It will be nil
-	// if the function has no named parameters.
-	ParamList *NameList
+	// Params is a list of named parameters of the function. It will be nil if
+	// the function has no named parameters.
+	Params *NameList
 	// VarArgSepToken is the token preceding a variable-argument token. This
 	// will be a COMMA when a vararg parameter follows a named parameter, and
 	// INVALID otherwise.
@@ -396,9 +396,9 @@ type CallArgs interface {
 type ArgsCall struct {
 	// LParenToken is the LPAREN token that opens the argument list.
 	LParenToken Token
-	// ExprList contains each argument of the call. It is nil if the call has
-	// no arguments.
-	ExprList *ExprList
+	// Args contains each argument of the call. It is nil if the call has no
+	// arguments.
+	Args *ExprList
 	// RParenToken is the RPAREN token that closes the argument list.
 	RParenToken Token
 }
@@ -543,9 +543,9 @@ func (NumericForStmt) stmtNode() {}
 type GenericForStmt struct {
 	// ForToken is the FOR token that begins the for statement.
 	ForToken Token
-	// NameList is the list of names of variables that will be assigned to by
-	// the iterator.
-	NameList NameList
+	// Names is the list of names of variables that will be assigned to by the
+	// iterator.
+	Names NameList
 	// InToken is the IN token that separates the variables from the iterator
 	// expressions.
 	InToken Token
@@ -597,14 +597,14 @@ func (RepeatStmt) stmtNode() {}
 type LocalVarStmt struct {
 	// LocalToken is the LOCAL token that begins the local statement.
 	LocalToken Token
-	// NameList contains the names of each variable in the local statement.
-	NameList NameList
+	// Names contains the names of each variable in the local statement.
+	Names NameList
 	// AssignToken is the ASSIGN token that separates the variables from the
 	// values. It is INVALID if not present.
 	AssignToken Token
-	// ExprList is the list of expressions that are assigned to each variable.
+	// Values is the list of expressions that are assigned to each variable.
 	// It is nil if not present.
-	ExprList *ExprList
+	Values *ExprList
 }
 
 func (LocalVarStmt) stmtNode() {}
