@@ -35,10 +35,10 @@ type parser struct {
 	look *tokenstate // Store state for single-token lookaheads.
 }
 
-// init prepares the parser to parse a source. The filename sets the name to
-// use for positional information. The src is the text to be parsed.
-func (p *parser) init(filename string, src []byte) {
-	p.file = token.NewFile(filename)
+// init prepares the parser to parse a source. The info sets the file to use
+// for positional information. The src is the text to be parsed.
+func (p *parser) init(info *token.File, src []byte) {
+	p.file = info
 	p.scanner.Init(p.file, src, func(pos token.Position, msg string) {
 		p.err = scanner.Error{Position: pos, Message: msg}
 	})
@@ -708,7 +708,7 @@ func (p *parser) parseBlock() (block ast.Block) {
 // parseFile creates a file node from the current source.
 func (p *parser) parseFile() *ast.File {
 	return &ast.File{
-		Name:     p.file.Name(),
+		Info:     p.file,
 		Body:     p.parseBlock(),
 		EOFToken: p.tokenNext(),
 	}
@@ -752,6 +752,7 @@ func ParseFile(filename string, src interface{}) (f *ast.File, err error) {
 		return nil, err
 	}
 
+	info := token.NewFile(filename)
 	var p parser
 	defer func() {
 		if e := recover(); e != nil {
@@ -761,13 +762,13 @@ func ParseFile(filename string, src interface{}) (f *ast.File, err error) {
 		}
 
 		if f == nil {
-			f = &ast.File{Name: filename}
+			f = &ast.File{Info: info}
 		}
 
 		err = p.err
 	}()
 
-	p.init(filename, text)
+	p.init(info, text)
 	f = p.parseFile()
 	return f, err
 }

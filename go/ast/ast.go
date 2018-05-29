@@ -78,8 +78,9 @@ func (t *Token) EndOffset() int {
 
 // File is a Node representing an entire file.
 type File struct {
-	// Name is the name of the file. It is not used when printing.
-	Name string
+	// Info contains information about the file, such as the name, and line
+	// offsets.
+	Info *token.File
 	// Body is the top-level block of the file.
 	Body Block
 	// EOFToken is the EOF token at the end of the file.
