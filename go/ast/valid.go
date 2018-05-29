@@ -195,17 +195,17 @@ func (e *CallExpr) IsValid() bool {
 		isv(e.Args)
 }
 
-func (c *ArgsCall) IsValid() bool {
+func (c *ListArgs) IsValid() bool {
 	return ist(c.LParenToken, token.LPAREN) &&
 		ist(c.RParenToken, token.RPAREN)
 }
 
-func (c *TableCall) IsValid() bool {
+func (c *TableArg) IsValid() bool {
 	return true
 }
 
-func (c *StringCall) IsValid() bool {
-	return c.Arg.Type.IsString()
+func (c *StringArg) IsValid() bool {
+	return c.Value.Type.IsString()
 }
 
 func (s *DoStmt) IsValid() bool {

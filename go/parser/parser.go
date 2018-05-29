@@ -571,18 +571,18 @@ func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 }
 
 // parseFuncArgs creates a node representing the arguments of a function call.
-func (p *parser) parseFuncArgs() (args ast.CallArgs) {
+func (p *parser) parseFuncArgs() (args ast.Args) {
 	switch p.tok {
 	case token.LPAREN:
-		a := &ast.ArgsCall{}
+		a := &ast.ListArgs{}
 		a.LParenToken = p.tokenNext()
 		for p.tok != token.RPAREN {
-			if a.Args == nil {
-				a.Args = &ast.ExprList{}
+			if a.Values == nil {
+				a.Values = &ast.ExprList{}
 			}
-			a.Args.Items = append(a.Args.Items, p.parseExpr())
+			a.Values.Items = append(a.Values.Items, p.parseExpr())
 			if p.tok == token.COMMA {
-				a.Args.Seps = append(a.Args.Seps, p.tokenNext())
+				a.Values.Seps = append(a.Values.Seps, p.tokenNext())
 			} else {
 				break
 			}
@@ -590,12 +590,12 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 		a.RParenToken = p.expectToken(token.RPAREN)
 		args = a
 	case token.LBRACE:
-		a := &ast.TableCall{}
-		a.Arg = *p.parseTableCtor()
+		a := &ast.TableArg{}
+		a.Value = *p.parseTableCtor()
 		args = a
 	case token.STRING, token.LONGSTRING:
-		a := &ast.StringCall{}
-		a.Arg = *p.parseString()
+		a := &ast.StringArg{}
+		a.Value = *p.parseString()
 		args = a
 	default:
 		p.error(p.off, "function arguments expected")

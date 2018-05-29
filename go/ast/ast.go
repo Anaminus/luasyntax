@@ -369,7 +369,7 @@ type MethodExpr struct {
 	// Name is the name of the method.
 	Name Name
 	// Args holds the arguments of the method call.
-	Args CallArgs
+	Args Args
 }
 
 func (MethodExpr) exprNode() {}
@@ -380,48 +380,48 @@ type CallExpr struct {
 	// Value is the expression being operated on.
 	Value Expr
 	// Args holds the arguments of the function call.
-	Args CallArgs
+	Args Args
 }
 
 func (CallExpr) exprNode() {}
 
-// CallArgs is the interface that all function call argument nodes implement.
-type CallArgs interface {
+// Args is the interface that all function call argument nodes implement.
+type Args interface {
 	Node
-	callArgsNode()
+	argsNode()
 }
 
-// ArgsCall represents the arguments of a function call, in the form of a list
+// ListArgs represents the arguments of a function call, in the form of a list
 // of expressions.
-type ArgsCall struct {
+type ListArgs struct {
 	// LParenToken is the LPAREN token that opens the argument list.
 	LParenToken Token
-	// Args contains each argument of the call. It is nil if the call has no
+	// Values contains each argument of the call. It is nil if the call has no
 	// arguments.
-	Args *ExprList
+	Values *ExprList
 	// RParenToken is the RPAREN token that closes the argument list.
 	RParenToken Token
 }
 
-func (ArgsCall) callArgsNode() {}
+func (ListArgs) argsNode() {}
 
-// TableCall represents the arguments of a function call, in the form of a
+// TableArg represents the arguments of a function call, in the form of a
 // single table constructor.
-type TableCall struct {
-	// Arg is the table constructor expression.
-	Arg TableCtor
+type TableArg struct {
+	// Value is the table constructor expression.
+	Value TableCtor
 }
 
-func (TableCall) callArgsNode() {}
+func (TableArg) argsNode() {}
 
-// StringCall represents the arguments of a function call, in the form of a
+// StringArg represents the arguments of a function call, in the form of a
 // single string expression.
-type StringCall struct {
-	// Arg is the string expression.
-	Arg String
+type StringArg struct {
+	// Value is the string expression.
+	Value String
 }
 
-func (StringCall) callArgsNode() {}
+func (StringArg) argsNode() {}
 
 // Stmt is the interface that all statement nodes implement.
 type Stmt interface {

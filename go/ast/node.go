@@ -95,14 +95,14 @@ func (e *MethodExpr) LastToken() *Token  { return e.Args.LastToken() }
 func (e *CallExpr) FirstToken() *Token { return e.Value.FirstToken() }
 func (e *CallExpr) LastToken() *Token  { return e.Args.LastToken() }
 
-func (c *ArgsCall) FirstToken() *Token { return &c.LParenToken }
-func (c *ArgsCall) LastToken() *Token  { return &c.RParenToken }
+func (c *ListArgs) FirstToken() *Token { return &c.LParenToken }
+func (c *ListArgs) LastToken() *Token  { return &c.RParenToken }
 
-func (c *TableCall) FirstToken() *Token { return c.Arg.FirstToken() }
-func (c *TableCall) LastToken() *Token  { return c.Arg.LastToken() }
+func (c *TableArg) FirstToken() *Token { return c.Value.FirstToken() }
+func (c *TableArg) LastToken() *Token  { return c.Value.LastToken() }
 
-func (c *StringCall) FirstToken() *Token { return &c.Arg.Token }
-func (c *StringCall) LastToken() *Token  { return &c.Arg.Token }
+func (c *StringArg) FirstToken() *Token { return &c.Value.Token }
+func (c *StringArg) LastToken() *Token  { return &c.Value.Token }
 
 func (s *DoStmt) FirstToken() *Token { return &s.DoToken }
 func (s *DoStmt) LastToken() *Token  { return &s.EndToken }

@@ -219,22 +219,22 @@ func (e *CallExpr) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (ac *ArgsCall) WriteTo(w io.Writer) (n int64, err error) {
+func (ac *ListArgs) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, ac.LParenToken)
-	if ac.Args != nil {
-		c.writeTo(w, ac.Args)
+	if ac.Values != nil {
+		c.writeTo(w, ac.Values)
 	}
 	c.writeTo(w, ac.RParenToken)
 	return c.finish()
 }
 
-func (tc *TableCall) WriteTo(w io.Writer) (n int64, err error) {
-	return tc.Arg.WriteTo(w)
+func (tc *TableArg) WriteTo(w io.Writer) (n int64, err error) {
+	return tc.Value.WriteTo(w)
 }
 
-func (sc *StringCall) WriteTo(w io.Writer) (n int64, err error) {
-	return sc.Arg.WriteTo(w)
+func (sc *StringArg) WriteTo(w io.Writer) (n int64, err error) {
+	return sc.Value.WriteTo(w)
 }
 
 func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
