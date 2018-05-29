@@ -303,17 +303,17 @@ func (l *FuncNameList) IsValid() bool {
 	if len(l.Items) == 0 || len(l.Seps) != len(l.Items)-1 {
 		return false
 	}
-	if len(l.Seps) > 0 {
-		for i := 0; i < len(l.Seps)-1; i++ {
-			if ist(l.Seps[i], token.DOT) {
-				return false
-			}
-		}
-		if ist2(l.Seps[len(l.Seps)-1], token.DOT, token.COLON) {
+	for _, sep := range l.Seps {
+		if !ist(sep, token.DOT) {
 			return false
 		}
 	}
-	return true
+	if ist(l.ColonToken, token.COLON) {
+		return ist(l.Method.Token, token.NAME)
+	} else if ist(l.ColonToken, token.INVALID) {
+		return ist(l.Method.Token, token.INVALID)
+	}
+	return false
 }
 
 func (s *BreakStmt) IsValid() bool {

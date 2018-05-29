@@ -413,11 +413,15 @@ func (l *FuncNameList) WriteTo(w io.Writer) (n int64, err error) {
 		if !c.writeTo(w, name) {
 			break
 		}
-		if i < len(l.Seps) && l.Seps[i].Type.IsValid() {
+		if i < len(l.Seps) {
 			if !c.writeTo(w, l.Seps[i]) {
 				break
 			}
 		}
+	}
+	if l.ColonToken.Type.IsValid() {
+		c.writeTo(w, l.ColonToken)
+		c.writeTo(w, l.Method)
 	}
 	return c.finish()
 }

@@ -648,23 +648,32 @@ type FunctionStmt struct {
 func (FunctionStmt) stmtNode() {}
 
 // FuncNameList represents a list of dot-separated names in a function
-// statement.
+// statement. The list may optionally be followed by a method name, indicating
+// that the function is a method.
 type FuncNameList struct {
 	// Items contains the chain of one or more names, indicating the name of a
 	// function statement. Each successive name is a field of the previous
-	// value. The last name may or may not indicate a method name, as
-	// determined by the Seps field.
+	// value.
 	Items []Name
-	// Seps contains each DOT between names. If the last token is a COLON, it
-	// indicates that the last name is a method. The length of Seps is one
-	// less than the length of Exprs.
+	// Seps contains each DOT between names. The length of Seps is one less
+	// than the length of Exprs.
 	Seps []Token
-	// TODO: colon as separate field
+	// ColonToken is the COLON token following the last Name in Items, and
+	// preceding Method. It is INVALID if the method is not present.
+	ColonToken Token
+	// Method indicates that the function name describes a method, as well as
+	// the name of the method. It is INVALID if the method is not present.
+	Method Name
 }
 
-// Len returns the combined length of Names and Seps.
+// Len returns the combined length of Names and Seps, and ColonToken and
+// Method, if present.
 func (l *FuncNameList) Len() int {
-	return len(l.Items) + len(l.Seps)
+	n := len(l.Items) + len(l.Seps)
+	if l.ColonToken.Type.IsValid() {
+		n += 2
+	}
+	return n
 }
 
 // BreakStmt represents a `break` statement.

@@ -459,8 +459,8 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 				names.Items = append(names.Items, p.parseName())
 			}
 			if p.tok == token.COLON {
-				names.Seps = append(names.Seps, p.tokenNext())
-				names.Items = append(names.Items, p.parseName())
+				names.ColonToken = p.tokenNext()
+				names.Method = p.parseName()
 			}
 		}
 	}
