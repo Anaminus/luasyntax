@@ -477,7 +477,7 @@ type IfStmt struct {
 	// ElseIf is a list of zero or more elseif clauses of the if statement.
 	ElseIf []ElseIfClause
 	// Else is the else clause of the if statement. It is nil if not present.
-	Else *ElseClause // nil if not present
+	Else *ElseClause
 	// EndToken is the END token that ends the if statement.
 	EndToken Token
 }
