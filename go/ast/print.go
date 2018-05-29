@@ -171,8 +171,8 @@ func (e *FunctionExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.FuncToken)
 	c.writeTo(w, e.LParenToken)
-	if e.ParList != nil {
-		c.writeTo(w, e.ParList)
+	if e.ParamList != nil {
+		c.writeTo(w, e.ParamList)
 		if e.VarArgSepToken.Type.IsValid() {
 			c.writeTo(w, e.VarArgSepToken)
 			c.writeTo(w, e.VarArgToken)
@@ -372,8 +372,8 @@ func (s *LocalFunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.Expr.FuncToken)
 	c.writeTo(w, s.Name)
 	c.writeTo(w, s.Expr.LParenToken)
-	if s.Expr.ParList != nil {
-		c.writeTo(w, s.Expr.ParList)
+	if s.Expr.ParamList != nil {
+		c.writeTo(w, s.Expr.ParamList)
 		if s.Expr.VarArgSepToken.Type.IsValid() {
 			c.writeTo(w, s.Expr.VarArgSepToken)
 			c.writeTo(w, s.Expr.VarArgToken)
@@ -392,8 +392,8 @@ func (s *FunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.Expr.FuncToken)
 	c.writeTo(w, &s.Name)
 	c.writeTo(w, s.Expr.LParenToken)
-	if s.Expr.ParList != nil {
-		c.writeTo(w, s.Expr.ParList)
+	if s.Expr.ParamList != nil {
+		c.writeTo(w, s.Expr.ParamList)
 		if s.Expr.VarArgSepToken.Type.IsValid() {
 			c.writeTo(w, s.Expr.VarArgSepToken)
 			c.writeTo(w, s.Expr.VarArgToken)

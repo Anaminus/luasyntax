@@ -311,9 +311,9 @@ type FunctionExpr struct {
 	FuncToken Token
 	// LParenToken is the LPAREN token that opens the function's parameters.
 	LParenToken Token
-	// ParList is a list of named parameters of the function. It will be nil
+	// ParamList is a list of named parameters of the function. It will be nil
 	// if the function has no named parameters.
-	ParList *NameList
+	ParamList *NameList
 	// VarArgSepToken is the token preceding a variable-argument token. This
 	// will be a COMMA when a vararg parameter follows a named parameter, and
 	// INVALID otherwise.

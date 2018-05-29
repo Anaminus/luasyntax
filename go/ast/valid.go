@@ -160,7 +160,7 @@ func (e *FunctionExpr) IsValid() bool {
 		return false
 	}
 	if ist(e.VarArgToken, token.VARARG) {
-		if e.ParList != nil {
+		if e.ParamList != nil {
 			return ist(e.VarArgSepToken, token.COMMA)
 		}
 		return ist(e.VarArgSepToken, token.INVALID)

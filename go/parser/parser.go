@@ -442,7 +442,7 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 	}
 	expr.LParenToken = p.expectToken(token.LPAREN)
 	if p.tok == token.NAME {
-		expr.ParList = &ast.NameList{Names: []ast.Name{p.parseName()}}
+		expr.ParamList = &ast.NameList{Names: []ast.Name{p.parseName()}}
 		for p.tok == token.COMMA {
 			sepToken := p.tokenNext()
 			if p.tok == token.VARARG {
@@ -450,8 +450,8 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 				expr.VarArgToken = p.tokenNext()
 				break
 			}
-			expr.ParList.Seps = append(expr.ParList.Seps, sepToken)
-			expr.ParList.Names = append(expr.ParList.Names, p.parseName())
+			expr.ParamList.Seps = append(expr.ParamList.Seps, sepToken)
+			expr.ParamList.Names = append(expr.ParamList.Names, p.parseName())
 		}
 	} else if p.tok == token.VARARG {
 		expr.VarArgToken = p.tokenNext()
