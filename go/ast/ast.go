@@ -88,8 +88,8 @@ type File struct {
 
 // Block represents a Lua block.
 type Block struct {
-	// Stmts is a list of 0 or more Lua statements.
-	Stmts []Stmt
+	// Items is a list of 0 or more Lua statements.
+	Items []Stmt
 	// Seps indicates whether a statement is followed by a semi-colon. The
 	// length of Seps is the same as Stmts. Tokens will either be a SEMICOLON,
 	// or INVALID when no semicolon is present.
@@ -98,7 +98,7 @@ type Block struct {
 
 // Len returns the combined length of Stmts and Seps.
 func (b *Block) Len() int {
-	return len(b.Stmts) + len(b.Seps)
+	return len(b.Items) + len(b.Seps)
 }
 
 // Expr is the interface that all Lua expressions implement.
@@ -109,8 +109,8 @@ type Expr interface {
 
 // ExprList represents a list of one or more Lua expressions.
 type ExprList struct {
-	// Exprs contains each expression in the list.
-	Exprs []Expr
+	// Items contains each expression in the list.
+	Items []Expr
 	// Seps contains each COMMA between expressions. The length of Seps is one
 	// less than the length of Exprs.
 	Seps []Token
@@ -118,7 +118,7 @@ type ExprList struct {
 
 // Len returns the combined length of Exprs and Seps.
 func (l *ExprList) Len() int {
-	return len(l.Exprs) + len(l.Seps)
+	return len(l.Items) + len(l.Seps)
 }
 
 // Name represents a Lua name expression.
@@ -133,8 +133,8 @@ func (Name) exprNode() {}
 
 // NameList represents a list of one or more name expressions.
 type NameList struct {
-	// Names contains each name in the list.
-	Names []Name
+	// Items contains each name in the list.
+	Items []Name
 	// Seps contains each COMMA between names. The length of Seps is one less
 	// then the length of Names.
 	Seps []Token
@@ -142,7 +142,7 @@ type NameList struct {
 
 // Len returns the combined length of Names and Seps.
 func (l *NameList) Len() int {
-	return len(l.Names) + len(l.Seps)
+	return len(l.Items) + len(l.Seps)
 }
 
 // Number represents a Lua number expression.
@@ -247,8 +247,8 @@ func (TableCtor) exprNode() {}
 
 // EntryList represents a list of entries in a table.
 type EntryList struct {
-	// Entries contains each entry in the list.
-	Entries []Entry
+	// Items contains each entry in the list.
+	Items []Entry
 	// Seps contains each separator between entries, which will be either a
 	// COMMA or SEMICOLON. The length of Seps is equal to or one less than the
 	// length of Entries.
@@ -257,7 +257,7 @@ type EntryList struct {
 
 // Len returns the combined length of Entries and Seps.
 func (l *EntryList) Len() int {
-	return len(l.Entries) + len(l.Seps)
+	return len(l.Items) + len(l.Seps)
 }
 
 // Entry is the interface that all table entry nodes implement.
@@ -637,11 +637,11 @@ func (FunctionStmt) stmtNode() {}
 // FuncNameList represents a list of dot-separated names in a function
 // statement.
 type FuncNameList struct {
-	// Names contains the chain of one or more names, indicating the name of a
+	// Items contains the chain of one or more names, indicating the name of a
 	// function statement. Each successive name is a field of the previous
 	// value. The last name may or may not indicate a method name, as
 	// determined by the Seps field.
-	Names []Name
+	Items []Name
 	// Seps contains each DOT between names. If the last token is a COLON, it
 	// indicates that the last name is a method. The length of Seps is one
 	// less than the length of Exprs.
@@ -651,7 +651,7 @@ type FuncNameList struct {
 
 // Len returns the combined length of Names and Seps.
 func (l *FuncNameList) Len() int {
-	return len(l.Names) + len(l.Seps)
+	return len(l.Items) + len(l.Seps)
 }
 
 // BreakStmt represents a `break` statement.

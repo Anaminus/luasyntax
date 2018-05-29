@@ -17,10 +17,10 @@ func (f *File) IsValid() bool {
 }
 
 func (b *Block) IsValid() bool {
-	if len(b.Seps) != len(b.Stmts) {
+	if len(b.Seps) != len(b.Items) {
 		return false
 	}
-	for _, stmt := range b.Stmts {
+	for _, stmt := range b.Items {
 		if !isv(stmt) {
 			return false
 		}
@@ -34,10 +34,10 @@ func (b *Block) IsValid() bool {
 }
 
 func (l *ExprList) IsValid() bool {
-	if len(l.Exprs) == 0 || len(l.Seps) != len(l.Exprs)-1 {
+	if len(l.Items) == 0 || len(l.Seps) != len(l.Items)-1 {
 		return false
 	}
-	for _, expr := range l.Exprs {
+	for _, expr := range l.Items {
 		if !isv(expr) {
 			return false
 		}
@@ -55,7 +55,7 @@ func (e *Name) IsValid() bool {
 }
 
 func (l *NameList) IsValid() bool {
-	if len(l.Names) == 0 || len(l.Seps) != len(l.Names)-1 {
+	if len(l.Items) == 0 || len(l.Seps) != len(l.Items)-1 {
 		return false
 	}
 	for _, name := range l.Seps {
@@ -118,10 +118,10 @@ func (e *TableCtor) IsValid() bool {
 }
 
 func (l *EntryList) IsValid() bool {
-	if len(l.Seps) != len(l.Entries) && len(l.Seps) != len(l.Entries)-1 {
+	if len(l.Seps) != len(l.Items) && len(l.Seps) != len(l.Items)-1 {
 		return false
 	}
-	for _, entry := range l.Entries {
+	for _, entry := range l.Items {
 		if entry == nil {
 			return false
 		}
@@ -300,7 +300,7 @@ func (s *FunctionStmt) IsValid() bool {
 }
 
 func (l *FuncNameList) IsValid() bool {
-	if len(l.Names) == 0 || len(l.Seps) != len(l.Names)-1 {
+	if len(l.Items) == 0 || len(l.Seps) != len(l.Items)-1 {
 		return false
 	}
 	if len(l.Seps) > 0 {

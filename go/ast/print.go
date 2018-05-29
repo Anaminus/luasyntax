@@ -67,7 +67,7 @@ func (f *File) WriteTo(w io.Writer) (n int64, err error) {
 
 func (l *ExprList) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	for i, expr := range l.Exprs {
+	for i, expr := range l.Items {
 		if !c.writeTo(w, expr) {
 			break
 		}
@@ -82,7 +82,7 @@ func (l *ExprList) WriteTo(w io.Writer) (n int64, err error) {
 
 func (l *NameList) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	for i, name := range l.Names {
+	for i, name := range l.Items {
 		if !c.writeTo(w, name) {
 			break
 		}
@@ -132,7 +132,7 @@ func (e *TableCtor) WriteTo(w io.Writer) (n int64, err error) {
 
 func (l *EntryList) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	for i, entry := range l.Entries {
+	for i, entry := range l.Items {
 		if !c.writeTo(w, entry) {
 			break
 		}
@@ -239,7 +239,7 @@ func (sc *StringCall) WriteTo(w io.Writer) (n int64, err error) {
 
 func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	for i, stmt := range b.Stmts {
+	for i, stmt := range b.Items {
 		if !c.writeTo(w, stmt) {
 			break
 		}
@@ -409,7 +409,7 @@ func (s *FunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 
 func (l *FuncNameList) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	for i, name := range l.Names {
+	for i, name := range l.Items {
 		if !c.writeTo(w, name) {
 			break
 		}

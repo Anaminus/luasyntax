@@ -304,10 +304,10 @@ func (p *parser) parseExpr() ast.Expr {
 
 // parseExprList creates a list of expressions.
 func (p *parser) parseExprList() *ast.ExprList {
-	list := &ast.ExprList{Exprs: []ast.Expr{p.parseExpr()}}
+	list := &ast.ExprList{Items: []ast.Expr{p.parseExpr()}}
 	for p.tok == token.COMMA {
 		list.Seps = append(list.Seps, p.tokenNext())
-		list.Exprs = append(list.Exprs, p.parseExpr())
+		list.Items = append(list.Items, p.parseExpr())
 	}
 	return list
 }
@@ -399,10 +399,10 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 	case token.COMMA, token.IN:
 		st := &ast.GenericForStmt{}
 		st.ForToken = forToken
-		st.NameList.Names = append(st.NameList.Names, name)
+		st.NameList.Items = append(st.NameList.Items, name)
 		for p.tok == token.COMMA {
 			st.NameList.Seps = append(st.NameList.Seps, p.tokenNext())
-			st.NameList.Names = append(st.NameList.Names, p.parseName())
+			st.NameList.Items = append(st.NameList.Items, p.parseName())
 		}
 		st.InToken = p.expectToken(token.IN)
 		st.Iterator = *p.parseExprList()
@@ -428,21 +428,21 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 	expr = &ast.FunctionExpr{}
 	expr.FuncToken = p.expectToken(token.FUNCTION)
 	if typ > funcExpr {
-		names.Names = append(names.Names, p.parseName())
+		names.Items = append(names.Items, p.parseName())
 		if typ > funcLocal {
 			for p.tok == token.DOT {
 				names.Seps = append(names.Seps, p.tokenNext())
-				names.Names = append(names.Names, p.parseName())
+				names.Items = append(names.Items, p.parseName())
 			}
 			if p.tok == token.COLON {
 				names.Seps = append(names.Seps, p.tokenNext())
-				names.Names = append(names.Names, p.parseName())
+				names.Items = append(names.Items, p.parseName())
 			}
 		}
 	}
 	expr.LParenToken = p.expectToken(token.LPAREN)
 	if p.tok == token.NAME {
-		expr.ParamList = &ast.NameList{Names: []ast.Name{p.parseName()}}
+		expr.ParamList = &ast.NameList{Items: []ast.Name{p.parseName()}}
 		for p.tok == token.COMMA {
 			sepToken := p.tokenNext()
 			if p.tok == token.VARARG {
@@ -451,7 +451,7 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 				break
 			}
 			expr.ParamList.Seps = append(expr.ParamList.Seps, sepToken)
-			expr.ParamList.Names = append(expr.ParamList.Names, p.parseName())
+			expr.ParamList.Items = append(expr.ParamList.Items, p.parseName())
 		}
 	} else if p.tok == token.VARARG {
 		expr.VarArgToken = p.tokenNext()
@@ -469,16 +469,16 @@ func (p *parser) parseLocalStmt() ast.Stmt {
 		expr, names := p.parseFunction(funcLocal)
 		return &ast.LocalFunctionStmt{
 			LocalToken: localToken,
-			Name:       names.Names[0],
+			Name:       names.Items[0],
 			Func:       *expr,
 		}
 	}
 	stmt := &ast.LocalVarStmt{}
 	stmt.LocalToken = localToken
-	stmt.NameList.Names = append(stmt.NameList.Names, p.parseName())
+	stmt.NameList.Items = append(stmt.NameList.Items, p.parseName())
 	for p.tok == token.COMMA {
 		stmt.NameList.Seps = append(stmt.NameList.Seps, p.tokenNext())
-		stmt.NameList.Names = append(stmt.NameList.Names, p.parseName())
+		stmt.NameList.Items = append(stmt.NameList.Items, p.parseName())
 	}
 	if p.tok == token.ASSIGN {
 		stmt.AssignToken = p.tokenNext()
@@ -559,7 +559,7 @@ func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 			e.Value = p.parseExpr()
 			entry = e
 		}
-		ctor.EntryList.Entries = append(ctor.EntryList.Entries, entry)
+		ctor.EntryList.Items = append(ctor.EntryList.Items, entry)
 		if p.tok == token.COMMA || p.tok == token.SEMICOLON {
 			ctor.EntryList.Seps = append(ctor.EntryList.Seps, p.tokenNext())
 		} else {
@@ -580,7 +580,7 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 			if a.ExprList == nil {
 				a.ExprList = &ast.ExprList{}
 			}
-			a.ExprList.Exprs = append(a.ExprList.Exprs, p.parseExpr())
+			a.ExprList.Items = append(a.ExprList.Items, p.parseExpr())
 			if p.tok == token.COMMA {
 				a.ExprList.Seps = append(a.ExprList.Seps, p.tokenNext())
 			} else {
@@ -649,14 +649,14 @@ func (p *parser) parseExprStmt() ast.Stmt {
 		return &ast.CallExprStmt{Expr: expr}
 	}
 
-	stmt := &ast.AssignStmt{Left: ast.ExprList{Exprs: []ast.Expr{expr}}}
+	stmt := &ast.AssignStmt{Left: ast.ExprList{Items: []ast.Expr{expr}}}
 	for p.tok == token.COMMA {
 		stmt.Left.Seps = append(stmt.Left.Seps, p.tokenNext())
 		switch expr := p.parsePrimaryExpr().(type) {
 		case *ast.MethodExpr, *ast.CallExpr:
 			p.error(p.off, "syntax error")
 		default:
-			stmt.Left.Exprs = append(stmt.Left.Exprs, expr)
+			stmt.Left.Items = append(stmt.Left.Items, expr)
 		}
 	}
 	stmt.AssignToken = p.expectToken(token.ASSIGN)
@@ -695,7 +695,7 @@ func (p *parser) parseBlock() (block ast.Block) {
 	for last := false; !last && !p.isBlockFollow(); {
 		var stmt ast.Stmt
 		stmt, last = p.parseStmt()
-		block.Stmts = append(block.Stmts, stmt)
+		block.Items = append(block.Items, stmt)
 		var semi ast.Token
 		if p.tok == token.SEMICOLON {
 			semi = p.tokenNext()

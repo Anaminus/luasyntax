@@ -4,29 +4,29 @@ func (f *File) FirstToken() *Token { return f.Body.FirstToken() }
 func (f *File) LastToken() *Token  { return &f.EOFToken }
 
 func (b *Block) FirstToken() *Token {
-	if len(b.Stmts) == 0 {
+	if len(b.Items) == 0 {
 		return nil
 	}
-	return b.Stmts[0].FirstToken()
+	return b.Items[0].FirstToken()
 }
 func (b *Block) LastToken() *Token {
-	if len(b.Stmts) == 0 {
+	if len(b.Items) == 0 {
 		return nil
 	}
-	if len(b.Seps) == len(b.Stmts) {
+	if len(b.Seps) == len(b.Items) {
 		return &b.Seps[len(b.Seps)-1]
 	}
-	return b.Stmts[len(b.Stmts)-1].LastToken()
+	return b.Items[len(b.Items)-1].LastToken()
 }
 
-func (l *ExprList) FirstToken() *Token { return l.Exprs[0].FirstToken() }
-func (l *ExprList) LastToken() *Token  { return l.Exprs[len(l.Exprs)-1].LastToken() }
+func (l *ExprList) FirstToken() *Token { return l.Items[0].FirstToken() }
+func (l *ExprList) LastToken() *Token  { return l.Items[len(l.Items)-1].LastToken() }
 
 func (e *Name) FirstToken() *Token { return &e.Token }
 func (e *Name) LastToken() *Token  { return &e.Token }
 
-func (l *NameList) FirstToken() *Token { return &l.Names[0].Token }
-func (l *NameList) LastToken() *Token  { return &l.Names[len(l.Names)-1].Token }
+func (l *NameList) FirstToken() *Token { return &l.Items[0].Token }
+func (l *NameList) LastToken() *Token  { return &l.Items[len(l.Items)-1].Token }
 
 func (e *Number) FirstToken() *Token { return &e.Token }
 func (e *Number) LastToken() *Token  { return &e.Token }
@@ -59,16 +59,16 @@ func (e *TableCtor) FirstToken() *Token { return &e.LBraceToken }
 func (e *TableCtor) LastToken() *Token  { return &e.RBraceToken }
 
 func (l *EntryList) FirstToken() *Token {
-	if len(l.Entries) == 0 {
+	if len(l.Items) == 0 {
 		return nil
 	}
-	return l.Entries[0].FirstToken()
+	return l.Items[0].FirstToken()
 }
 func (l *EntryList) LastToken() *Token {
-	if len(l.Seps) == len(l.Entries) {
+	if len(l.Seps) == len(l.Items) {
 		return &l.Seps[len(l.Seps)-1]
 	}
-	return l.Entries[len(l.Entries)-1].LastToken()
+	return l.Items[len(l.Items)-1].LastToken()
 }
 
 func (e *IndexEntry) FirstToken() *Token { return &e.LBrackToken }
