@@ -259,6 +259,8 @@ func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {
 			tok = token.DIV
 		case '%':
 			tok = token.MOD
+		case '^':
+			tok = token.EXP
 		case '.':
 			if isDigit(s.ch) {
 				tok = s.scanNumber()
