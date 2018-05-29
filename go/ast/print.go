@@ -369,41 +369,41 @@ func (s *LocalVarStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *LocalFunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.LocalToken)
-	c.writeTo(w, s.Expr.FuncToken)
+	c.writeTo(w, s.Func.FuncToken)
 	c.writeTo(w, s.Name)
-	c.writeTo(w, s.Expr.LParenToken)
-	if s.Expr.ParamList != nil {
-		c.writeTo(w, s.Expr.ParamList)
-		if s.Expr.VarArgSepToken.Type.IsValid() {
-			c.writeTo(w, s.Expr.VarArgSepToken)
-			c.writeTo(w, s.Expr.VarArgToken)
+	c.writeTo(w, s.Func.LParenToken)
+	if s.Func.ParamList != nil {
+		c.writeTo(w, s.Func.ParamList)
+		if s.Func.VarArgSepToken.Type.IsValid() {
+			c.writeTo(w, s.Func.VarArgSepToken)
+			c.writeTo(w, s.Func.VarArgToken)
 		}
-	} else if s.Expr.VarArgToken.Type.IsValid() {
-		c.writeTo(w, s.Expr.VarArgToken)
+	} else if s.Func.VarArgToken.Type.IsValid() {
+		c.writeTo(w, s.Func.VarArgToken)
 	}
-	c.writeTo(w, s.Expr.RParenToken)
-	c.writeTo(w, &s.Expr.Block)
-	c.writeTo(w, s.Expr.EndToken)
+	c.writeTo(w, s.Func.RParenToken)
+	c.writeTo(w, &s.Func.Block)
+	c.writeTo(w, s.Func.EndToken)
 	return c.finish()
 }
 
 func (s *FunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, s.Expr.FuncToken)
+	c.writeTo(w, s.Func.FuncToken)
 	c.writeTo(w, &s.Name)
-	c.writeTo(w, s.Expr.LParenToken)
-	if s.Expr.ParamList != nil {
-		c.writeTo(w, s.Expr.ParamList)
-		if s.Expr.VarArgSepToken.Type.IsValid() {
-			c.writeTo(w, s.Expr.VarArgSepToken)
-			c.writeTo(w, s.Expr.VarArgToken)
+	c.writeTo(w, s.Func.LParenToken)
+	if s.Func.ParamList != nil {
+		c.writeTo(w, s.Func.ParamList)
+		if s.Func.VarArgSepToken.Type.IsValid() {
+			c.writeTo(w, s.Func.VarArgSepToken)
+			c.writeTo(w, s.Func.VarArgToken)
 		}
-	} else if s.Expr.VarArgToken.Type.IsValid() {
-		c.writeTo(w, s.Expr.VarArgToken)
+	} else if s.Func.VarArgToken.Type.IsValid() {
+		c.writeTo(w, s.Func.VarArgToken)
 	}
-	c.writeTo(w, s.Expr.RParenToken)
-	c.writeTo(w, &s.Expr.Block)
-	c.writeTo(w, s.Expr.EndToken)
+	c.writeTo(w, s.Func.RParenToken)
+	c.writeTo(w, &s.Func.Block)
+	c.writeTo(w, s.Func.EndToken)
 	return c.finish()
 }
 

@@ -143,10 +143,10 @@ func (s *LocalVarStmt) LastToken() *Token {
 }
 
 func (s *LocalFunctionStmt) FirstToken() *Token { return &s.LocalToken }
-func (s *LocalFunctionStmt) LastToken() *Token  { return s.Expr.LastToken() }
+func (s *LocalFunctionStmt) LastToken() *Token  { return s.Func.LastToken() }
 
-func (s *FunctionStmt) FirstToken() *Token { return s.Expr.FirstToken() }
-func (s *FunctionStmt) LastToken() *Token  { return s.Expr.LastToken() }
+func (s *FunctionStmt) FirstToken() *Token { return s.Func.FirstToken() }
+func (s *FunctionStmt) LastToken() *Token  { return s.Func.LastToken() }
 
 func (s *BreakStmt) FirstToken() *Token { return &s.BreakToken }
 func (s *BreakStmt) LastToken() *Token  { return &s.BreakToken }

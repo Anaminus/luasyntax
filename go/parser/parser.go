@@ -470,7 +470,7 @@ func (p *parser) parseLocalStmt() ast.Stmt {
 		return &ast.LocalFunctionStmt{
 			LocalToken: localToken,
 			Name:       names.Names[0],
-			Expr:       *expr,
+			Func:       *expr,
 		}
 	}
 	stmt := &ast.LocalVarStmt{}
@@ -492,7 +492,7 @@ func (p *parser) parseFunctionStmt() ast.Stmt {
 	expr, names := p.parseFunction(funcStmt)
 	return &ast.FunctionStmt{
 		Name: names,
-		Expr: *expr,
+		Func: *expr,
 	}
 }
 

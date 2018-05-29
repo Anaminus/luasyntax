@@ -620,8 +620,8 @@ type LocalFunctionStmt struct {
 	// Name is the name of the function. Note that this token is located after
 	// the FuncToken of the FunctionExpr.
 	Name Name
-	// Expr defines the parameters and body of the function.
-	Expr FunctionExpr
+	// Func defines the parameters and body of the function.
+	Func FunctionExpr
 }
 
 func (LocalFunctionStmt) stmtNode() {}
@@ -631,8 +631,8 @@ type FunctionStmt struct {
 	// Name contains the name of the function. Note that tokens within this
 	// are located after the FuncToken of the FunctionExpr.
 	Name FuncNameList
-	// Expr defines the parameters and body of the function.
-	Expr FunctionExpr
+	// Func defines the parameters and body of the function.
+	Func FunctionExpr
 }
 
 func (FunctionStmt) stmtNode() {}
