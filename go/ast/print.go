@@ -239,8 +239,8 @@ func (sc *StringCall) WriteTo(w io.Writer) (n int64, err error) {
 
 func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	for i, stat := range b.Stats {
-		if !c.writeTo(w, stat) {
+	for i, stmt := range b.Stmts {
+		if !c.writeTo(w, stmt) {
 			break
 		}
 		if i < len(b.Seps) && b.Seps[i].Type.IsValid() {
@@ -252,7 +252,7 @@ func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *DoStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *DoStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.DoToken)
 	c.writeTo(w, &s.Block)
@@ -260,7 +260,7 @@ func (s *DoStat) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *AssignStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *AssignStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, &s.Left)
 	c.writeTo(w, s.AssignToken)
@@ -268,11 +268,11 @@ func (s *AssignStat) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *CallExprStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *CallExprStmt) WriteTo(w io.Writer) (n int64, err error) {
 	return s.Exp.WriteTo(w)
 }
 
-func (s *IfStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *IfStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.IfToken)
 	c.writeTo(w, s.Exp)
@@ -306,7 +306,7 @@ func (cl *ElseClause) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *NumericForStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *NumericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.ForToken)
 	c.writeTo(w, s.Name)
@@ -324,7 +324,7 @@ func (s *NumericForStat) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *GenericForStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *GenericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.ForToken)
 	c.writeTo(w, &s.NameList)
@@ -336,7 +336,7 @@ func (s *GenericForStat) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *WhileStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *WhileStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.WhileToken)
 	c.writeTo(w, s.Exp)
@@ -346,7 +346,7 @@ func (s *WhileStat) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *RepeatStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *RepeatStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.RepeatToken)
 	c.writeTo(w, &s.Block)
@@ -355,7 +355,7 @@ func (s *RepeatStat) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *LocalVarStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *LocalVarStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.LocalToken)
 	c.writeTo(w, &s.NameList)
@@ -366,7 +366,7 @@ func (s *LocalVarStat) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *LocalFunctionStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *LocalFunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.LocalToken)
 	c.writeTo(w, s.Exp.FuncToken)
@@ -387,7 +387,7 @@ func (s *LocalFunctionStat) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *FunctionStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *FunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.Exp.FuncToken)
 	c.writeTo(w, &s.Name)
@@ -422,11 +422,11 @@ func (l *FuncNameList) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *BreakStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *BreakStmt) WriteTo(w io.Writer) (n int64, err error) {
 	return s.BreakToken.WriteTo(w)
 }
 
-func (s *ReturnStat) WriteTo(w io.Writer) (n int64, err error) {
+func (s *ReturnStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.ReturnToken)
 	if s.ExpList != nil {

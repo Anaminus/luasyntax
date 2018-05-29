@@ -4,19 +4,19 @@ func (f *File) FirstToken() *Token { return f.Block.FirstToken() }
 func (f *File) LastToken() *Token  { return &f.EOFToken }
 
 func (b *Block) FirstToken() *Token {
-	if len(b.Stats) == 0 {
+	if len(b.Stmts) == 0 {
 		return nil
 	}
-	return b.Stats[0].FirstToken()
+	return b.Stmts[0].FirstToken()
 }
 func (b *Block) LastToken() *Token {
-	if len(b.Stats) == 0 {
+	if len(b.Stmts) == 0 {
 		return nil
 	}
-	if len(b.Seps) == len(b.Stats) {
+	if len(b.Seps) == len(b.Stmts) {
 		return &b.Seps[len(b.Seps)-1]
 	}
-	return b.Stats[len(b.Stats)-1].LastToken()
+	return b.Stmts[len(b.Stmts)-1].LastToken()
 }
 
 func (l *ExpList) FirstToken() *Token { return l.Exps[0].FirstToken() }
@@ -104,17 +104,17 @@ func (c *TableCall) LastToken() *Token  { return c.TableExp.LastToken() }
 func (c *StringCall) FirstToken() *Token { return &c.StringExp.Token }
 func (c *StringCall) LastToken() *Token  { return &c.StringExp.Token }
 
-func (s *DoStat) FirstToken() *Token { return &s.DoToken }
-func (s *DoStat) LastToken() *Token  { return &s.EndToken }
+func (s *DoStmt) FirstToken() *Token { return &s.DoToken }
+func (s *DoStmt) LastToken() *Token  { return &s.EndToken }
 
-func (s *AssignStat) FirstToken() *Token { return s.Left.FirstToken() }
-func (s *AssignStat) LastToken() *Token  { return s.Right.LastToken() }
+func (s *AssignStmt) FirstToken() *Token { return s.Left.FirstToken() }
+func (s *AssignStmt) LastToken() *Token  { return s.Right.LastToken() }
 
-func (s *CallExprStat) FirstToken() *Token { return s.Exp.FirstToken() }
-func (s *CallExprStat) LastToken() *Token  { return s.Exp.LastToken() }
+func (s *CallExprStmt) FirstToken() *Token { return s.Exp.FirstToken() }
+func (s *CallExprStmt) LastToken() *Token  { return s.Exp.LastToken() }
 
-func (s *IfStat) FirstToken() *Token { return &s.IfToken }
-func (s *IfStat) LastToken() *Token  { return &s.EndToken }
+func (s *IfStmt) FirstToken() *Token { return &s.IfToken }
+func (s *IfStmt) LastToken() *Token  { return &s.EndToken }
 
 func (c *ElseIfClause) FirstToken() *Token { return &c.ElseIfToken }
 func (c *ElseIfClause) LastToken() *Token  { return c.Block.LastToken() }
@@ -122,37 +122,37 @@ func (c *ElseIfClause) LastToken() *Token  { return c.Block.LastToken() }
 func (c *ElseClause) FirstToken() *Token { return &c.ElseToken }
 func (c *ElseClause) LastToken() *Token  { return c.Block.LastToken() }
 
-func (s *NumericForStat) FirstToken() *Token { return &s.ForToken }
-func (s *NumericForStat) LastToken() *Token  { return &s.EndToken }
+func (s *NumericForStmt) FirstToken() *Token { return &s.ForToken }
+func (s *NumericForStmt) LastToken() *Token  { return &s.EndToken }
 
-func (s *GenericForStat) FirstToken() *Token { return &s.ForToken }
-func (s *GenericForStat) LastToken() *Token  { return &s.EndToken }
+func (s *GenericForStmt) FirstToken() *Token { return &s.ForToken }
+func (s *GenericForStmt) LastToken() *Token  { return &s.EndToken }
 
-func (s *WhileStat) FirstToken() *Token { return &s.WhileToken }
-func (s *WhileStat) LastToken() *Token  { return &s.EndToken }
+func (s *WhileStmt) FirstToken() *Token { return &s.WhileToken }
+func (s *WhileStmt) LastToken() *Token  { return &s.EndToken }
 
-func (s *RepeatStat) FirstToken() *Token { return &s.RepeatToken }
-func (s *RepeatStat) LastToken() *Token  { return s.Exp.LastToken() }
+func (s *RepeatStmt) FirstToken() *Token { return &s.RepeatToken }
+func (s *RepeatStmt) LastToken() *Token  { return s.Exp.LastToken() }
 
-func (s *LocalVarStat) FirstToken() *Token { return &s.LocalToken }
-func (s *LocalVarStat) LastToken() *Token {
+func (s *LocalVarStmt) FirstToken() *Token { return &s.LocalToken }
+func (s *LocalVarStmt) LastToken() *Token {
 	if !s.AssignToken.Type.IsValid() {
 		return s.NameList.LastToken()
 	}
 	return s.ExpList.LastToken()
 }
 
-func (s *LocalFunctionStat) FirstToken() *Token { return &s.LocalToken }
-func (s *LocalFunctionStat) LastToken() *Token  { return s.Exp.LastToken() }
+func (s *LocalFunctionStmt) FirstToken() *Token { return &s.LocalToken }
+func (s *LocalFunctionStmt) LastToken() *Token  { return s.Exp.LastToken() }
 
-func (s *FunctionStat) FirstToken() *Token { return s.Exp.FirstToken() }
-func (s *FunctionStat) LastToken() *Token  { return s.Exp.LastToken() }
+func (s *FunctionStmt) FirstToken() *Token { return s.Exp.FirstToken() }
+func (s *FunctionStmt) LastToken() *Token  { return s.Exp.LastToken() }
 
-func (s *BreakStat) FirstToken() *Token { return &s.BreakToken }
-func (s *BreakStat) LastToken() *Token  { return &s.BreakToken }
+func (s *BreakStmt) FirstToken() *Token { return &s.BreakToken }
+func (s *BreakStmt) LastToken() *Token  { return &s.BreakToken }
 
-func (s *ReturnStat) FirstToken() *Token { return &s.ReturnToken }
-func (s *ReturnStat) LastToken() *Token {
+func (s *ReturnStmt) FirstToken() *Token { return &s.ReturnToken }
+func (s *ReturnStmt) LastToken() *Token {
 	if s.ExpList.Len() == 0 {
 		return &s.ReturnToken
 	}

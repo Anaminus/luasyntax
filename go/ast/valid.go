@@ -17,11 +17,11 @@ func (f *File) IsValid() bool {
 }
 
 func (b *Block) IsValid() bool {
-	if len(b.Seps) != len(b.Stats) {
+	if len(b.Seps) != len(b.Stmts) {
 		return false
 	}
-	for _, stat := range b.Stats {
-		if !isv(stat) {
+	for _, stmt := range b.Stmts {
+		if !isv(stmt) {
 			return false
 		}
 	}
@@ -208,20 +208,20 @@ func (c *StringCall) IsValid() bool {
 	return c.StringExp.Type.IsString()
 }
 
-func (s *DoStat) IsValid() bool {
+func (s *DoStmt) IsValid() bool {
 	return ist(s.DoToken, token.DO) &&
 		ist(s.EndToken, token.END)
 }
 
-func (s *AssignStat) IsValid() bool {
+func (s *AssignStmt) IsValid() bool {
 	return ist(s.AssignToken, token.ASSIGN)
 }
 
-func (s *CallExprStat) IsValid() bool {
+func (s *CallExprStmt) IsValid() bool {
 	return isv(s.Exp)
 }
 
-func (s *IfStat) IsValid() bool {
+func (s *IfStmt) IsValid() bool {
 	return ist(s.IfToken, token.IF) &&
 		isv(s.Exp) &&
 		ist(s.ThenToken, token.THEN) &&
@@ -238,7 +238,7 @@ func (c *ElseClause) IsValid() bool {
 	return ist(c.ElseToken, token.ELSE)
 }
 
-func (s *NumericForStat) IsValid() bool {
+func (s *NumericForStmt) IsValid() bool {
 	if !(ist(s.ForToken, token.FOR) &&
 		ist(s.Name.Token, token.NAME) &&
 		ist(s.AssignToken, token.ASSIGN) &&
@@ -258,27 +258,27 @@ func (s *NumericForStat) IsValid() bool {
 	return false
 }
 
-func (s *GenericForStat) IsValid() bool {
+func (s *GenericForStmt) IsValid() bool {
 	return ist(s.ForToken, token.FOR) &&
 		ist(s.InToken, token.IN) &&
 		ist(s.DoToken, token.DO) &&
 		ist(s.EndToken, token.END)
 }
 
-func (s *WhileStat) IsValid() bool {
+func (s *WhileStmt) IsValid() bool {
 	return ist(s.WhileToken, token.WHILE) &&
 		isv(s.Exp) &&
 		ist(s.DoToken, token.DO) &&
 		ist(s.EndToken, token.END)
 }
 
-func (s *RepeatStat) IsValid() bool {
+func (s *RepeatStmt) IsValid() bool {
 	return ist(s.RepeatToken, token.REPEAT) &&
 		ist(s.UntilToken, token.UNTIL) &&
 		isv(s.Exp)
 }
 
-func (s *LocalVarStat) IsValid() bool {
+func (s *LocalVarStmt) IsValid() bool {
 	if !ist(s.LocalToken, token.LOCAL) {
 		return false
 	}
@@ -290,12 +290,12 @@ func (s *LocalVarStat) IsValid() bool {
 	return false
 }
 
-func (s *LocalFunctionStat) IsValid() bool {
+func (s *LocalFunctionStmt) IsValid() bool {
 	return ist(s.LocalToken, token.LOCAL) &&
 		ist(s.Name.Token, token.NAME)
 }
 
-func (s *FunctionStat) IsValid() bool {
+func (s *FunctionStmt) IsValid() bool {
 	return true
 }
 
@@ -316,10 +316,10 @@ func (l *FuncNameList) IsValid() bool {
 	return true
 }
 
-func (s *BreakStat) IsValid() bool {
+func (s *BreakStmt) IsValid() bool {
 	return ist(s.BreakToken, token.BREAK)
 }
 
-func (s *ReturnStat) IsValid() bool {
+func (s *ReturnStmt) IsValid() bool {
 	return ist(s.ReturnToken, token.RETURN)
 }

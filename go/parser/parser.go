@@ -321,67 +321,67 @@ func (p *parser) parseBlockBody(term token.Type) ast.Block {
 	return block
 }
 
-// parseDoStat creates a `do` statement node.
-func (p *parser) parseDoStat() ast.Stat {
-	stat := &ast.DoStat{}
-	stat.DoToken = p.expectToken(token.DO)
-	stat.Block = p.parseBlockBody(token.END)
-	stat.EndToken = p.expectToken(token.END)
-	return stat
+// parseDoStmt creates a `do` statement node.
+func (p *parser) parseDoStmt() ast.Stmt {
+	stmt := &ast.DoStmt{}
+	stmt.DoToken = p.expectToken(token.DO)
+	stmt.Block = p.parseBlockBody(token.END)
+	stmt.EndToken = p.expectToken(token.END)
+	return stmt
 }
 
-// parseWhileStat creates a `while` statement node.
-func (p *parser) parseWhileStat() ast.Stat {
-	stat := &ast.WhileStat{}
-	stat.WhileToken = p.expectToken(token.WHILE)
-	stat.Exp = p.parseExp()
-	stat.DoToken = p.expectToken(token.DO)
-	stat.Block = p.parseBlockBody(token.END)
-	stat.EndToken = p.expectToken(token.END)
-	return stat
+// parseWhileStmt creates a `while` statement node.
+func (p *parser) parseWhileStmt() ast.Stmt {
+	stmt := &ast.WhileStmt{}
+	stmt.WhileToken = p.expectToken(token.WHILE)
+	stmt.Exp = p.parseExp()
+	stmt.DoToken = p.expectToken(token.DO)
+	stmt.Block = p.parseBlockBody(token.END)
+	stmt.EndToken = p.expectToken(token.END)
+	return stmt
 }
 
-// parseRepeatStat creates a `repeat` statement node.
-func (p *parser) parseRepeatStat() ast.Stat {
-	stat := &ast.RepeatStat{}
-	stat.RepeatToken = p.expectToken(token.REPEAT)
-	stat.Block = p.parseBlockBody(token.UNTIL)
-	stat.UntilToken = p.expectToken(token.UNTIL)
-	stat.Exp = p.parseExp()
-	return stat
+// parseRepeatStmt creates a `repeat` statement node.
+func (p *parser) parseRepeatStmt() ast.Stmt {
+	stmt := &ast.RepeatStmt{}
+	stmt.RepeatToken = p.expectToken(token.REPEAT)
+	stmt.Block = p.parseBlockBody(token.UNTIL)
+	stmt.UntilToken = p.expectToken(token.UNTIL)
+	stmt.Exp = p.parseExp()
+	return stmt
 }
 
-// parseIfStat creates an `if` statement node.
-func (p *parser) parseIfStat() ast.Stat {
-	stat := &ast.IfStat{}
-	stat.IfToken = p.expectToken(token.IF)
-	stat.Exp = p.parseExp()
-	stat.ThenToken = p.expectToken(token.THEN)
-	stat.Block = p.parseBlock()
+// parseIfStmt creates an `if` statement node.
+func (p *parser) parseIfStmt() ast.Stmt {
+	stmt := &ast.IfStmt{}
+	stmt.IfToken = p.expectToken(token.IF)
+	stmt.Exp = p.parseExp()
+	stmt.ThenToken = p.expectToken(token.THEN)
+	stmt.Block = p.parseBlock()
 	for p.tok == token.ELSEIF {
 		clause := ast.ElseIfClause{}
 		clause.ElseIfToken = p.expectToken(token.ELSEIF)
 		clause.Exp = p.parseExp()
 		clause.ThenToken = p.expectToken(token.THEN)
 		clause.Block = p.parseBlock()
-		stat.ElseIfClauses = append(stat.ElseIfClauses, clause)
+		stmt.ElseIfClauses = append(stmt.ElseIfClauses, clause)
 	}
 	if p.tok == token.ELSE {
-		stat.ElseClause = &ast.ElseClause{}
-		stat.ElseClause.ElseToken = p.expectToken(token.ELSE)
-		stat.ElseClause.Block = p.parseBlock()
+		stmt.ElseClause = &ast.ElseClause{}
+		stmt.ElseClause.ElseToken = p.expectToken(token.ELSE)
+		stmt.ElseClause.Block = p.parseBlock()
 	}
-	stat.EndToken = p.expectToken(token.END)
-	return stat
+	stmt.EndToken = p.expectToken(token.END)
+	return stmt
 }
 
-// parseIfStat creates a `for` statement node.
-func (p *parser) parseForStat() (stat ast.Stat) {
+// parseIfStmt creates a `for` statement node.
+func (p *parser) parseForStmt() (stmt ast.Stmt) {
 	forToken := p.expectToken(token.FOR)
 	name := p.parseName()
 	switch p.tok {
 	case token.ASSIGN:
-		st := &ast.NumericForStat{}
+		st := &ast.NumericForStmt{}
 		st.ForToken = forToken
 		st.Name = name
 		st.AssignToken = p.expectToken(token.ASSIGN)
@@ -395,9 +395,9 @@ func (p *parser) parseForStat() (stat ast.Stat) {
 		st.DoToken = p.expectToken(token.DO)
 		st.Block = p.parseBlockBody(token.END)
 		st.EndToken = p.expectToken(token.END)
-		stat = st
+		stmt = st
 	case token.COMMA, token.IN:
-		st := &ast.GenericForStat{}
+		st := &ast.GenericForStmt{}
 		st.ForToken = forToken
 		st.NameList.Names = append(st.NameList.Names, name)
 		for p.tok == token.COMMA {
@@ -409,17 +409,17 @@ func (p *parser) parseForStat() (stat ast.Stat) {
 		st.DoToken = p.expectToken(token.DO)
 		st.Block = p.parseBlockBody(token.END)
 		st.EndToken = p.expectToken(token.END)
-		stat = st
+		stmt = st
 	default:
 		p.error(p.off, "'=' or 'in' expected")
 	}
-	return stat
+	return stmt
 }
 
 const (
 	funcExp   uint8 = iota // `function...` expression (anonymous).
 	funcLocal              // `local function name...` statement.
-	funcStat               // `function name...` statement.
+	funcStmt               // `function name...` statement.
 )
 
 // parseFunction creates a node representing a function. The name of the
@@ -462,56 +462,56 @@ func (p *parser) parseFunction(typ uint8) (exp *ast.FunctionExp, names ast.FuncN
 	return exp, names
 }
 
-// parseLocalStat creates a `local` statement node.
-func (p *parser) parseLocalStat() ast.Stat {
+// parseLocalStmt creates a `local` statement node.
+func (p *parser) parseLocalStmt() ast.Stmt {
 	localToken := p.expectToken(token.LOCAL)
 	if p.tok == token.FUNCTION {
 		exp, names := p.parseFunction(funcLocal)
-		return &ast.LocalFunctionStat{
+		return &ast.LocalFunctionStmt{
 			LocalToken: localToken,
 			Name:       names.Names[0],
 			Exp:        *exp,
 		}
 	}
-	stat := &ast.LocalVarStat{}
-	stat.LocalToken = localToken
-	stat.NameList.Names = append(stat.NameList.Names, p.parseName())
+	stmt := &ast.LocalVarStmt{}
+	stmt.LocalToken = localToken
+	stmt.NameList.Names = append(stmt.NameList.Names, p.parseName())
 	for p.tok == token.COMMA {
-		stat.NameList.Seps = append(stat.NameList.Seps, p.tokenNext())
-		stat.NameList.Names = append(stat.NameList.Names, p.parseName())
+		stmt.NameList.Seps = append(stmt.NameList.Seps, p.tokenNext())
+		stmt.NameList.Names = append(stmt.NameList.Names, p.parseName())
 	}
 	if p.tok == token.ASSIGN {
-		stat.AssignToken = p.tokenNext()
-		stat.ExpList = p.parseExpList()
+		stmt.AssignToken = p.tokenNext()
+		stmt.ExpList = p.parseExpList()
 	}
-	return stat
+	return stmt
 }
 
-// parseFunctionStat creates a `function` statement node.
-func (p *parser) parseFunctionStat() ast.Stat {
-	exp, names := p.parseFunction(funcStat)
-	return &ast.FunctionStat{
+// parseFunctionStmt creates a `function` statement node.
+func (p *parser) parseFunctionStmt() ast.Stmt {
+	exp, names := p.parseFunction(funcStmt)
+	return &ast.FunctionStmt{
 		Name: names,
 		Exp:  *exp,
 	}
 }
 
-// parseReturnStat creates a `return` statement node.
-func (p *parser) parseReturnStat() ast.Stat {
-	stat := &ast.ReturnStat{}
-	stat.ReturnToken = p.expectToken(token.RETURN)
+// parseReturnStmt creates a `return` statement node.
+func (p *parser) parseReturnStmt() ast.Stmt {
+	stmt := &ast.ReturnStmt{}
+	stmt.ReturnToken = p.expectToken(token.RETURN)
 	if p.isBlockFollow() || p.tok == token.SEMICOLON {
-		return stat
+		return stmt
 	}
-	stat.ExpList = p.parseExpList()
-	return stat
+	stmt.ExpList = p.parseExpList()
+	return stmt
 }
 
-// parseBreakStat creates a `break` statement node.
-func (p *parser) parseBreakStat() ast.Stat {
-	stat := &ast.BreakStat{}
-	stat.BreakToken = p.expectToken(token.BREAK)
-	return stat
+// parseBreakStmt creates a `break` statement node.
+func (p *parser) parseBreakStmt() ast.Stmt {
+	stmt := &ast.BreakStmt{}
+	stmt.BreakToken = p.expectToken(token.BREAK)
+	return stmt
 }
 
 // parsePrefixExp creates an expression node that begins a primary expression.
@@ -640,61 +640,61 @@ loop:
 	return exp
 }
 
-// parseExpStat creates an expression statement node.
-func (p *parser) parseExpStat() ast.Stat {
+// parseExpStmt creates an expression statement node.
+func (p *parser) parseExpStmt() ast.Stmt {
 	exp := p.parsePrimaryExp()
 	switch exp.(type) {
 	case *ast.MethodExp, *ast.CallExp:
-		return &ast.CallExprStat{Exp: exp}
+		return &ast.CallExprStmt{Exp: exp}
 	}
 
-	stat := &ast.AssignStat{Left: ast.ExpList{Exps: []ast.Exp{exp}}}
+	stmt := &ast.AssignStmt{Left: ast.ExpList{Exps: []ast.Exp{exp}}}
 	for p.tok == token.COMMA {
-		stat.Left.Seps = append(stat.Left.Seps, p.tokenNext())
+		stmt.Left.Seps = append(stmt.Left.Seps, p.tokenNext())
 		switch exp := p.parsePrimaryExp().(type) {
 		case *ast.MethodExp, *ast.CallExp:
 			p.error(p.off, "syntax error")
 		default:
-			stat.Left.Exps = append(stat.Left.Exps, exp)
+			stmt.Left.Exps = append(stmt.Left.Exps, exp)
 		}
 	}
-	stat.AssignToken = p.expectToken(token.ASSIGN)
-	stat.Right = *p.parseExpList()
-	return stat
+	stmt.AssignToken = p.expectToken(token.ASSIGN)
+	stmt.Right = *p.parseExpList()
+	return stmt
 }
 
-// parseStat creates a statement node. Returns the node, and whether the
+// parseStmt creates a statement node. Returns the node, and whether the
 // statement is meant to be the last statement in the block.
-func (p *parser) parseStat() (stat ast.Stat, last bool) {
+func (p *parser) parseStmt() (stmt ast.Stmt, last bool) {
 	switch p.tok {
 	case token.DO:
-		return p.parseDoStat(), false
+		return p.parseDoStmt(), false
 	case token.WHILE:
-		return p.parseWhileStat(), false
+		return p.parseWhileStmt(), false
 	case token.REPEAT:
-		return p.parseRepeatStat(), false
+		return p.parseRepeatStmt(), false
 	case token.IF:
-		return p.parseIfStat(), false
+		return p.parseIfStmt(), false
 	case token.FOR:
-		return p.parseForStat(), false
+		return p.parseForStmt(), false
 	case token.FUNCTION:
-		return p.parseFunctionStat(), false
+		return p.parseFunctionStmt(), false
 	case token.LOCAL:
-		return p.parseLocalStat(), false
+		return p.parseLocalStmt(), false
 	case token.RETURN:
-		return p.parseReturnStat(), true
+		return p.parseReturnStmt(), true
 	case token.BREAK:
-		return p.parseBreakStat(), true
+		return p.parseBreakStmt(), true
 	}
-	return p.parseExpStat(), false
+	return p.parseExpStmt(), false
 }
 
 // parseBlock creates a block node.
 func (p *parser) parseBlock() (block ast.Block) {
 	for last := false; !last && !p.isBlockFollow(); {
-		var stat ast.Stat
-		stat, last = p.parseStat()
-		block.Stats = append(block.Stats, stat)
+		var stmt ast.Stmt
+		stmt, last = p.parseStmt()
+		block.Stmts = append(block.Stmts, stmt)
 		var semi ast.Token
 		if p.tok == token.SEMICOLON {
 			semi = p.tokenNext()

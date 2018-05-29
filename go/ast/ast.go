@@ -88,17 +88,17 @@ type File struct {
 
 // Block represents a Lua block.
 type Block struct {
-	// Stats is a list of 0 or more Lua statements.
-	Stats []Stat
+	// Stmts is a list of 0 or more Lua statements.
+	Stmts []Stmt
 	// Seps indicates whether a statement is followed by a semi-colon. The
-	// length of Seps is the same as Stats. Tokens will either be a SEMICOLON,
+	// length of Seps is the same as Stmts. Tokens will either be a SEMICOLON,
 	// or INVALID when no semicolon is present.
 	Seps []Token
 }
 
-// Len returns the combined length of Stats and Seps.
+// Len returns the combined length of Stmts and Seps.
 func (b *Block) Len() int {
-	return len(b.Stats) + len(b.Seps)
+	return len(b.Stmts) + len(b.Seps)
 }
 
 // Exp is the interface that all Lua expressions implement.
@@ -422,14 +422,14 @@ type StringCall struct {
 
 func (StringCall) callArgsNode() {}
 
-// Stat is the interface that all statement nodes implement.
-type Stat interface {
+// Stmt is the interface that all statement nodes implement.
+type Stmt interface {
 	Node
-	statNode()
+	stmtNode()
 }
 
-// DoStat represents a `do ... end` Lua statement.
-type DoStat struct {
+// DoStmt represents a `do ... end` Lua statement.
+type DoStmt struct {
 	// DoToken is the DO token that begins the do statement.
 	DoToken Token
 	// Block is the body of the do statement.
@@ -438,11 +438,11 @@ type DoStat struct {
 	EndToken Token
 }
 
-func (DoStat) statNode() {}
+func (DoStmt) stmtNode() {}
 
-// AssignStat represents the assignment of one or more variables with a number
+// AssignStmt represents the assignment of one or more variables with a number
 // of values.
-type AssignStat struct {
+type AssignStmt struct {
 	// Left is the left side of the assignment, comprised of one or more
 	// expressions.
 	Left ExpList
@@ -453,18 +453,18 @@ type AssignStat struct {
 	Right ExpList
 }
 
-func (AssignStat) statNode() {}
+func (AssignStmt) stmtNode() {}
 
-// CallExprStat represents a call expression as a statement.
-type CallExprStat struct {
+// CallExprStmt represents a call expression as a statement.
+type CallExprStmt struct {
 	// Exp is the call expression.
 	Exp Exp
 }
 
-func (CallExprStat) statNode() {}
+func (CallExprStmt) stmtNode() {}
 
-// IfStat represents a `if .. then .. end` statement.
-type IfStat struct {
+// IfStmt represents a `if .. then .. end` statement.
+type IfStmt struct {
 	// IfToken is the IF token that begins the if statement.
 	IfToken Token
 	// Exp is the condition of the if statement.
@@ -483,7 +483,7 @@ type IfStat struct {
 	EndToken Token
 }
 
-func (IfStat) statNode() {}
+func (IfStmt) stmtNode() {}
 
 // ElseIfClause represents an `elseif .. then` clause within an `if` statement.
 type ElseIfClause struct {
@@ -505,8 +505,8 @@ type ElseClause struct {
 	Block Block
 }
 
-// NumericForStat represents a numeric `for` statement.
-type NumericForStat struct {
+// NumericForStmt represents a numeric `for` statement.
+type NumericForStmt struct {
 	// ForToken is the FOR token that begins the for statement.
 	ForToken Token
 	// Name is the name of the control variable.
@@ -535,10 +535,10 @@ type NumericForStat struct {
 	EndToken Token
 }
 
-func (NumericForStat) statNode() {}
+func (NumericForStmt) stmtNode() {}
 
-// GenericForStat represents a generic `for` statement.
-type GenericForStat struct {
+// GenericForStmt represents a generic `for` statement.
+type GenericForStmt struct {
 	// ForToken is the FOR token that begins the for statement.
 	ForToken Token
 	// NameList is the list of names of variables that will be assigned to by the iterator.
@@ -557,10 +557,10 @@ type GenericForStat struct {
 	EndToken Token
 }
 
-func (GenericForStat) statNode() {}
+func (GenericForStmt) stmtNode() {}
 
-// WhileStat represents a `while .. do .. end` statement.
-type WhileStat struct {
+// WhileStmt represents a `while .. do .. end` statement.
+type WhileStmt struct {
 	// WhileToken is the WHILE token that begins a while statement.
 	WhileToken Token
 	// Exp is the condition of the while statement.
@@ -573,10 +573,10 @@ type WhileStat struct {
 	EndToken Token
 }
 
-func (WhileStat) statNode() {}
+func (WhileStmt) stmtNode() {}
 
-// RepeatStat represents a `repeat .. until ..` statement.
-type RepeatStat struct {
+// RepeatStmt represents a `repeat .. until ..` statement.
+type RepeatStmt struct {
 	// RepeatToken is the REPEAT token that begins the repeat statement.
 	RepeatToken Token
 	// Block is the body of the repeat statement.
@@ -587,10 +587,10 @@ type RepeatStat struct {
 	Exp Exp
 }
 
-func (RepeatStat) statNode() {}
+func (RepeatStmt) stmtNode() {}
 
-// LocalVarStat represents the statement that assigns local variables.
-type LocalVarStat struct {
+// LocalVarStmt represents the statement that assigns local variables.
+type LocalVarStmt struct {
 	// LocalToken is the LOCAL token that begins the local statement.
 	LocalToken Token
 	// NameList contains the names of each variable in the local statement.
@@ -603,11 +603,11 @@ type LocalVarStat struct {
 	ExpList *ExpList
 }
 
-func (LocalVarStat) statNode() {}
+func (LocalVarStmt) stmtNode() {}
 
-// LocalFunctionStat represents the statement that assigns a function to a
+// LocalFunctionStmt represents the statement that assigns a function to a
 // local variable.
-type LocalFunctionStat struct {
+type LocalFunctionStmt struct {
 	// LocalToken is the LOCAL token that begins the local statement.
 	LocalToken Token
 	// Name is the name of the function. Note that this token is located after
@@ -617,10 +617,10 @@ type LocalFunctionStat struct {
 	Exp FunctionExp
 }
 
-func (LocalFunctionStat) statNode() {}
+func (LocalFunctionStmt) stmtNode() {}
 
-// FunctionStat represents the statement that assigns a function.
-type FunctionStat struct {
+// FunctionStmt represents the statement that assigns a function.
+type FunctionStmt struct {
 	// Name contains the name of the function. Note that tokens within this
 	// are located after the FuncToken of the FunctionExp.
 	Name FuncNameList
@@ -628,7 +628,7 @@ type FunctionStat struct {
 	Exp FunctionExp
 }
 
-func (FunctionStat) statNode() {}
+func (FunctionStmt) stmtNode() {}
 
 // FuncNameList represents a list of dot-separated names in a function
 // statement.
@@ -650,16 +650,16 @@ func (l *FuncNameList) Len() int {
 	return len(l.Names) + len(l.Seps)
 }
 
-// BreakStat represents a `break` statement.
-type BreakStat struct {
+// BreakStmt represents a `break` statement.
+type BreakStmt struct {
 	// BreakToken is the BREAK token of the break statement.
 	BreakToken Token
 }
 
-func (BreakStat) statNode() {}
+func (BreakStmt) stmtNode() {}
 
-// ReturnStat represents a `return` statement.
-type ReturnStat struct {
+// ReturnStmt represents a `return` statement.
+type ReturnStmt struct {
 	// ReturnToken is the RETURN token of the return statement.
 	ReturnToken Token
 	// ExpList is the list of expressions that evaluate to the values being
@@ -667,4 +667,4 @@ type ReturnStat struct {
 	ExpList *ExpList
 }
 
-func (ReturnStat) statNode() {}
+func (ReturnStmt) stmtNode() {}
