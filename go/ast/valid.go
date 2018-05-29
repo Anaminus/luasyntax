@@ -242,18 +242,18 @@ func (s *NumericForStmt) IsValid() bool {
 	if !(ist(s.ForToken, token.FOR) &&
 		ist(s.Name.Token, token.NAME) &&
 		ist(s.AssignToken, token.ASSIGN) &&
-		isv(s.MinExpr) &&
+		isv(s.Min) &&
 		ist(s.MaxSepToken, token.COMMA) &&
-		isv(s.MaxExpr) &&
+		isv(s.Max) &&
 		ist2(s.StepSepToken, token.COMMA, token.INVALID) &&
 		ist(s.DoToken, token.DO) &&
 		ist(s.EndToken, token.END)) {
 		return false
 	}
 	if ist(s.StepSepToken, token.COMMA) {
-		return isv(s.StepExpr)
+		return isv(s.Step)
 	} else if ist(s.StepSepToken, token.INVALID) {
-		return !isv(s.StepExpr)
+		return !isv(s.Step)
 	}
 	return false
 }

@@ -311,12 +311,12 @@ func (s *NumericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.ForToken)
 	c.writeTo(w, s.Name)
 	c.writeTo(w, s.AssignToken)
-	c.writeTo(w, s.MinExpr)
+	c.writeTo(w, s.Min)
 	c.writeTo(w, s.MaxSepToken)
-	c.writeTo(w, s.MaxExpr)
+	c.writeTo(w, s.Max)
 	if s.StepSepToken.Type.IsValid() {
 		c.writeTo(w, s.StepSepToken)
-		c.writeTo(w, s.StepExpr)
+		c.writeTo(w, s.Step)
 	}
 	c.writeTo(w, s.DoToken)
 	c.writeTo(w, &s.Block)

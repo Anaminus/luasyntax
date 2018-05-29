@@ -385,12 +385,12 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 		st.ForToken = forToken
 		st.Name = name
 		st.AssignToken = p.expectToken(token.ASSIGN)
-		st.MinExpr = p.parseExpr()
+		st.Min = p.parseExpr()
 		st.MaxSepToken = p.expectToken(token.COMMA)
-		st.MaxExpr = p.parseExpr()
+		st.Max = p.parseExpr()
 		if p.tok == token.COMMA {
 			st.StepSepToken = p.expectToken(token.COMMA)
-			st.StepExpr = p.parseExpr()
+			st.Step = p.parseExpr()
 		}
 		st.DoToken = p.expectToken(token.DO)
 		st.Block = p.parseBlockBody(token.END)

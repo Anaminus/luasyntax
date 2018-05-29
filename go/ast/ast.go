@@ -515,22 +515,22 @@ type NumericForStmt struct {
 	Name Name
 	// AssignToken is the ASSIGN token that begins the control expressions.
 	AssignToken Token
-	// MinExpr is the expression indicating the lower bound of the control
+	// Min is the expression indicating the lower bound of the control
 	// variable.
-	MinExpr Expr
+	Min Expr
 	// MaxSepToken is the COMMA token that separates the lower and upper
 	// bound.
 	MaxSepToken Token
-	// MaxExpr is the expression indicating the upper bound of the control
+	// Max is the expression indicating the upper bound of the control
 	// variable.
-	MaxExpr Expr
+	Max Expr
 	// StepSepToken is the separator token between the upper bound and the
 	// step expressions. It is a COMMA if the step is present, and INVALID
 	// otherwise.
 	StepSepToken Token
-	// StepExpr is the expression indicating the step of the control variable.
-	// It is nil if not present.
-	StepExpr Expr
+	// Step is the expression indicating the step of the control variable. It
+	// is nil if not present.
+	Step Expr
 	// DoToken is the DO token that begins the body of the for statement.
 	DoToken Token
 	// Block is the body of the for statement.
