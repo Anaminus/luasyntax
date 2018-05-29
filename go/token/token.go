@@ -15,9 +15,9 @@ type Type int
 const (
 	INVALID      Type = iota
 	valid_start       // [ VALID
-	EOF               // End of file
+	EOF               // End of file marker
 	pre_start         // [ PREFIXES
-	SPACE             // All whitespace
+	SPACE             // Whitespace sequence
 	comm_start        // [ COMMENTS
 	COMMENT           // Line-style comment
 	LONGCOMMENT       // Block-style comment
@@ -25,70 +25,70 @@ const (
 	pre_end           // PREFIXES ]
 	NAME              // Identifier
 	num_start         // [ NUMBER
-	NUMBERFLOAT       // Float
-	NUMBERHEX         // Hexadecimal
+	NUMBERFLOAT       // Float number
+	NUMBERHEX         // Hexadecimal number
 	num_end           // NUMBER ]
 	str_start         // [ STRINGS
 	STRING            // Quote-style string
 	LONGSTRING        // Block-style string
 	str_end           // STRINGS ]
 	op_start          // [ OPERATORS
-	SEMICOLON         // `;`
-	ASSIGN            // `=`
-	COMMA             // `,`
-	DOT               // `.`
-	COLON             // `:`
-	LBRACK            // `[`
-	RBRACK            // `]`
-	VARARG            // `...`
-	LPAREN            // `(`
-	RPAREN            // `)`
-	LBRACE            // `{`
-	RBRACE            // `}`
+	SEMICOLON         // `;` operator
+	ASSIGN            // `=` operator
+	COMMA             // `,` operator
+	DOT               // `.` operator
+	COLON             // `:` operator
+	LBRACK            // `[` operator
+	RBRACK            // `]` operator
+	VARARG            // `...` operator
+	LPAREN            // `(` operator
+	RPAREN            // `)` operator
+	LBRACE            // `{` operator
+	RBRACE            // `}` operator
 	binop_start       // [ BINARY OPERATORS
-	ADD               // `+`
-	MUL               // `*`
-	DIV               // `/`
-	MOD               // `%`
-	EXP               // `^`
-	CONCAT            // `..`
-	LT                // `<`
-	LEQ               // `<=`
-	GT                // `>`
-	GEQ               // `>=`
-	EQ                // `==`
-	NEQ               // `~=`
+	ADD               // `+` binary operator
+	MUL               // `*` binary operator
+	DIV               // `/` binary operator
+	MOD               // `%` binary operator
+	EXP               // `^` binary operator
+	CONCAT            // `..` binary operator
+	LT                // `<` binary operator
+	LEQ               // `<=` binary operator
+	GT                // `>` binary operator
+	GEQ               // `>=` binary operator
+	EQ                // `==` binary operator
+	NEQ               // `~=` binary operator
 	unop_start        // [ UNARY
-	SUB               // `-`
+	SUB               // `-` binary / unary operator
 	binop_end         // BINARY OPERATORS ]
-	LENGTH            // `#`
+	LENGTH            // `#` unary operator
 	op_end            /// OPERATORS ]
 	key_start         // [ KEYWORDS
-	NOT               // `not`
+	NOT               // `not` keyword / unary operator
 	unop_end          // UNARY ]
-	DO                // `do`
-	END               // `end`
-	WHILE             // `while`
-	REPEAT            // `repeat`
-	UNTIL             // `until`
-	IF                // `if`
-	THEN              // `then`
-	ELSEIF            // `elseif`
-	ELSE              // `else`
-	FOR               // `for`
-	IN                // `in`
-	LOCAL             // `local`
-	FUNCTION          // `function`
-	RETURN            // `return`
-	BREAK             // `break`
-	NIL               // `nil`
+	DO                // `do` keyword
+	END               // `end` keyword
+	WHILE             // `while` keyword
+	REPEAT            // `repeat` keyword
+	UNTIL             // `until` keyword
+	IF                // `if` keyword
+	THEN              // `then` keyword
+	ELSEIF            // `elseif` keyword
+	ELSE              // `else` keyword
+	FOR               // `for` keyword
+	IN                // `in` keyword
+	LOCAL             // `local` keyword
+	FUNCTION          // `function` keyword
+	RETURN            // `return` keyword
+	BREAK             // `break` keyword
+	NIL               // `nil` keyword
 	bool_start        // [ BOOLEANS
-	FALSE             // `false`
-	TRUE              // `true`
+	FALSE             // `false` keyword / boolean
+	TRUE              // `true` keyword / boolean
 	bool_end          // BOOLEANS ]
 	binkey_start      // [ BINARY KEYWORDS
-	AND               // `and`
-	OR                // `or`
+	AND               // `and` keyword / binary operator
+	OR                // `or` keyword / binary operator
 	binkey_end        // BINARY KEYWORDS ]
 	key_end           // KEYWORDS ]
 	valid_end         // VALID ]
