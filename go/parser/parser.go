@@ -613,7 +613,7 @@ loop:
 			e := &ast.FieldExpr{}
 			e.Value = expr
 			e.DotToken = p.tokenNext()
-			e.Field = p.parseName()
+			e.Name = p.parseName()
 			expr = e
 		case token.COLON:
 			e := &ast.MethodExpr{}

@@ -173,7 +173,7 @@ func (e *FunctionExpr) IsValid() bool {
 func (e *FieldExpr) IsValid() bool {
 	return isv(e.Value) &&
 		ist(e.DotToken, token.DOT) &&
-		ist(e.Field.Token, token.NAME)
+		ist(e.Name.Token, token.NAME)
 }
 
 func (e *IndexExpr) IsValid() bool {

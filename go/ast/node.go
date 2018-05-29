@@ -84,7 +84,7 @@ func (s *FunctionExpr) FirstToken() *Token { return &s.FuncToken }
 func (s *FunctionExpr) LastToken() *Token  { return &s.EndToken }
 
 func (e *FieldExpr) FirstToken() *Token { return e.Value.FirstToken() }
-func (e *FieldExpr) LastToken() *Token  { return &e.Field.Token }
+func (e *FieldExpr) LastToken() *Token  { return &e.Name.Token }
 
 func (e *IndexExpr) FirstToken() *Token { return e.Value.FirstToken() }
 func (e *IndexExpr) LastToken() *Token  { return &e.RBrackToken }

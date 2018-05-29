@@ -190,7 +190,7 @@ func (e *FieldExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.Value)
 	c.writeTo(w, e.DotToken)
-	c.writeTo(w, e.Field)
+	c.writeTo(w, e.Name)
 	return c.finish()
 }
 

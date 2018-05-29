@@ -338,8 +338,8 @@ type FieldExpr struct {
 	Value Expr
 	// DotToken is the DOT token that separates the field.
 	DotToken Token
-	// Field is the name of the field.
-	Field Name
+	// Name is the name of the field.
+	Name Name
 }
 
 func (FieldExpr) exprNode() {}
