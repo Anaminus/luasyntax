@@ -1,3 +1,6 @@
+// The parser package implements a parser for Lua source files. Input may be
+// provided in a variety of forms, and the output is an abstract syntax tree
+// (AST) representing the Lua source.
 package parser
 
 import (
@@ -12,6 +15,7 @@ import (
 	"strconv"
 )
 
+// tokenstate holds information about the current token.
 type tokenstate struct {
 	off int
 	tok token.Type
@@ -19,6 +23,8 @@ type tokenstate struct {
 	pre []ast.Prefix
 }
 
+// parser holds the parser's state while processing a source file. It must be
+// initialized with init before using.
 type parser struct {
 	file    *token.File
 	err     error //scanner.Error
@@ -29,6 +35,8 @@ type parser struct {
 	look *tokenstate // Store state for single-token lookaheads.
 }
 
+// init prepares the parser to parse a source. The filename sets the name to
+// use for positional information. The src is the text to be parsed.
 func (p *parser) init(filename string, src []byte) {
 	p.file = token.NewFile(filename)
 	p.scanner.Init(p.file, src, func(pos token.Position, msg string) {
@@ -37,6 +45,7 @@ func (p *parser) init(filename string, src []byte) {
 	p.next()
 }
 
+// next advances to the next token.
 func (p *parser) next() {
 	if p.look != nil {
 		// Consume stored state.
@@ -48,15 +57,16 @@ func (p *parser) next() {
 	p.off, p.tok, p.lit = p.scanner.Scan()
 
 	p.pre = nil
-	// Skip over spaces and comments, accumulating them in p.pre.
+	// Skip over prefix tokens, accumulating them in p.pre.
 	for p.tok.IsPrefix() {
 		p.pre = append(p.pre, ast.Prefix{Type: p.tok, Bytes: p.lit})
 		p.off, p.tok, p.lit = p.scanner.Scan()
 	}
 }
 
-// Look at next token without consuming current token. The lookahead state is
-// stored in p.look, and is consumed on the next call to p.next().
+// lookahead looks at the next token without consuming current state. The
+// lookahead state is stored in p.look, and is consumed on the next call to
+// p.next().
 func (p *parser) lookahead() {
 	// Save current state.
 	prev := p.tokenstate
@@ -69,8 +79,11 @@ func (p *parser) lookahead() {
 	p.tokenstate = prev
 }
 
+// bailout is used when panicking to indicate an early termination.
 type bailout struct{}
 
+// errors stores the offset and message in p.err, then causes the parser to
+// terminate.
 func (p *parser) error(off int, msg string) {
 	p.err = scanner.Error{
 		Position: p.file.Position(off),
@@ -79,12 +92,14 @@ func (p *parser) error(off int, msg string) {
 	panic(bailout{})
 }
 
+// expect asserts that the current state is of the given type.
 func (p *parser) expect(tok token.Type) {
 	if p.tok != tok {
 		p.error(p.off, "'"+tok.String()+"' expected")
 	}
 }
 
+// token creates a token node from the current state.
 func (p *parser) token() ast.Token {
 	return ast.Token{
 		Type:   p.tok,
@@ -94,17 +109,22 @@ func (p *parser) token() ast.Token {
 	}
 }
 
+// tokenNext creates a token node from the current state, then advances to the
+// next token.
 func (p *parser) tokenNext() ast.Token {
 	tok := p.token()
 	p.next()
 	return tok
 }
 
+// expectToken asserts that the current state is of the given type, creates an
+// token node, then advances to the next token.
 func (p *parser) expectToken(t token.Type) ast.Token {
 	p.expect(t)
 	return p.tokenNext()
 }
 
+// isBlockFollow returns whether the current state ends a block.
 func (p *parser) isBlockFollow() bool {
 	switch p.tok {
 	case token.EOF,
@@ -117,6 +137,7 @@ func (p *parser) isBlockFollow() bool {
 	return false
 }
 
+// parseName creates a name node from the current state.
 func (p *parser) parseName() (name ast.Name) {
 	p.expect(token.NAME)
 	name = ast.Name{Token: p.token(), Value: string(p.lit)}
@@ -124,6 +145,7 @@ func (p *parser) parseName() (name ast.Name) {
 	return
 }
 
+// parseNumber creates a number node from the current state.
 func (p *parser) parseNumber() (num *ast.Number) {
 	var n float64
 	var err error
@@ -148,6 +170,7 @@ func (p *parser) parseNumber() (num *ast.Number) {
 	return
 }
 
+// parseQuotedString parses literal quoted string into actual text.
 func parseQuotedString(b []byte) string {
 	b = b[1 : len(b)-1]          // Trim quotes.
 	c := make([]byte, 0, len(b)) // Result will never be larger than source.
@@ -188,6 +211,7 @@ func parseQuotedString(b []byte) string {
 	return string(c)
 }
 
+// parseBlockString parses a literal long string into actual text.
 func parseBlockString(b []byte) string {
 	// Assumes string is wrapped in a `[==[]==]`-like block.
 	b = b[1:] // Trim first `[`
@@ -208,6 +232,7 @@ func parseBlockString(b []byte) string {
 	return string(b)
 }
 
+// parseString creates a string node from the current state.
 func (p *parser) parseString() (str *ast.String) {
 	switch p.tok {
 	case token.STRING:
@@ -221,6 +246,7 @@ func (p *parser) parseString() (str *ast.String) {
 	return
 }
 
+// parseSimpleExp creates a simple expression node from the current state.
 func (p *parser) parseSimpleExp() (exp ast.Exp) {
 	switch p.tok {
 	case token.NUMBERFLOAT, token.NUMBERHEX:
@@ -245,6 +271,7 @@ func (p *parser) parseSimpleExp() (exp ast.Exp) {
 	return exp
 }
 
+// parseSubexp recursively builds an expression chain.
 func (p *parser) parseSubexp(limit int) (exp ast.Exp) {
 	if p.tok.IsUnary() {
 		e := &ast.UnopExp{}
@@ -270,10 +297,12 @@ func (p *parser) parseSubexp(limit int) (exp ast.Exp) {
 	return exp
 }
 
+// parseExp begins parsing an expression chain.
 func (p *parser) parseExp() ast.Exp {
 	return p.parseSubexp(0)
 }
 
+// parseExpList creates a list of expressions.
 func (p *parser) parseExpList() *ast.ExpList {
 	list := &ast.ExpList{Exps: []ast.Exp{p.parseExp()}}
 	for p.tok == token.COMMA {
@@ -283,6 +312,7 @@ func (p *parser) parseExpList() *ast.ExpList {
 	return list
 }
 
+// parseBlockBody creates a block terminated by a specified token.
 func (p *parser) parseBlockBody(term token.Type) ast.Block {
 	block := p.parseBlock()
 	if p.tok != term {
@@ -291,6 +321,7 @@ func (p *parser) parseBlockBody(term token.Type) ast.Block {
 	return block
 }
 
+// parseDoStat creates a `do` statement node.
 func (p *parser) parseDoStat() ast.Stat {
 	stat := &ast.DoStat{}
 	stat.DoToken = p.expectToken(token.DO)
@@ -299,6 +330,7 @@ func (p *parser) parseDoStat() ast.Stat {
 	return stat
 }
 
+// parseWhileStat creates a `while` statement node.
 func (p *parser) parseWhileStat() ast.Stat {
 	stat := &ast.WhileStat{}
 	stat.WhileToken = p.expectToken(token.WHILE)
@@ -309,6 +341,7 @@ func (p *parser) parseWhileStat() ast.Stat {
 	return stat
 }
 
+// parseRepeatStat creates a `repeat` statement node.
 func (p *parser) parseRepeatStat() ast.Stat {
 	stat := &ast.RepeatStat{}
 	stat.RepeatToken = p.expectToken(token.REPEAT)
@@ -318,6 +351,7 @@ func (p *parser) parseRepeatStat() ast.Stat {
 	return stat
 }
 
+// parseIfStat creates an `if` statement node.
 func (p *parser) parseIfStat() ast.Stat {
 	stat := &ast.IfStat{}
 	stat.IfToken = p.expectToken(token.IF)
@@ -341,6 +375,7 @@ func (p *parser) parseIfStat() ast.Stat {
 	return stat
 }
 
+// parseIfStat creates a `for` statement node.
 func (p *parser) parseForStat() (stat ast.Stat) {
 	forToken := p.expectToken(token.FOR)
 	name := p.parseName()
@@ -382,11 +417,13 @@ func (p *parser) parseForStat() (stat ast.Stat) {
 }
 
 const (
-	funcExp uint8 = iota
-	funcLocal
-	funcStat
+	funcExp   uint8 = iota // `function...` expression (anonymous).
+	funcLocal              // `local function name...` statement.
+	funcStat               // `function name...` statement.
 )
 
+// parseFunction creates a node representing a function. The name of the
+// function is parsed depending on the given type.
 func (p *parser) parseFunction(typ uint8) (exp *ast.FunctionExp, names ast.FuncNameList) {
 	exp = &ast.FunctionExp{}
 	exp.FuncToken = p.expectToken(token.FUNCTION)
@@ -425,6 +462,7 @@ func (p *parser) parseFunction(typ uint8) (exp *ast.FunctionExp, names ast.FuncN
 	return exp, names
 }
 
+// parseLocalStat creates a `local` statement node.
 func (p *parser) parseLocalStat() ast.Stat {
 	localToken := p.expectToken(token.LOCAL)
 	if p.tok == token.FUNCTION {
@@ -449,6 +487,7 @@ func (p *parser) parseLocalStat() ast.Stat {
 	return stat
 }
 
+// parseFunctionStat creates a `function` statement node.
 func (p *parser) parseFunctionStat() ast.Stat {
 	exp, names := p.parseFunction(funcStat)
 	return &ast.FunctionStat{
@@ -457,6 +496,7 @@ func (p *parser) parseFunctionStat() ast.Stat {
 	}
 }
 
+// parseReturnStat creates a `return` statement node.
 func (p *parser) parseReturnStat() ast.Stat {
 	stat := &ast.ReturnStat{}
 	stat.ReturnToken = p.expectToken(token.RETURN)
@@ -467,12 +507,14 @@ func (p *parser) parseReturnStat() ast.Stat {
 	return stat
 }
 
+// parseBreakStat creates a `break` statement node.
 func (p *parser) parseBreakStat() ast.Stat {
 	stat := &ast.BreakStat{}
 	stat.BreakToken = p.expectToken(token.BREAK)
 	return stat
 }
 
+// parsePrefixExp creates an expression node that begins a primary expression.
 func (p *parser) parsePrefixExp() (exp ast.Exp) {
 	switch p.tok {
 	case token.LPAREN:
@@ -491,6 +533,7 @@ func (p *parser) parsePrefixExp() (exp ast.Exp) {
 	return exp
 }
 
+// parseTableCtor creates a table constructor node.
 func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 	ctor = &ast.TableCtor{}
 	ctor.LBraceToken = p.expectToken(token.LBRACE)
@@ -526,6 +569,7 @@ func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 	return ctor
 }
 
+// parseFuncArgs creates a node representing the arguments of a function call.
 func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 	switch p.tok {
 	case token.LPAREN:
@@ -558,6 +602,8 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 	return args
 }
 
+// parsePrimaryExp creates a primary expression node that begins an expression
+// chain.
 func (p *parser) parsePrimaryExp() (exp ast.Exp) {
 loop:
 	for exp = p.parsePrefixExp(); ; {
@@ -594,6 +640,7 @@ loop:
 	return exp
 }
 
+// parseExpStat creates an expression statement node.
 func (p *parser) parseExpStat() ast.Stat {
 	exp := p.parsePrimaryExp()
 	switch exp.(type) {
@@ -616,6 +663,8 @@ func (p *parser) parseExpStat() ast.Stat {
 	return stat
 }
 
+// parseStat creates a statement node. Returns the node, and whether the
+// statement is meant to be the last statement in the block.
 func (p *parser) parseStat() (stat ast.Stat, last bool) {
 	switch p.tok {
 	case token.DO:
@@ -640,6 +689,7 @@ func (p *parser) parseStat() (stat ast.Stat, last bool) {
 	return p.parseExpStat(), false
 }
 
+// parseBlock creates a block node.
 func (p *parser) parseBlock() (block ast.Block) {
 	for last := false; !last && !p.isBlockFollow(); {
 		var stat ast.Stat
@@ -654,6 +704,7 @@ func (p *parser) parseBlock() (block ast.Block) {
 	return
 }
 
+// parseFile creates a file node from the current source.
 func (p *parser) parseFile() *ast.File {
 	return &ast.File{
 		Name:     p.file.Name(),
@@ -662,6 +713,7 @@ func (p *parser) parseFile() *ast.File {
 	}
 }
 
+// readSource retrieves the bytes from several types of values.
 func readSource(filename string, src interface{}) ([]byte, error) {
 	if src != nil {
 		switch s := src.(type) {
@@ -685,6 +737,14 @@ func readSource(filename string, src interface{}) ([]byte, error) {
 	return ioutil.ReadFile(filename)
 }
 
+// ParseFile parses the source code of a single Lua file. It returns a root
+// ast.File node representing the parsed file, any any errors that may have
+// occurred while parsing.
+//
+// The src argument may be a string, []byte, *bytes.Buffer, or io.Reader. In
+// these cases, the filename is used only when recording positional
+// information. If src is nil, the source is read from the file specified by
+// filename.
 func ParseFile(filename string, src interface{}) (f *ast.File, err error) {
 	text, err := readSource(filename, src)
 	if err != nil {
