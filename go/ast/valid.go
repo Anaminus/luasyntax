@@ -109,7 +109,7 @@ func (e *ParenExpr) IsValid() bool {
 }
 
 func (e *VariableExpr) IsValid() bool {
-	return ist(e.NameToken.Token, token.NAME)
+	return ist(e.Name.Token, token.NAME)
 }
 
 func (e *TableCtor) IsValid() bool {

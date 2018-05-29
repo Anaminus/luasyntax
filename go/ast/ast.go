@@ -227,8 +227,8 @@ func (ParenExpr) exprNode() {}
 
 // VariableExpr represents a variable name used as an expression.
 type VariableExpr struct {
-	// NameToken is the token indicating the name of the variable.
-	NameToken Name
+	// Name is the token indicating the name of the variable.
+	Name Name
 }
 
 func (VariableExpr) exprNode() {}

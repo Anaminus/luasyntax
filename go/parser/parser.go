@@ -526,7 +526,7 @@ func (p *parser) parsePrefixExpr() (expr ast.Expr) {
 		expr = e
 	case token.NAME:
 		e := &ast.VariableExpr{}
-		e.NameToken = p.parseName()
+		e.Name = p.parseName()
 		expr = e
 	default:
 		p.error(p.off, "unexpected symbol")

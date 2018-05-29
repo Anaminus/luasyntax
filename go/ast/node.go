@@ -52,8 +52,8 @@ func (e *BinopExpr) LastToken() *Token  { return e.Right.LastToken() }
 func (e *ParenExpr) FirstToken() *Token { return &e.LParenToken }
 func (e *ParenExpr) LastToken() *Token  { return &e.RParenToken }
 
-func (e *VariableExpr) FirstToken() *Token { return &e.NameToken.Token }
-func (e *VariableExpr) LastToken() *Token  { return &e.NameToken.Token }
+func (e *VariableExpr) FirstToken() *Token { return &e.Name.Token }
+func (e *VariableExpr) LastToken() *Token  { return &e.Name.Token }
 
 func (e *TableCtor) FirstToken() *Token { return &e.LBraceToken }
 func (e *TableCtor) LastToken() *Token  { return &e.RBraceToken }

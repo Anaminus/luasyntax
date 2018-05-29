@@ -119,7 +119,7 @@ func (e *ParenExpr) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 func (e *VariableExpr) WriteTo(w io.Writer) (n int64, err error) {
-	return e.NameToken.WriteTo(w)
+	return e.Name.WriteTo(w)
 }
 
 func (e *TableCtor) WriteTo(w io.Writer) (n int64, err error) {
