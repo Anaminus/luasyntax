@@ -4,14 +4,14 @@ import (
 	"io"
 )
 
-// Copier handles multiple writes in sequence, then allows the accumulated
+// copier handles multiple writes in sequence, then allows the accumulated
 // result to be returned.
 type copier struct {
 	n   int64
 	err error
 }
 
-// WriteTo calls wt.WriteTo(w), and acculumates the results. Returns whether
+// writeTo calls wt.WriteTo(w), and acculumates the results. Returns whether
 // an error occurred.
 func (c *copier) writeTo(w io.Writer, wt io.WriterTo) bool {
 	if c.err != nil {
@@ -26,7 +26,7 @@ func (c *copier) writeTo(w io.Writer, wt io.WriterTo) bool {
 	return c.err == nil
 }
 
-// Write writes p to the Writer w, and accumulates the results. Returns
+// write writes p to the Writer w, and accumulates the results. Returns
 // whether can error occurred.
 func (c *copier) write(w io.Writer, p []byte) bool {
 	if c.err != nil {
@@ -41,7 +41,7 @@ func (c *copier) write(w io.Writer, p []byte) bool {
 	return c.err == nil
 }
 
-// Finish returns the accumulated results of every write.
+// finish returns the accumulated results of every write.
 func (c *copier) finish() (n int64, err error) {
 	return c.n, c.err
 }

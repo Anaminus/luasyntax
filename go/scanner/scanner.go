@@ -41,7 +41,7 @@ type Scanner struct {
 	ErrorCount int
 }
 
-// Next scans the next character, updating ch and offset, and tracking any new
+// next scans the next character, updating ch and offset, and tracking any new
 // lines encountered.
 func (s *Scanner) next() {
 	if s.rdOffset < len(s.src) {
@@ -78,7 +78,7 @@ func (s *Scanner) Init(file *token.File, src []byte, err ErrorHandler) {
 	s.next()
 }
 
-// Error calls the error handler, if available, and increments ErrorCount.
+// error calls the error handler, if available, and increments ErrorCount.
 func (s *Scanner) error(off int, msg string) {
 	if s.err != nil {
 		s.err(s.file.Position(off), msg)
@@ -86,14 +86,14 @@ func (s *Scanner) error(off int, msg string) {
 	s.ErrorCount++
 }
 
-// ScanSpace scans for a sequence of space characters.
+// scanSpace scans for a sequence of space characters.
 func (s *Scanner) scanSpace() {
 	for isSpace(s.ch) {
 		s.next()
 	}
 }
 
-// ScanName scans for a name of the form `[A-Za-z_][0-9A-Za-z_]*`.
+// scanName scans for a name of the form `[A-Za-z_][0-9A-Za-z_]*`.
 func (s *Scanner) scanName() []byte {
 	off := s.offset
 	for isLetter(s.ch) || isDigit(s.ch) {
@@ -102,7 +102,7 @@ func (s *Scanner) scanName() []byte {
 	return s.src[off:s.offset]
 }
 
-// ScanNumber scans for a number. The result may not evaluate to a valid
+// scanNumber scans for a number. The result may not evaluate to a valid
 // number.
 func (s *Scanner) scanNumber() token.Type {
 	off := s.offset
@@ -122,7 +122,7 @@ func (s *Scanner) scanNumber() token.Type {
 	return token.NUMBERFLOAT
 }
 
-// ScanString scans for a quoted string.
+// scanString scans for a quoted string.
 func (s *Scanner) scanString(off int) {
 	quote := s.ch
 	s.next()
@@ -170,7 +170,7 @@ func (s *Scanner) scanString(off int) {
 	s.next()
 }
 
-// ScanLongString scans for a long, bracket-enclosed string.
+// scanLongString scans for a long, bracket-enclosed string.
 func (s *Scanner) scanLongString(off int, t token.Type) {
 	eq := 0
 	for s.ch == '=' {
@@ -210,7 +210,7 @@ loop:
 	}
 }
 
-// ScanComment scans for a short or long comment.
+// scanComment scans for a short or long comment.
 func (s *Scanner) scanComment(off int) token.Type {
 	s.next()
 	if s.ch == '[' {

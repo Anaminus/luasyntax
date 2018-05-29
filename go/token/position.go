@@ -93,7 +93,7 @@ func (f *File) SetLinesForContent(content []byte) {
 	f.mutex.Unlock()
 }
 
-// SearchInts performs a binary search for the nearest position of an int
+// searchInts performs a binary search for the nearest position of an int
 // within a slice of ints.
 func searchInts(a []int, x int) int {
 	// return sort.Search(len(a), func(i int) bool { return a[i] > x }) - 1

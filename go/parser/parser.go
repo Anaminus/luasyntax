@@ -17,10 +17,10 @@ import (
 
 // tokenstate holds information about the current token.
 type tokenstate struct {
-	off int
-	tok token.Type
-	lit []byte
-	pre []ast.Prefix
+	off int          // Offset of token.
+	tok token.Type   // Type of token.
+	lit []byte       // Literal bytes represented by token.
+	pre []ast.Prefix // Accumulated prefix tokens.
 }
 
 // parser holds the parser's state while processing a source file. It must be
