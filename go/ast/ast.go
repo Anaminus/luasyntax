@@ -469,13 +469,13 @@ type AssignStmt struct {
 
 func (AssignStmt) stmtNode() {}
 
-// CallExprStmt represents a call expression as a statement.
-type CallExprStmt struct {
+// CallStmt represents a call expression as a statement.
+type CallStmt struct {
 	// Call is the call expression.
 	Call Call
 }
 
-func (CallExprStmt) stmtNode() {}
+func (CallStmt) stmtNode() {}
 
 // IfStmt represents a `if .. then .. end` statement.
 type IfStmt struct {

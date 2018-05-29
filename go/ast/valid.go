@@ -217,7 +217,7 @@ func (s *AssignStmt) IsValid() bool {
 	return ist(s.AssignToken, token.ASSIGN)
 }
 
-func (s *CallExprStmt) IsValid() bool {
+func (s *CallStmt) IsValid() bool {
 	return isv(s.Call)
 }
 

@@ -669,7 +669,7 @@ loop:
 func (p *parser) parseExprStmt() ast.Stmt {
 	expr := p.parsePrimaryExpr()
 	if call, ok := expr.(ast.Call); ok {
-		return &ast.CallExprStmt{Call: call}
+		return &ast.CallStmt{Call: call}
 	}
 
 	stmt := &ast.AssignStmt{Left: ast.ExprList{Items: []ast.Expr{expr}}}

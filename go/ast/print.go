@@ -268,7 +268,7 @@ func (s *AssignStmt) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (s *CallExprStmt) WriteTo(w io.Writer) (n int64, err error) {
+func (s *CallStmt) WriteTo(w io.Writer) (n int64, err error) {
 	return s.Call.WriteTo(w)
 }
 
