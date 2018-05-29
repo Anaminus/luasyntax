@@ -125,12 +125,12 @@ func (e *VariableExp) WriteTo(w io.Writer) (n int64, err error) {
 func (e *TableCtor) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.LBraceToken)
-	c.writeTo(w, &e.Fields)
+	c.writeTo(w, &e.EntryList)
 	c.writeTo(w, e.RBraceToken)
 	return c.finish()
 }
 
-func (l *FieldList) WriteTo(w io.Writer) (n int64, err error) {
+func (l *EntryList) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	for i, entry := range l.Entries {
 		if !c.writeTo(w, entry) {

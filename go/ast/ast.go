@@ -237,16 +237,16 @@ func (VariableExp) expNode() {}
 type TableCtor struct {
 	// LBraceToken is the LBRACE token that opens the table.
 	LBraceToken Token
-	// Fields a list of entries in the table.
-	Fields FieldList
+	// EntryList a list of entries in the table.
+	EntryList EntryList
 	// RBraceToken is the RBRACE token that closes the table.
 	RBraceToken Token
 }
 
 func (TableCtor) expNode() {}
 
-// FieldList represents a list of entries in a table.
-type FieldList struct {
+// EntryList represents a list of entries in a table.
+type EntryList struct {
 	// Entries contains each entry in the list.
 	Entries []Entry
 	// Seps contains each separator between entries, which will be either a
@@ -256,7 +256,7 @@ type FieldList struct {
 }
 
 // Len returns the combined length of Entries and Seps.
-func (l *FieldList) Len() int {
+func (l *EntryList) Len() int {
 	return len(l.Entries) + len(l.Seps)
 }
 

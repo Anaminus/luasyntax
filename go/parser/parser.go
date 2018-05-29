@@ -558,9 +558,9 @@ func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 			e.Value = p.parseExp()
 			entry = e
 		}
-		ctor.Fields.Entries = append(ctor.Fields.Entries, entry)
+		ctor.EntryList.Entries = append(ctor.EntryList.Entries, entry)
 		if p.tok == token.COMMA || p.tok == token.SEMICOLON {
-			ctor.Fields.Seps = append(ctor.Fields.Seps, p.tokenNext())
+			ctor.EntryList.Seps = append(ctor.EntryList.Seps, p.tokenNext())
 		} else {
 			break
 		}

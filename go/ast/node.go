@@ -58,13 +58,13 @@ func (e *VariableExp) LastToken() *Token  { return &e.NameToken.Token }
 func (e *TableCtor) FirstToken() *Token { return &e.LBraceToken }
 func (e *TableCtor) LastToken() *Token  { return &e.RBraceToken }
 
-func (l *FieldList) FirstToken() *Token {
+func (l *EntryList) FirstToken() *Token {
 	if len(l.Entries) == 0 {
 		return nil
 	}
 	return l.Entries[0].FirstToken()
 }
-func (l *FieldList) LastToken() *Token {
+func (l *EntryList) LastToken() *Token {
 	if len(l.Seps) == len(l.Entries) {
 		return &l.Seps[len(l.Seps)-1]
 	}

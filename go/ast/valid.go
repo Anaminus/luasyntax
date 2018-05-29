@@ -117,7 +117,7 @@ func (e *TableCtor) IsValid() bool {
 		ist(e.RBraceToken, token.RBRACE)
 }
 
-func (l *FieldList) IsValid() bool {
+func (l *EntryList) IsValid() bool {
 	if len(l.Seps) != len(l.Entries) && len(l.Seps) != len(l.Entries)-1 {
 		return false
 	}
