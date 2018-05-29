@@ -65,10 +65,10 @@ func (f *File) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (l *ExpList) WriteTo(w io.Writer) (n int64, err error) {
+func (l *ExprList) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	for i, exp := range l.Exps {
-		if !c.writeTo(w, exp) {
+	for i, expr := range l.Exprs {
+		if !c.writeTo(w, expr) {
 			break
 		}
 		if i < len(l.Seps) && l.Seps[i].Type.IsValid() {
@@ -95,14 +95,14 @@ func (l *NameList) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (e *UnopExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *UnopExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.UnopToken)
-	c.writeTo(w, e.Exp)
+	c.writeTo(w, e.Expr)
 	return c.finish()
 }
 
-func (e *BinopExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *BinopExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.Left)
 	c.writeTo(w, e.BinopToken)
@@ -110,15 +110,15 @@ func (e *BinopExp) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (e *ParenExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *ParenExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.LParenToken)
-	c.writeTo(w, e.Exp)
+	c.writeTo(w, e.Expr)
 	c.writeTo(w, e.RParenToken)
 	return c.finish()
 }
 
-func (e *VariableExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *VariableExpr) WriteTo(w io.Writer) (n int64, err error) {
 	return e.NameToken.WriteTo(w)
 }
 
@@ -148,10 +148,10 @@ func (l *EntryList) WriteTo(w io.Writer) (n int64, err error) {
 func (e *IndexEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.LBrackToken)
-	c.writeTo(w, e.KeyExp)
+	c.writeTo(w, e.KeyExpr)
 	c.writeTo(w, e.RBrackToken)
 	c.writeTo(w, e.AssignToken)
-	c.writeTo(w, e.ValueExp)
+	c.writeTo(w, e.ValueExpr)
 	return c.finish()
 }
 
@@ -167,7 +167,7 @@ func (e *ValueEntry) WriteTo(w io.Writer) (n int64, err error) {
 	return e.Value.WriteTo(w)
 }
 
-func (e *FunctionExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *FunctionExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.FuncToken)
 	c.writeTo(w, e.LParenToken)
@@ -186,35 +186,35 @@ func (e *FunctionExp) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
-func (e *FieldExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *FieldExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Exp)
+	c.writeTo(w, e.Expr)
 	c.writeTo(w, e.DotToken)
 	c.writeTo(w, e.Field)
 	return c.finish()
 }
 
-func (e *IndexExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *IndexExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Exp)
+	c.writeTo(w, e.Expr)
 	c.writeTo(w, e.LBrackToken)
 	c.writeTo(w, e.Index)
 	c.writeTo(w, e.RBrackToken)
 	return c.finish()
 }
 
-func (e *MethodExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *MethodExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Exp)
+	c.writeTo(w, e.Expr)
 	c.writeTo(w, e.ColonToken)
 	c.writeTo(w, e.Name)
 	c.writeTo(w, e.Args)
 	return c.finish()
 }
 
-func (e *CallExp) WriteTo(w io.Writer) (n int64, err error) {
+func (e *CallExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Exp)
+	c.writeTo(w, e.Expr)
 	c.writeTo(w, e.Args)
 	return c.finish()
 }
@@ -222,19 +222,19 @@ func (e *CallExp) WriteTo(w io.Writer) (n int64, err error) {
 func (ac *ArgsCall) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, ac.LParenToken)
-	if ac.ExpList != nil {
-		c.writeTo(w, ac.ExpList)
+	if ac.ExprList != nil {
+		c.writeTo(w, ac.ExprList)
 	}
 	c.writeTo(w, ac.RParenToken)
 	return c.finish()
 }
 
 func (tc *TableCall) WriteTo(w io.Writer) (n int64, err error) {
-	return tc.TableExp.WriteTo(w)
+	return tc.TableExpr.WriteTo(w)
 }
 
 func (sc *StringCall) WriteTo(w io.Writer) (n int64, err error) {
-	return sc.StringExp.WriteTo(w)
+	return sc.StringExpr.WriteTo(w)
 }
 
 func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
@@ -269,13 +269,13 @@ func (s *AssignStmt) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 func (s *CallExprStmt) WriteTo(w io.Writer) (n int64, err error) {
-	return s.Exp.WriteTo(w)
+	return s.Expr.WriteTo(w)
 }
 
 func (s *IfStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.IfToken)
-	c.writeTo(w, s.Exp)
+	c.writeTo(w, s.Expr)
 	c.writeTo(w, s.ThenToken)
 	c.writeTo(w, &s.Block)
 	for _, elif := range s.ElseIfClauses {
@@ -293,7 +293,7 @@ func (s *IfStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (cl *ElseIfClause) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, cl.ElseIfToken)
-	c.writeTo(w, cl.Exp)
+	c.writeTo(w, cl.Expr)
 	c.writeTo(w, cl.ThenToken)
 	c.writeTo(w, &cl.Block)
 	return c.finish()
@@ -311,12 +311,12 @@ func (s *NumericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.ForToken)
 	c.writeTo(w, s.Name)
 	c.writeTo(w, s.AssignToken)
-	c.writeTo(w, s.MinExp)
+	c.writeTo(w, s.MinExpr)
 	c.writeTo(w, s.MaxSepToken)
-	c.writeTo(w, s.MaxExp)
+	c.writeTo(w, s.MaxExpr)
 	if s.StepSepToken.Type.IsValid() {
 		c.writeTo(w, s.StepSepToken)
-		c.writeTo(w, s.StepExp)
+		c.writeTo(w, s.StepExpr)
 	}
 	c.writeTo(w, s.DoToken)
 	c.writeTo(w, &s.Block)
@@ -329,7 +329,7 @@ func (s *GenericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.ForToken)
 	c.writeTo(w, &s.NameList)
 	c.writeTo(w, s.InToken)
-	c.writeTo(w, &s.ExpList)
+	c.writeTo(w, &s.ExprList)
 	c.writeTo(w, s.DoToken)
 	c.writeTo(w, &s.Block)
 	c.writeTo(w, s.EndToken)
@@ -339,7 +339,7 @@ func (s *GenericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *WhileStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.WhileToken)
-	c.writeTo(w, s.Exp)
+	c.writeTo(w, s.Expr)
 	c.writeTo(w, s.DoToken)
 	c.writeTo(w, &s.Block)
 	c.writeTo(w, s.EndToken)
@@ -351,7 +351,7 @@ func (s *RepeatStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.RepeatToken)
 	c.writeTo(w, &s.Block)
 	c.writeTo(w, s.UntilToken)
-	c.writeTo(w, s.Exp)
+	c.writeTo(w, s.Expr)
 	return c.finish()
 }
 
@@ -361,7 +361,7 @@ func (s *LocalVarStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, &s.NameList)
 	if s.AssignToken.Type.IsValid() {
 		c.writeTo(w, s.AssignToken)
-		c.writeTo(w, s.ExpList)
+		c.writeTo(w, s.ExprList)
 	}
 	return c.finish()
 }
@@ -369,41 +369,41 @@ func (s *LocalVarStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *LocalFunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.LocalToken)
-	c.writeTo(w, s.Exp.FuncToken)
+	c.writeTo(w, s.Expr.FuncToken)
 	c.writeTo(w, s.Name)
-	c.writeTo(w, s.Exp.LParenToken)
-	if s.Exp.ParList != nil {
-		c.writeTo(w, s.Exp.ParList)
-		if s.Exp.VarArgSepToken.Type.IsValid() {
-			c.writeTo(w, s.Exp.VarArgSepToken)
-			c.writeTo(w, s.Exp.VarArgToken)
+	c.writeTo(w, s.Expr.LParenToken)
+	if s.Expr.ParList != nil {
+		c.writeTo(w, s.Expr.ParList)
+		if s.Expr.VarArgSepToken.Type.IsValid() {
+			c.writeTo(w, s.Expr.VarArgSepToken)
+			c.writeTo(w, s.Expr.VarArgToken)
 		}
-	} else if s.Exp.VarArgToken.Type.IsValid() {
-		c.writeTo(w, s.Exp.VarArgToken)
+	} else if s.Expr.VarArgToken.Type.IsValid() {
+		c.writeTo(w, s.Expr.VarArgToken)
 	}
-	c.writeTo(w, s.Exp.RParenToken)
-	c.writeTo(w, &s.Exp.Block)
-	c.writeTo(w, s.Exp.EndToken)
+	c.writeTo(w, s.Expr.RParenToken)
+	c.writeTo(w, &s.Expr.Block)
+	c.writeTo(w, s.Expr.EndToken)
 	return c.finish()
 }
 
 func (s *FunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, s.Exp.FuncToken)
+	c.writeTo(w, s.Expr.FuncToken)
 	c.writeTo(w, &s.Name)
-	c.writeTo(w, s.Exp.LParenToken)
-	if s.Exp.ParList != nil {
-		c.writeTo(w, s.Exp.ParList)
-		if s.Exp.VarArgSepToken.Type.IsValid() {
-			c.writeTo(w, s.Exp.VarArgSepToken)
-			c.writeTo(w, s.Exp.VarArgToken)
+	c.writeTo(w, s.Expr.LParenToken)
+	if s.Expr.ParList != nil {
+		c.writeTo(w, s.Expr.ParList)
+		if s.Expr.VarArgSepToken.Type.IsValid() {
+			c.writeTo(w, s.Expr.VarArgSepToken)
+			c.writeTo(w, s.Expr.VarArgToken)
 		}
-	} else if s.Exp.VarArgToken.Type.IsValid() {
-		c.writeTo(w, s.Exp.VarArgToken)
+	} else if s.Expr.VarArgToken.Type.IsValid() {
+		c.writeTo(w, s.Expr.VarArgToken)
 	}
-	c.writeTo(w, s.Exp.RParenToken)
-	c.writeTo(w, &s.Exp.Block)
-	c.writeTo(w, s.Exp.EndToken)
+	c.writeTo(w, s.Expr.RParenToken)
+	c.writeTo(w, &s.Expr.Block)
+	c.writeTo(w, s.Expr.EndToken)
 	return c.finish()
 }
 
@@ -429,8 +429,8 @@ func (s *BreakStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *ReturnStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.ReturnToken)
-	if s.ExpList != nil {
-		c.writeTo(w, s.ExpList)
+	if s.ExprList != nil {
+		c.writeTo(w, s.ExprList)
 	}
 	return c.finish()
 }

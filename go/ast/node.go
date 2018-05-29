@@ -19,8 +19,8 @@ func (b *Block) LastToken() *Token {
 	return b.Stmts[len(b.Stmts)-1].LastToken()
 }
 
-func (l *ExpList) FirstToken() *Token { return l.Exps[0].FirstToken() }
-func (l *ExpList) LastToken() *Token  { return l.Exps[len(l.Exps)-1].LastToken() }
+func (l *ExprList) FirstToken() *Token { return l.Exprs[0].FirstToken() }
+func (l *ExprList) LastToken() *Token  { return l.Exprs[len(l.Exprs)-1].LastToken() }
 
 func (e *Name) FirstToken() *Token { return &e.Token }
 func (e *Name) LastToken() *Token  { return &e.Token }
@@ -43,17 +43,17 @@ func (e *Bool) LastToken() *Token  { return &e.Token }
 func (e *VarArg) FirstToken() *Token { return &e.Token }
 func (e *VarArg) LastToken() *Token  { return &e.Token }
 
-func (e *UnopExp) FirstToken() *Token { return &e.UnopToken }
-func (e *UnopExp) LastToken() *Token  { return e.Exp.LastToken() }
+func (e *UnopExpr) FirstToken() *Token { return &e.UnopToken }
+func (e *UnopExpr) LastToken() *Token  { return e.Expr.LastToken() }
 
-func (e *BinopExp) FirstToken() *Token { return e.Left.FirstToken() }
-func (e *BinopExp) LastToken() *Token  { return e.Right.LastToken() }
+func (e *BinopExpr) FirstToken() *Token { return e.Left.FirstToken() }
+func (e *BinopExpr) LastToken() *Token  { return e.Right.LastToken() }
 
-func (e *ParenExp) FirstToken() *Token { return &e.LParenToken }
-func (e *ParenExp) LastToken() *Token  { return &e.RParenToken }
+func (e *ParenExpr) FirstToken() *Token { return &e.LParenToken }
+func (e *ParenExpr) LastToken() *Token  { return &e.RParenToken }
 
-func (e *VariableExp) FirstToken() *Token { return &e.NameToken.Token }
-func (e *VariableExp) LastToken() *Token  { return &e.NameToken.Token }
+func (e *VariableExpr) FirstToken() *Token { return &e.NameToken.Token }
+func (e *VariableExpr) LastToken() *Token  { return &e.NameToken.Token }
 
 func (e *TableCtor) FirstToken() *Token { return &e.LBraceToken }
 func (e *TableCtor) LastToken() *Token  { return &e.RBraceToken }
@@ -72,7 +72,7 @@ func (l *EntryList) LastToken() *Token {
 }
 
 func (e *IndexEntry) FirstToken() *Token { return &e.LBrackToken }
-func (e *IndexEntry) LastToken() *Token  { return e.ValueExp.LastToken() }
+func (e *IndexEntry) LastToken() *Token  { return e.ValueExpr.LastToken() }
 
 func (e *FieldEntry) FirstToken() *Token { return &e.Name.Token }
 func (e *FieldEntry) LastToken() *Token  { return e.Value.LastToken() }
@@ -80,29 +80,29 @@ func (e *FieldEntry) LastToken() *Token  { return e.Value.LastToken() }
 func (e *ValueEntry) FirstToken() *Token { return e.Value.FirstToken() }
 func (e *ValueEntry) LastToken() *Token  { return e.Value.LastToken() }
 
-func (s *FunctionExp) FirstToken() *Token { return &s.FuncToken }
-func (s *FunctionExp) LastToken() *Token  { return &s.EndToken }
+func (s *FunctionExpr) FirstToken() *Token { return &s.FuncToken }
+func (s *FunctionExpr) LastToken() *Token  { return &s.EndToken }
 
-func (e *FieldExp) FirstToken() *Token { return e.Exp.FirstToken() }
-func (e *FieldExp) LastToken() *Token  { return &e.Field.Token }
+func (e *FieldExpr) FirstToken() *Token { return e.Expr.FirstToken() }
+func (e *FieldExpr) LastToken() *Token  { return &e.Field.Token }
 
-func (e *IndexExp) FirstToken() *Token { return e.Exp.FirstToken() }
-func (e *IndexExp) LastToken() *Token  { return &e.RBrackToken }
+func (e *IndexExpr) FirstToken() *Token { return e.Expr.FirstToken() }
+func (e *IndexExpr) LastToken() *Token  { return &e.RBrackToken }
 
-func (e *MethodExp) FirstToken() *Token { return e.Exp.FirstToken() }
-func (e *MethodExp) LastToken() *Token  { return e.Args.LastToken() }
+func (e *MethodExpr) FirstToken() *Token { return e.Expr.FirstToken() }
+func (e *MethodExpr) LastToken() *Token  { return e.Args.LastToken() }
 
-func (e *CallExp) FirstToken() *Token { return e.Exp.FirstToken() }
-func (e *CallExp) LastToken() *Token  { return e.Args.LastToken() }
+func (e *CallExpr) FirstToken() *Token { return e.Expr.FirstToken() }
+func (e *CallExpr) LastToken() *Token  { return e.Args.LastToken() }
 
 func (c *ArgsCall) FirstToken() *Token { return &c.LParenToken }
 func (c *ArgsCall) LastToken() *Token  { return &c.RParenToken }
 
-func (c *TableCall) FirstToken() *Token { return c.TableExp.FirstToken() }
-func (c *TableCall) LastToken() *Token  { return c.TableExp.LastToken() }
+func (c *TableCall) FirstToken() *Token { return c.TableExpr.FirstToken() }
+func (c *TableCall) LastToken() *Token  { return c.TableExpr.LastToken() }
 
-func (c *StringCall) FirstToken() *Token { return &c.StringExp.Token }
-func (c *StringCall) LastToken() *Token  { return &c.StringExp.Token }
+func (c *StringCall) FirstToken() *Token { return &c.StringExpr.Token }
+func (c *StringCall) LastToken() *Token  { return &c.StringExpr.Token }
 
 func (s *DoStmt) FirstToken() *Token { return &s.DoToken }
 func (s *DoStmt) LastToken() *Token  { return &s.EndToken }
@@ -110,8 +110,8 @@ func (s *DoStmt) LastToken() *Token  { return &s.EndToken }
 func (s *AssignStmt) FirstToken() *Token { return s.Left.FirstToken() }
 func (s *AssignStmt) LastToken() *Token  { return s.Right.LastToken() }
 
-func (s *CallExprStmt) FirstToken() *Token { return s.Exp.FirstToken() }
-func (s *CallExprStmt) LastToken() *Token  { return s.Exp.LastToken() }
+func (s *CallExprStmt) FirstToken() *Token { return s.Expr.FirstToken() }
+func (s *CallExprStmt) LastToken() *Token  { return s.Expr.LastToken() }
 
 func (s *IfStmt) FirstToken() *Token { return &s.IfToken }
 func (s *IfStmt) LastToken() *Token  { return &s.EndToken }
@@ -132,29 +132,29 @@ func (s *WhileStmt) FirstToken() *Token { return &s.WhileToken }
 func (s *WhileStmt) LastToken() *Token  { return &s.EndToken }
 
 func (s *RepeatStmt) FirstToken() *Token { return &s.RepeatToken }
-func (s *RepeatStmt) LastToken() *Token  { return s.Exp.LastToken() }
+func (s *RepeatStmt) LastToken() *Token  { return s.Expr.LastToken() }
 
 func (s *LocalVarStmt) FirstToken() *Token { return &s.LocalToken }
 func (s *LocalVarStmt) LastToken() *Token {
 	if !s.AssignToken.Type.IsValid() {
 		return s.NameList.LastToken()
 	}
-	return s.ExpList.LastToken()
+	return s.ExprList.LastToken()
 }
 
 func (s *LocalFunctionStmt) FirstToken() *Token { return &s.LocalToken }
-func (s *LocalFunctionStmt) LastToken() *Token  { return s.Exp.LastToken() }
+func (s *LocalFunctionStmt) LastToken() *Token  { return s.Expr.LastToken() }
 
-func (s *FunctionStmt) FirstToken() *Token { return s.Exp.FirstToken() }
-func (s *FunctionStmt) LastToken() *Token  { return s.Exp.LastToken() }
+func (s *FunctionStmt) FirstToken() *Token { return s.Expr.FirstToken() }
+func (s *FunctionStmt) LastToken() *Token  { return s.Expr.LastToken() }
 
 func (s *BreakStmt) FirstToken() *Token { return &s.BreakToken }
 func (s *BreakStmt) LastToken() *Token  { return &s.BreakToken }
 
 func (s *ReturnStmt) FirstToken() *Token { return &s.ReturnToken }
 func (s *ReturnStmt) LastToken() *Token {
-	if s.ExpList.Len() == 0 {
+	if s.ExprList.Len() == 0 {
 		return &s.ReturnToken
 	}
-	return s.ExpList.LastToken()
+	return s.ExprList.LastToken()
 }

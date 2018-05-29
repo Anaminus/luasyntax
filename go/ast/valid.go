@@ -33,12 +33,12 @@ func (b *Block) IsValid() bool {
 	return true
 }
 
-func (l *ExpList) IsValid() bool {
-	if len(l.Exps) == 0 || len(l.Seps) != len(l.Exps)-1 {
+func (l *ExprList) IsValid() bool {
+	if len(l.Exprs) == 0 || len(l.Seps) != len(l.Exprs)-1 {
 		return false
 	}
-	for _, exp := range l.Exps {
-		if !isv(exp) {
+	for _, expr := range l.Exprs {
+		if !isv(expr) {
 			return false
 		}
 	}
@@ -91,24 +91,24 @@ func (e *VarArg) IsValid() bool {
 	return ist(e.Token, token.VARARG)
 }
 
-func (e *UnopExp) IsValid() bool {
+func (e *UnopExpr) IsValid() bool {
 	return e.UnopToken.Type.IsUnary() &&
-		isv(e.Exp)
+		isv(e.Expr)
 }
 
-func (e *BinopExp) IsValid() bool {
+func (e *BinopExpr) IsValid() bool {
 	return isv(e.Left) &&
 		e.BinopToken.Type.IsBinary() &&
 		isv(e.Right)
 }
 
-func (e *ParenExp) IsValid() bool {
+func (e *ParenExpr) IsValid() bool {
 	return ist(e.LParenToken, token.LPAREN) &&
-		isv(e.Exp) &&
+		isv(e.Expr) &&
 		ist(e.RParenToken, token.RPAREN)
 }
 
-func (e *VariableExp) IsValid() bool {
+func (e *VariableExpr) IsValid() bool {
 	return ist(e.NameToken.Token, token.NAME)
 }
 
@@ -136,10 +136,10 @@ func (l *EntryList) IsValid() bool {
 
 func (e *IndexEntry) IsValid() bool {
 	return ist(e.LBrackToken, token.LBRACK) &&
-		isv(e.KeyExp) &&
+		isv(e.KeyExpr) &&
 		ist(e.RBrackToken, token.RBRACK) &&
 		ist(e.AssignToken, token.ASSIGN) &&
-		isv(e.ValueExp)
+		isv(e.ValueExpr)
 }
 
 func (e *FieldEntry) IsValid() bool {
@@ -152,7 +152,7 @@ func (e *ValueEntry) IsValid() bool {
 	return isv(e.Value)
 }
 
-func (e *FunctionExp) IsValid() bool {
+func (e *FunctionExpr) IsValid() bool {
 	if !(ist(e.FuncToken, token.FUNCTION) &&
 		ist(e.LParenToken, token.LPAREN) &&
 		ist(e.RParenToken, token.RPAREN) &&
@@ -170,28 +170,28 @@ func (e *FunctionExp) IsValid() bool {
 	return false
 }
 
-func (e *FieldExp) IsValid() bool {
-	return isv(e.Exp) &&
+func (e *FieldExpr) IsValid() bool {
+	return isv(e.Expr) &&
 		ist(e.DotToken, token.DOT) &&
 		ist(e.Field.Token, token.NAME)
 }
 
-func (e *IndexExp) IsValid() bool {
-	return isv(e.Exp) &&
+func (e *IndexExpr) IsValid() bool {
+	return isv(e.Expr) &&
 		ist(e.LBrackToken, token.LBRACK) &&
 		isv(e.Index) &&
 		ist(e.RBrackToken, token.RBRACK)
 }
 
-func (e *MethodExp) IsValid() bool {
-	return isv(e.Exp) &&
+func (e *MethodExpr) IsValid() bool {
+	return isv(e.Expr) &&
 		ist(e.ColonToken, token.COLON) &&
 		ist(e.Name.Token, token.NAME) &&
 		isv(e.Args)
 }
 
-func (e *CallExp) IsValid() bool {
-	return isv(e.Exp) &&
+func (e *CallExpr) IsValid() bool {
+	return isv(e.Expr) &&
 		isv(e.Args)
 }
 
@@ -205,7 +205,7 @@ func (c *TableCall) IsValid() bool {
 }
 
 func (c *StringCall) IsValid() bool {
-	return c.StringExp.Type.IsString()
+	return c.StringExpr.Type.IsString()
 }
 
 func (s *DoStmt) IsValid() bool {
@@ -218,19 +218,19 @@ func (s *AssignStmt) IsValid() bool {
 }
 
 func (s *CallExprStmt) IsValid() bool {
-	return isv(s.Exp)
+	return isv(s.Expr)
 }
 
 func (s *IfStmt) IsValid() bool {
 	return ist(s.IfToken, token.IF) &&
-		isv(s.Exp) &&
+		isv(s.Expr) &&
 		ist(s.ThenToken, token.THEN) &&
 		ist(s.EndToken, token.END)
 }
 
 func (c *ElseIfClause) IsValid() bool {
 	return ist(c.ElseIfToken, token.ELSEIF) &&
-		isv(c.Exp) &&
+		isv(c.Expr) &&
 		ist(c.ThenToken, token.THEN)
 }
 
@@ -242,18 +242,18 @@ func (s *NumericForStmt) IsValid() bool {
 	if !(ist(s.ForToken, token.FOR) &&
 		ist(s.Name.Token, token.NAME) &&
 		ist(s.AssignToken, token.ASSIGN) &&
-		isv(s.MinExp) &&
+		isv(s.MinExpr) &&
 		ist(s.MaxSepToken, token.COMMA) &&
-		isv(s.MaxExp) &&
+		isv(s.MaxExpr) &&
 		ist2(s.StepSepToken, token.COMMA, token.INVALID) &&
 		ist(s.DoToken, token.DO) &&
 		ist(s.EndToken, token.END)) {
 		return false
 	}
 	if ist(s.StepSepToken, token.COMMA) {
-		return isv(s.StepExp)
+		return isv(s.StepExpr)
 	} else if ist(s.StepSepToken, token.INVALID) {
-		return !isv(s.StepExp)
+		return !isv(s.StepExpr)
 	}
 	return false
 }
@@ -267,7 +267,7 @@ func (s *GenericForStmt) IsValid() bool {
 
 func (s *WhileStmt) IsValid() bool {
 	return ist(s.WhileToken, token.WHILE) &&
-		isv(s.Exp) &&
+		isv(s.Expr) &&
 		ist(s.DoToken, token.DO) &&
 		ist(s.EndToken, token.END)
 }
@@ -275,7 +275,7 @@ func (s *WhileStmt) IsValid() bool {
 func (s *RepeatStmt) IsValid() bool {
 	return ist(s.RepeatToken, token.REPEAT) &&
 		ist(s.UntilToken, token.UNTIL) &&
-		isv(s.Exp)
+		isv(s.Expr)
 }
 
 func (s *LocalVarStmt) IsValid() bool {
@@ -283,9 +283,9 @@ func (s *LocalVarStmt) IsValid() bool {
 		return false
 	}
 	if ist(s.AssignToken, token.ASSIGN) {
-		return s.ExpList != nil
+		return s.ExprList != nil
 	} else if ist(s.AssignToken, token.INVALID) {
-		return s.ExpList == nil
+		return s.ExprList == nil
 	}
 	return false
 }

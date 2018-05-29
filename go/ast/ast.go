@@ -101,24 +101,24 @@ func (b *Block) Len() int {
 	return len(b.Stmts) + len(b.Seps)
 }
 
-// Exp is the interface that all Lua expressions implement.
-type Exp interface {
+// Expr is the interface that all Lua expressions implement.
+type Expr interface {
 	Node
-	expNode()
+	exprNode()
 }
 
-// ExpList represents a list of one or more Lua expressions.
-type ExpList struct {
-	// Exps contains each expression in the list.
-	Exps []Exp
+// ExprList represents a list of one or more Lua expressions.
+type ExprList struct {
+	// Exprs contains each expression in the list.
+	Exprs []Expr
 	// Seps contains each COMMA between expressions. The length of Seps is one
-	// less than the length of Exps.
+	// less than the length of Exprs.
 	Seps []Token
 }
 
-// Len returns the combined length of Exps and Seps.
-func (l *ExpList) Len() int {
-	return len(l.Exps) + len(l.Seps)
+// Len returns the combined length of Exprs and Seps.
+func (l *ExprList) Len() int {
+	return len(l.Exprs) + len(l.Seps)
 }
 
 // Name represents a Lua name expression.
@@ -129,7 +129,7 @@ type Name struct {
 	Value string
 }
 
-func (Name) expNode() {}
+func (Name) exprNode() {}
 
 // NameList represents a list of one or more name expressions.
 type NameList struct {
@@ -153,7 +153,7 @@ type Number struct {
 	Value float64
 }
 
-func (Number) expNode() {}
+func (Number) exprNode() {}
 
 // String represents a Lua string expression.
 type String struct {
@@ -163,7 +163,7 @@ type String struct {
 	Value string
 }
 
-func (String) expNode() {}
+func (String) exprNode() {}
 
 // Nil represents a Lua nil expression.
 type Nil struct {
@@ -171,7 +171,7 @@ type Nil struct {
 	Token
 }
 
-func (Nil) expNode() {}
+func (Nil) exprNode() {}
 
 // Bool represents a Lua boolean expression.
 type Bool struct {
@@ -181,7 +181,7 @@ type Bool struct {
 	Value bool
 }
 
-func (Bool) expNode() {}
+func (Bool) exprNode() {}
 
 // VarArg represents a Lua variable argument expression.
 type VarArg struct {
@@ -189,49 +189,49 @@ type VarArg struct {
 	Token
 }
 
-func (VarArg) expNode() {}
+func (VarArg) exprNode() {}
 
-// UnopExp represents a unary operation.
-type UnopExp struct {
+// UnopExpr represents a unary operation.
+type UnopExpr struct {
 	// UnopToken is the unary operator token.
 	UnopToken Token
-	// Exp is the expression being operated on.
-	Exp Exp
+	// Expr is the expression being operated on.
+	Expr Expr
 }
 
-func (UnopExp) expNode() {}
+func (UnopExpr) exprNode() {}
 
-// BinopExp represents a binary operation.
-type BinopExp struct {
+// BinopExpr represents a binary operation.
+type BinopExpr struct {
 	// Left is the left side of the operation.
-	Left Exp
+	Left Expr
 	// BinopToken is the binary operator token.
 	BinopToken Token
 	// Right is the right side of the binary operation.
-	Right Exp
+	Right Expr
 }
 
-func (BinopExp) expNode() {}
+func (BinopExpr) exprNode() {}
 
-// ParenExp represents an expression enclosed in parentheses.
-type ParenExp struct {
+// ParenExpr represents an expression enclosed in parentheses.
+type ParenExpr struct {
 	// LParenToken is the LPAREN token that opens the expression.
 	LParenToken Token
-	// Exp is the enclosed expression.
-	Exp Exp
+	// Expr is the enclosed expression.
+	Expr Expr
 	// RParenToken is the RPAREN token that closes the expression.
 	RParenToken Token
 }
 
-func (ParenExp) expNode() {}
+func (ParenExpr) exprNode() {}
 
-// VariableExp represents a variable name used as an expression.
-type VariableExp struct {
+// VariableExpr represents a variable name used as an expression.
+type VariableExpr struct {
 	// NameToken is the token indicating the name of the variable.
 	NameToken Name
 }
 
-func (VariableExp) expNode() {}
+func (VariableExpr) exprNode() {}
 
 // TableCtor represents a table constructor expression.
 type TableCtor struct {
@@ -243,7 +243,7 @@ type TableCtor struct {
 	RBraceToken Token
 }
 
-func (TableCtor) expNode() {}
+func (TableCtor) exprNode() {}
 
 // EntryList represents a list of entries in a table.
 type EntryList struct {
@@ -270,26 +270,27 @@ type Entry interface {
 type IndexEntry struct {
 	// LBrackToken is the LBRACK token that begins the entry key.
 	LBrackToken Token
-	// KeyExp is the expression evaluating to the key of the entry.
-	KeyExp Exp
+	// KeyExpr is the expression evaluating to the key of the entry.
+	KeyExpr Expr
 	// RBrackToken is the RBRACK token that ends the entry key.
 	RBrackToken Token
 	// AssignToken is the ASSIGN token that begins the entry value.
 	AssignToken Token
-	// ValueExp is the expression evaluating to the value of the entry.
-	ValueExp Exp
+	// ValueExpr is the expression evaluating to the value of the entry.
+	ValueExpr Expr
 }
 
 func (IndexEntry) entryNode() {}
 
-// FieldEntry represents a table entry defining a value with a field as the key.
+// FieldEntry represents a table entry defining a value with a field as the
+// key.
 type FieldEntry struct {
 	// Name is the name of the field, evaluating to the key of the entry.
 	Name Name
 	// AssignToken is the ASSIGN token that begins the entry value.
 	AssignToken Token
 	// Value is the expression evaluating to the value of the entry.
-	Value Exp
+	Value Expr
 }
 
 func (FieldEntry) entryNode() {}
@@ -297,15 +298,15 @@ func (FieldEntry) entryNode() {}
 // ValueEntry represents a table entry defining a value with a numerical key.
 type ValueEntry struct {
 	// Value is the expression evaluating to the value of the entry.
-	Value Exp
+	Value Expr
 }
 
 func (ValueEntry) entryNode() {}
 
-// FunctionExp represents a Lua function, primarily an anonymous function
+// FunctionExpr represents a Lua function, primarily an anonymous function
 // expression. It is also used by other nodes for other representations of
 // functions.
-type FunctionExp struct {
+type FunctionExpr struct {
 	// FuncToken is the FUNCTION token that begins the function.
 	FuncToken Token
 	// LParenToken is the LPAREN token that opens the function's parameters.
@@ -328,41 +329,41 @@ type FunctionExp struct {
 	EndToken Token
 }
 
-func (FunctionExp) expNode() {}
+func (FunctionExpr) exprNode() {}
 
-// FieldExp represents an expression that indexes a value from another
+// FieldExpr represents an expression that indexes a value from another
 // expression, by field.
-type FieldExp struct {
-	// Exp is the expression being operated on.
-	Exp Exp
+type FieldExpr struct {
+	// Expr is the expression being operated on.
+	Expr Expr
 	// DotToken is the DOT token that separates the field.
 	DotToken Token
 	// Field is the name of the field.
 	Field Name
 }
 
-func (FieldExp) expNode() {}
+func (FieldExpr) exprNode() {}
 
-// IndexExp represents an expression that indexes a value from another
+// IndexExpr represents an expression that indexes a value from another
 // expression, by key.
-type IndexExp struct {
-	// Exp is the expression being operated on.
-	Exp Exp
+type IndexExpr struct {
+	// Expr is the expression being operated on.
+	Expr Expr
 	// LBrackToken is the LBRACK token opening the key expression.
 	LBrackToken Token
 	// Index is the expression evaluating to the key.
-	Index Exp
+	Index Expr
 	// RBrackToken is the RBRACK token closing the key expression.
 	RBrackToken Token
 }
 
-func (IndexExp) expNode() {}
+func (IndexExpr) exprNode() {}
 
-// MethodExp represents an expression that gets and calls a method on another
+// MethodExpr represents an expression that gets and calls a method on another
 // expression.
-type MethodExp struct {
-	// Exp is the expression being operated on.
-	Exp Exp
+type MethodExpr struct {
+	// Expr is the expression being operated on.
+	Expr Expr
 	// ColonToken is the COLON token that separates the method name.
 	ColonToken Token
 	// Name is the name of the method.
@@ -371,18 +372,18 @@ type MethodExp struct {
 	Args CallArgs
 }
 
-func (MethodExp) expNode() {}
+func (MethodExpr) exprNode() {}
 
-// CallExp represents an expression that calls another expression as a
+// CallExpr represents an expression that calls another expression as a
 // function.
-type CallExp struct {
-	// Exp is the expression being operated on.
-	Exp Exp
+type CallExpr struct {
+	// Expr is the expression being operated on.
+	Expr Expr
 	// Args holds the arguments of the function call.
 	Args CallArgs
 }
 
-func (CallExp) expNode() {}
+func (CallExpr) exprNode() {}
 
 // CallArgs is the interface that all function call argument nodes implement.
 type CallArgs interface {
@@ -395,9 +396,9 @@ type CallArgs interface {
 type ArgsCall struct {
 	// LParenToken is the LPAREN token that opens the argument list.
 	LParenToken Token
-	// ExpList contains each argument of the call. It is nil if the call has
+	// ExprList contains each argument of the call. It is nil if the call has
 	// no arguments.
-	ExpList *ExpList
+	ExprList *ExprList
 	// RParenToken is the RPAREN token that closes the argument list.
 	RParenToken Token
 }
@@ -407,8 +408,8 @@ func (ArgsCall) callArgsNode() {}
 // TableCall represents the arguments of a function call, in the form of a
 // single table constructor.
 type TableCall struct {
-	// TableExp is the table constructor expression.
-	TableExp TableCtor
+	// TableExpr is the table constructor expression.
+	TableExpr TableCtor
 }
 
 func (TableCall) callArgsNode() {}
@@ -416,8 +417,8 @@ func (TableCall) callArgsNode() {}
 // StringCall represents the arguments of a function call, in the form of a
 // single string expression.
 type StringCall struct {
-	// StringExp is the string expression.
-	StringExp String
+	// StringExpr is the string expression.
+	StringExpr String
 }
 
 func (StringCall) callArgsNode() {}
@@ -445,20 +446,20 @@ func (DoStmt) stmtNode() {}
 type AssignStmt struct {
 	// Left is the left side of the assignment, comprised of one or more
 	// expressions.
-	Left ExpList
+	Left ExprList
 	// AssignToken is the ASSIGN token separating the values.
 	AssignToken Token
 	// Right is the right side of the assignment, comprised of one or more
 	// expressions.
-	Right ExpList
+	Right ExprList
 }
 
 func (AssignStmt) stmtNode() {}
 
 // CallExprStmt represents a call expression as a statement.
 type CallExprStmt struct {
-	// Exp is the call expression.
-	Exp Exp
+	// Expr is the call expression.
+	Expr Expr
 }
 
 func (CallExprStmt) stmtNode() {}
@@ -467,8 +468,8 @@ func (CallExprStmt) stmtNode() {}
 type IfStmt struct {
 	// IfToken is the IF token that begins the if statement.
 	IfToken Token
-	// Exp is the condition of the if statement.
-	Exp Exp
+	// Expr is the condition of the if statement.
+	Expr Expr
 	// ThenToken is the THEN token that begins the body of the if statement.
 	ThenToken Token
 	// Block is the body of the if statement.
@@ -485,12 +486,13 @@ type IfStmt struct {
 
 func (IfStmt) stmtNode() {}
 
-// ElseIfClause represents an `elseif .. then` clause within an `if` statement.
+// ElseIfClause represents an `elseif .. then` clause within an `if`
+// statement.
 type ElseIfClause struct {
 	// ElseIfToken is th ELSEIF token that begins the elseif clause.
 	ElseIfToken Token
-	// Exp is the condition of the elseif clause.
-	Exp Exp
+	// Expr is the condition of the elseif clause.
+	Expr Expr
 	// ThenToken is the THEN token that begins the body of the elseif clause.
 	ThenToken Token
 	// Block is the body of the elseif clause.
@@ -513,20 +515,22 @@ type NumericForStmt struct {
 	Name Name
 	// AssignToken is the ASSIGN token that begins the control expressions.
 	AssignToken Token
-	// MinExp is the expression indicating the lower bound of the control variable.
-	MinExp Exp
+	// MinExpr is the expression indicating the lower bound of the control
+	// variable.
+	MinExpr Expr
 	// MaxSepToken is the COMMA token that separates the lower and upper
 	// bound.
 	MaxSepToken Token
-	// MaxExp is the expression indicating the upper bound of the control variable.
-	MaxExp Exp
+	// MaxExpr is the expression indicating the upper bound of the control
+	// variable.
+	MaxExpr Expr
 	// StepSepToken is the separator token between the upper bound and the
 	// step expressions. It is a COMMA if the step is present, and INVALID
 	// otherwise.
 	StepSepToken Token
-	// StepExp is the expression indicating the step of the control variable.
+	// StepExpr is the expression indicating the step of the control variable.
 	// It is nil if not present.
-	StepExp Exp
+	StepExpr Expr
 	// DoToken is the DO token that begins the body of the for statement.
 	DoToken Token
 	// Block is the body of the for statement.
@@ -541,14 +545,16 @@ func (NumericForStmt) stmtNode() {}
 type GenericForStmt struct {
 	// ForToken is the FOR token that begins the for statement.
 	ForToken Token
-	// NameList is the list of names of variables that will be assigned to by the iterator.
+	// NameList is the list of names of variables that will be assigned to by
+	// the iterator.
 	NameList NameList
 	// InToken is the IN token that separates the variables from the iterator
 	// expressions.
 	InToken Token
-	// ExpList is the list of expressions that evaluate to the iterator of the
+	// ExprList is the list of expressions that evaluate to the iterator of
+	// the
 	// for statement.
-	ExpList ExpList
+	ExprList ExprList
 	// DoToken is the DO token that begins the body of the for statement.
 	DoToken Token
 	// Block is the body of the for statement.
@@ -563,8 +569,8 @@ func (GenericForStmt) stmtNode() {}
 type WhileStmt struct {
 	// WhileToken is the WHILE token that begins a while statement.
 	WhileToken Token
-	// Exp is the condition of the while statement.
-	Exp Exp
+	// Expr is the condition of the while statement.
+	Expr Expr
 	// DoToken is the DO token that begins the body of the while statement.
 	DoToken Token
 	// Block is body of the while statement.
@@ -581,10 +587,11 @@ type RepeatStmt struct {
 	RepeatToken Token
 	// Block is the body of the repeat statement.
 	Block Block
-	// UntilToken is the UNTIL token that ends the body of the repeat statement.
+	// UntilToken is the UNTIL token that ends the body of the repeat
+	// statement.
 	UntilToken Token
-	// Exp is the condition of the repeat statement.
-	Exp Exp
+	// Expr is the condition of the repeat statement.
+	Expr Expr
 }
 
 func (RepeatStmt) stmtNode() {}
@@ -598,9 +605,9 @@ type LocalVarStmt struct {
 	// AssignToken is the ASSIGN token that separates the variables from the
 	// values. It is INVALID if not present.
 	AssignToken Token
-	// ExpList is the list of expressions that are assigned to each variable.
+	// ExprList is the list of expressions that are assigned to each variable.
 	// It is nil if not present.
-	ExpList *ExpList
+	ExprList *ExprList
 }
 
 func (LocalVarStmt) stmtNode() {}
@@ -611,10 +618,10 @@ type LocalFunctionStmt struct {
 	// LocalToken is the LOCAL token that begins the local statement.
 	LocalToken Token
 	// Name is the name of the function. Note that this token is located after
-	// the FuncToken of the FunctionExp.
+	// the FuncToken of the FunctionExpr.
 	Name Name
-	// Exp defines the parameters and body of the function.
-	Exp FunctionExp
+	// Expr defines the parameters and body of the function.
+	Expr FunctionExpr
 }
 
 func (LocalFunctionStmt) stmtNode() {}
@@ -622,10 +629,10 @@ func (LocalFunctionStmt) stmtNode() {}
 // FunctionStmt represents the statement that assigns a function.
 type FunctionStmt struct {
 	// Name contains the name of the function. Note that tokens within this
-	// are located after the FuncToken of the FunctionExp.
+	// are located after the FuncToken of the FunctionExpr.
 	Name FuncNameList
-	// Exp defines the parameters and body of the function.
-	Exp FunctionExp
+	// Expr defines the parameters and body of the function.
+	Expr FunctionExpr
 }
 
 func (FunctionStmt) stmtNode() {}
@@ -640,7 +647,7 @@ type FuncNameList struct {
 	Names []Name
 	// Seps contains each DOT between names. If the last token is a COLON, it
 	// indicates that the last name is a method. The length of Seps is one
-	// less than the length of Exps.
+	// less than the length of Exprs.
 	Seps []Token
 	// TODO: colon as separate field
 }
@@ -662,9 +669,9 @@ func (BreakStmt) stmtNode() {}
 type ReturnStmt struct {
 	// ReturnToken is the RETURN token of the return statement.
 	ReturnToken Token
-	// ExpList is the list of expressions that evaluate to the values being
+	// ExprList is the list of expressions that evaluate to the values being
 	// returned. Will be nil if there are no values.
-	ExpList *ExpList
+	ExprList *ExprList
 }
 
 func (ReturnStmt) stmtNode() {}

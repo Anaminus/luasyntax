@@ -246,68 +246,68 @@ func (p *parser) parseString() (str *ast.String) {
 	return
 }
 
-// parseSimpleExp creates a simple expression node from the current state.
-func (p *parser) parseSimpleExp() (exp ast.Exp) {
+// parseSimpleExpr creates a simple expression node from the current state.
+func (p *parser) parseSimpleExpr() (expr ast.Expr) {
 	switch p.tok {
 	case token.NUMBERFLOAT, token.NUMBERHEX:
-		exp = p.parseNumber()
+		expr = p.parseNumber()
 	case token.STRING, token.LONGSTRING:
-		exp = p.parseString()
+		expr = p.parseString()
 	case token.NIL:
-		exp = &ast.Nil{Token: p.tokenNext()}
+		expr = &ast.Nil{Token: p.tokenNext()}
 	case token.TRUE:
-		exp = &ast.Bool{Token: p.tokenNext(), Value: true}
+		expr = &ast.Bool{Token: p.tokenNext(), Value: true}
 	case token.FALSE:
-		exp = &ast.Bool{Token: p.tokenNext(), Value: false}
+		expr = &ast.Bool{Token: p.tokenNext(), Value: false}
 	case token.VARARG:
-		exp = &ast.VarArg{Token: p.tokenNext()}
+		expr = &ast.VarArg{Token: p.tokenNext()}
 	case token.LBRACE:
-		exp = p.parseTableCtor()
+		expr = p.parseTableCtor()
 	case token.FUNCTION:
-		exp, _ = p.parseFunction(funcExp)
+		expr, _ = p.parseFunction(funcExpr)
 	default:
-		exp = p.parsePrimaryExp()
+		expr = p.parsePrimaryExpr()
 	}
-	return exp
+	return expr
 }
 
-// parseSubexp recursively builds an expression chain.
-func (p *parser) parseSubexp(limit int) (exp ast.Exp) {
+// parseSubexpr recursively builds an expression chain.
+func (p *parser) parseSubexpr(limit int) (expr ast.Expr) {
 	if p.tok.IsUnary() {
-		e := &ast.UnopExp{}
+		e := &ast.UnopExpr{}
 		e.UnopToken = p.tokenNext()
-		e.Exp = p.parseSubexp(token.UnaryPrecedence)
-		exp = e
+		e.Expr = p.parseSubexpr(token.UnaryPrecedence)
+		expr = e
 	} else {
-		exp = p.parseSimpleExp()
-		if exp == nil {
-			p.error(p.off, "nil simpleexp")
+		expr = p.parseSimpleExpr()
+		if expr == nil {
+			p.error(p.off, "nil simpleexpr")
 		}
 	}
 
 	for p.tok.IsBinary() && p.tok.Precedence()[0] > limit {
 		binopToken := p.tokenNext()
-		exp = &ast.BinopExp{
-			Left:       exp,
+		expr = &ast.BinopExpr{
+			Left:       expr,
 			BinopToken: binopToken,
-			Right:      p.parseSubexp(binopToken.Type.Precedence()[1]),
+			Right:      p.parseSubexpr(binopToken.Type.Precedence()[1]),
 		}
 	}
 
-	return exp
+	return expr
 }
 
-// parseExp begins parsing an expression chain.
-func (p *parser) parseExp() ast.Exp {
-	return p.parseSubexp(0)
+// parseExpr begins parsing an expression chain.
+func (p *parser) parseExpr() ast.Expr {
+	return p.parseSubexpr(0)
 }
 
-// parseExpList creates a list of expressions.
-func (p *parser) parseExpList() *ast.ExpList {
-	list := &ast.ExpList{Exps: []ast.Exp{p.parseExp()}}
+// parseExprList creates a list of expressions.
+func (p *parser) parseExprList() *ast.ExprList {
+	list := &ast.ExprList{Exprs: []ast.Expr{p.parseExpr()}}
 	for p.tok == token.COMMA {
 		list.Seps = append(list.Seps, p.tokenNext())
-		list.Exps = append(list.Exps, p.parseExp())
+		list.Exprs = append(list.Exprs, p.parseExpr())
 	}
 	return list
 }
@@ -334,7 +334,7 @@ func (p *parser) parseDoStmt() ast.Stmt {
 func (p *parser) parseWhileStmt() ast.Stmt {
 	stmt := &ast.WhileStmt{}
 	stmt.WhileToken = p.expectToken(token.WHILE)
-	stmt.Exp = p.parseExp()
+	stmt.Expr = p.parseExpr()
 	stmt.DoToken = p.expectToken(token.DO)
 	stmt.Block = p.parseBlockBody(token.END)
 	stmt.EndToken = p.expectToken(token.END)
@@ -347,7 +347,7 @@ func (p *parser) parseRepeatStmt() ast.Stmt {
 	stmt.RepeatToken = p.expectToken(token.REPEAT)
 	stmt.Block = p.parseBlockBody(token.UNTIL)
 	stmt.UntilToken = p.expectToken(token.UNTIL)
-	stmt.Exp = p.parseExp()
+	stmt.Expr = p.parseExpr()
 	return stmt
 }
 
@@ -355,13 +355,13 @@ func (p *parser) parseRepeatStmt() ast.Stmt {
 func (p *parser) parseIfStmt() ast.Stmt {
 	stmt := &ast.IfStmt{}
 	stmt.IfToken = p.expectToken(token.IF)
-	stmt.Exp = p.parseExp()
+	stmt.Expr = p.parseExpr()
 	stmt.ThenToken = p.expectToken(token.THEN)
 	stmt.Block = p.parseBlock()
 	for p.tok == token.ELSEIF {
 		clause := ast.ElseIfClause{}
 		clause.ElseIfToken = p.expectToken(token.ELSEIF)
-		clause.Exp = p.parseExp()
+		clause.Expr = p.parseExpr()
 		clause.ThenToken = p.expectToken(token.THEN)
 		clause.Block = p.parseBlock()
 		stmt.ElseIfClauses = append(stmt.ElseIfClauses, clause)
@@ -385,12 +385,12 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 		st.ForToken = forToken
 		st.Name = name
 		st.AssignToken = p.expectToken(token.ASSIGN)
-		st.MinExp = p.parseExp()
+		st.MinExpr = p.parseExpr()
 		st.MaxSepToken = p.expectToken(token.COMMA)
-		st.MaxExp = p.parseExp()
+		st.MaxExpr = p.parseExpr()
 		if p.tok == token.COMMA {
 			st.StepSepToken = p.expectToken(token.COMMA)
-			st.StepExp = p.parseExp()
+			st.StepExpr = p.parseExpr()
 		}
 		st.DoToken = p.expectToken(token.DO)
 		st.Block = p.parseBlockBody(token.END)
@@ -405,7 +405,7 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 			st.NameList.Names = append(st.NameList.Names, p.parseName())
 		}
 		st.InToken = p.expectToken(token.IN)
-		st.ExpList = *p.parseExpList()
+		st.ExprList = *p.parseExprList()
 		st.DoToken = p.expectToken(token.DO)
 		st.Block = p.parseBlockBody(token.END)
 		st.EndToken = p.expectToken(token.END)
@@ -417,17 +417,17 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 }
 
 const (
-	funcExp   uint8 = iota // `function...` expression (anonymous).
+	funcExpr  uint8 = iota // `function...` expression (anonymous).
 	funcLocal              // `local function name...` statement.
 	funcStmt               // `function name...` statement.
 )
 
 // parseFunction creates a node representing a function. The name of the
 // function is parsed depending on the given type.
-func (p *parser) parseFunction(typ uint8) (exp *ast.FunctionExp, names ast.FuncNameList) {
-	exp = &ast.FunctionExp{}
-	exp.FuncToken = p.expectToken(token.FUNCTION)
-	if typ > funcExp {
+func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.FuncNameList) {
+	expr = &ast.FunctionExpr{}
+	expr.FuncToken = p.expectToken(token.FUNCTION)
+	if typ > funcExpr {
 		names.Names = append(names.Names, p.parseName())
 		if typ > funcLocal {
 			for p.tok == token.DOT {
@@ -440,37 +440,37 @@ func (p *parser) parseFunction(typ uint8) (exp *ast.FunctionExp, names ast.FuncN
 			}
 		}
 	}
-	exp.LParenToken = p.expectToken(token.LPAREN)
+	expr.LParenToken = p.expectToken(token.LPAREN)
 	if p.tok == token.NAME {
-		exp.ParList = &ast.NameList{Names: []ast.Name{p.parseName()}}
+		expr.ParList = &ast.NameList{Names: []ast.Name{p.parseName()}}
 		for p.tok == token.COMMA {
 			sepToken := p.tokenNext()
 			if p.tok == token.VARARG {
-				exp.VarArgSepToken = sepToken
-				exp.VarArgToken = p.tokenNext()
+				expr.VarArgSepToken = sepToken
+				expr.VarArgToken = p.tokenNext()
 				break
 			}
-			exp.ParList.Seps = append(exp.ParList.Seps, sepToken)
-			exp.ParList.Names = append(exp.ParList.Names, p.parseName())
+			expr.ParList.Seps = append(expr.ParList.Seps, sepToken)
+			expr.ParList.Names = append(expr.ParList.Names, p.parseName())
 		}
 	} else if p.tok == token.VARARG {
-		exp.VarArgToken = p.tokenNext()
+		expr.VarArgToken = p.tokenNext()
 	}
-	exp.RParenToken = p.expectToken(token.RPAREN)
-	exp.Block = p.parseBlockBody(token.END)
-	exp.EndToken = p.expectToken(token.END)
-	return exp, names
+	expr.RParenToken = p.expectToken(token.RPAREN)
+	expr.Block = p.parseBlockBody(token.END)
+	expr.EndToken = p.expectToken(token.END)
+	return expr, names
 }
 
 // parseLocalStmt creates a `local` statement node.
 func (p *parser) parseLocalStmt() ast.Stmt {
 	localToken := p.expectToken(token.LOCAL)
 	if p.tok == token.FUNCTION {
-		exp, names := p.parseFunction(funcLocal)
+		expr, names := p.parseFunction(funcLocal)
 		return &ast.LocalFunctionStmt{
 			LocalToken: localToken,
 			Name:       names.Names[0],
-			Exp:        *exp,
+			Expr:       *expr,
 		}
 	}
 	stmt := &ast.LocalVarStmt{}
@@ -482,17 +482,17 @@ func (p *parser) parseLocalStmt() ast.Stmt {
 	}
 	if p.tok == token.ASSIGN {
 		stmt.AssignToken = p.tokenNext()
-		stmt.ExpList = p.parseExpList()
+		stmt.ExprList = p.parseExprList()
 	}
 	return stmt
 }
 
 // parseFunctionStmt creates a `function` statement node.
 func (p *parser) parseFunctionStmt() ast.Stmt {
-	exp, names := p.parseFunction(funcStmt)
+	expr, names := p.parseFunction(funcStmt)
 	return &ast.FunctionStmt{
 		Name: names,
-		Exp:  *exp,
+		Expr: *expr,
 	}
 }
 
@@ -503,7 +503,7 @@ func (p *parser) parseReturnStmt() ast.Stmt {
 	if p.isBlockFollow() || p.tok == token.SEMICOLON {
 		return stmt
 	}
-	stmt.ExpList = p.parseExpList()
+	stmt.ExprList = p.parseExprList()
 	return stmt
 }
 
@@ -514,23 +514,24 @@ func (p *parser) parseBreakStmt() ast.Stmt {
 	return stmt
 }
 
-// parsePrefixExp creates an expression node that begins a primary expression.
-func (p *parser) parsePrefixExp() (exp ast.Exp) {
+// parsePrefixExpr creates an expression node that begins a primary
+// expression.
+func (p *parser) parsePrefixExpr() (expr ast.Expr) {
 	switch p.tok {
 	case token.LPAREN:
-		e := &ast.ParenExp{}
+		e := &ast.ParenExpr{}
 		e.LParenToken = p.tokenNext()
-		e.Exp = p.parseExp()
+		e.Expr = p.parseExpr()
 		e.RParenToken = p.expectToken(token.RPAREN)
-		exp = e
+		expr = e
 	case token.NAME:
-		e := &ast.VariableExp{}
+		e := &ast.VariableExpr{}
 		e.NameToken = p.parseName()
-		exp = e
+		expr = e
 	default:
 		p.error(p.off, "unexpected symbol")
 	}
-	return exp
+	return expr
 }
 
 // parseTableCtor creates a table constructor node.
@@ -542,20 +543,20 @@ func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 		if p.tok == token.LBRACK {
 			e := &ast.IndexEntry{}
 			e.LBrackToken = p.tokenNext()
-			e.KeyExp = p.parseExp()
+			e.KeyExpr = p.parseExpr()
 			e.RBrackToken = p.expectToken(token.RBRACK)
 			e.AssignToken = p.expectToken(token.ASSIGN)
-			e.ValueExp = p.parseExp()
+			e.ValueExpr = p.parseExpr()
 			entry = e
 		} else if p.lookahead(); p.tok == token.NAME && p.look.tok == token.ASSIGN {
 			e := &ast.FieldEntry{}
 			e.Name = p.parseName()
 			e.AssignToken = p.expectToken(token.ASSIGN)
-			e.Value = p.parseExp()
+			e.Value = p.parseExpr()
 			entry = e
 		} else {
 			e := &ast.ValueEntry{}
-			e.Value = p.parseExp()
+			e.Value = p.parseExpr()
 			entry = e
 		}
 		ctor.EntryList.Entries = append(ctor.EntryList.Entries, entry)
@@ -576,12 +577,12 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 		a := &ast.ArgsCall{}
 		a.LParenToken = p.tokenNext()
 		for p.tok != token.RPAREN {
-			if a.ExpList == nil {
-				a.ExpList = &ast.ExpList{}
+			if a.ExprList == nil {
+				a.ExprList = &ast.ExprList{}
 			}
-			a.ExpList.Exps = append(a.ExpList.Exps, p.parseExp())
+			a.ExprList.Exprs = append(a.ExprList.Exprs, p.parseExpr())
 			if p.tok == token.COMMA {
-				a.ExpList.Seps = append(a.ExpList.Seps, p.tokenNext())
+				a.ExprList.Seps = append(a.ExprList.Seps, p.tokenNext())
 			} else {
 				break
 			}
@@ -590,11 +591,11 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 		args = a
 	case token.LBRACE:
 		a := &ast.TableCall{}
-		a.TableExp = *p.parseTableCtor()
+		a.TableExpr = *p.parseTableCtor()
 		args = a
 	case token.STRING, token.LONGSTRING:
 		a := &ast.StringCall{}
-		a.StringExp = *p.parseString()
+		a.StringExpr = *p.parseString()
 		args = a
 	default:
 		p.error(p.off, "function arguments expected")
@@ -602,64 +603,64 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 	return args
 }
 
-// parsePrimaryExp creates a primary expression node that begins an expression
-// chain.
-func (p *parser) parsePrimaryExp() (exp ast.Exp) {
+// parsePrimaryExpr creates a primary expression node that begins an
+// expression chain.
+func (p *parser) parsePrimaryExpr() (expr ast.Expr) {
 loop:
-	for exp = p.parsePrefixExp(); ; {
+	for expr = p.parsePrefixExpr(); ; {
 		switch p.tok {
 		case token.DOT:
-			e := &ast.FieldExp{}
-			e.Exp = exp
+			e := &ast.FieldExpr{}
+			e.Expr = expr
 			e.DotToken = p.tokenNext()
 			e.Field = p.parseName()
-			exp = e
+			expr = e
 		case token.COLON:
-			e := &ast.MethodExp{}
-			e.Exp = exp
+			e := &ast.MethodExpr{}
+			e.Expr = expr
 			e.ColonToken = p.tokenNext()
 			e.Name = p.parseName()
 			e.Args = p.parseFuncArgs()
-			exp = e
+			expr = e
 		case token.LBRACK:
-			e := &ast.IndexExp{}
-			e.Exp = exp
+			e := &ast.IndexExpr{}
+			e.Expr = expr
 			e.LBrackToken = p.tokenNext()
-			e.Index = p.parseExp()
+			e.Index = p.parseExpr()
 			e.RBrackToken = p.expectToken(token.RBRACK)
-			exp = e
+			expr = e
 		case token.LBRACE, token.LPAREN:
-			e := &ast.CallExp{}
-			e.Exp = exp
+			e := &ast.CallExpr{}
+			e.Expr = expr
 			e.Args = p.parseFuncArgs()
-			exp = e
+			expr = e
 		default:
 			break loop
 		}
 	}
-	return exp
+	return expr
 }
 
-// parseExpStmt creates an expression statement node.
-func (p *parser) parseExpStmt() ast.Stmt {
-	exp := p.parsePrimaryExp()
-	switch exp.(type) {
-	case *ast.MethodExp, *ast.CallExp:
-		return &ast.CallExprStmt{Exp: exp}
+// parseExprStmt creates an expression statement node.
+func (p *parser) parseExprStmt() ast.Stmt {
+	expr := p.parsePrimaryExpr()
+	switch expr.(type) {
+	case *ast.MethodExpr, *ast.CallExpr:
+		return &ast.CallExprStmt{Expr: expr}
 	}
 
-	stmt := &ast.AssignStmt{Left: ast.ExpList{Exps: []ast.Exp{exp}}}
+	stmt := &ast.AssignStmt{Left: ast.ExprList{Exprs: []ast.Expr{expr}}}
 	for p.tok == token.COMMA {
 		stmt.Left.Seps = append(stmt.Left.Seps, p.tokenNext())
-		switch exp := p.parsePrimaryExp().(type) {
-		case *ast.MethodExp, *ast.CallExp:
+		switch expr := p.parsePrimaryExpr().(type) {
+		case *ast.MethodExpr, *ast.CallExpr:
 			p.error(p.off, "syntax error")
 		default:
-			stmt.Left.Exps = append(stmt.Left.Exps, exp)
+			stmt.Left.Exprs = append(stmt.Left.Exprs, expr)
 		}
 	}
 	stmt.AssignToken = p.expectToken(token.ASSIGN)
-	stmt.Right = *p.parseExpList()
+	stmt.Right = *p.parseExprList()
 	return stmt
 }
 
@@ -686,7 +687,7 @@ func (p *parser) parseStmt() (stmt ast.Stmt, last bool) {
 	case token.BREAK:
 		return p.parseBreakStmt(), true
 	}
-	return p.parseExpStmt(), false
+	return p.parseExprStmt(), false
 }
 
 // parseBlock creates a block node.
