@@ -46,11 +46,11 @@ const (
 	LBRACE            // `{` operator
 	RBRACE            // `}` operator
 	binop_start       // [ BINARY OPERATORS
-	ADD               // `+` binary operator
-	MUL               // `*` binary operator
-	DIV               // `/` binary operator
-	MOD               // `%` binary operator
-	EXP               // `^` binary operator
+	PLUS              // `+` binary operator
+	ASTERISK          // `*` binary operator
+	SLASH             // `/` binary operator
+	PERCENT           // `%` binary operator
+	CARET             // `^` binary operator
 	CONCAT            // `..` binary operator
 	LT                // `<` binary operator
 	LEQ               // `<=` binary operator
@@ -59,9 +59,9 @@ const (
 	EQ                // `==` binary operator
 	NEQ               // `~=` binary operator
 	unop_start        // [ UNARY
-	SUB               // `-` binary / unary operator
+	MINUS             // `-` binary / unary operator
 	binop_end         // BINARY OPERATORS ]
-	LENGTH            // `#` unary operator
+	HASH              // `#` unary operator
 	op_end            /// OPERATORS ]
 	key_start         // [ KEYWORDS
 	NOT               // `not` keyword / unary operator
@@ -105,12 +105,12 @@ var tokens = [...]string{
 	NUMBERHEX:   "<number>",
 	STRING:      "<string>",
 	LONGSTRING:  "<string>",
-	ADD:         "+",
-	SUB:         "-",
-	MUL:         "*",
-	DIV:         "/",
-	EXP:         "^",
-	MOD:         "%",
+	PLUS:        "+",
+	MINUS:       "-",
+	ASTERISK:    "*",
+	SLASH:       "/",
+	CARET:       "^",
+	PERCENT:     "%",
 	CONCAT:      "..",
 	LT:          "<",
 	LEQ:         "<=",
@@ -130,7 +130,7 @@ var tokens = [...]string{
 	RPAREN:      ")",
 	LBRACE:      "{",
 	RBRACE:      "}",
-	LENGTH:      "#",
+	HASH:        "#",
 	DO:          "do",
 	END:         "end",
 	WHILE:       "while",
@@ -229,11 +229,11 @@ func (t Type) IsBinary() bool {
 // indicate the left and right priorities, respectively.
 func (t Type) Precedence() [2]int {
 	switch t {
-	case EXP:
+	case CARET:
 		return [2]int{10, 9}
-	case MUL, DIV, MOD:
+	case ASTERISK, SLASH, PERCENT:
 		return [2]int{7, 7}
-	case ADD, SUB:
+	case PLUS, MINUS:
 		return [2]int{6, 6}
 	case CONCAT:
 		return [2]int{5, 4}

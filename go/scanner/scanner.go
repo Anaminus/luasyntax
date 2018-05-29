@@ -249,18 +249,18 @@ func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {
 			if s.ch == '-' {
 				tok = s.scanComment(off)
 			} else {
-				tok = token.SUB
+				tok = token.MINUS
 			}
 		case '+':
-			tok = token.ADD
+			tok = token.PLUS
 		case '*':
-			tok = token.MUL
+			tok = token.ASTERISK
 		case '/':
-			tok = token.DIV
+			tok = token.SLASH
 		case '%':
-			tok = token.MOD
+			tok = token.PERCENT
 		case '^':
-			tok = token.EXP
+			tok = token.CARET
 		case '.':
 			if isDigit(s.ch) {
 				tok = s.scanNumber()
@@ -327,7 +327,7 @@ func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {
 		case '}':
 			tok = token.RBRACE
 		case '#':
-			tok = token.LENGTH
+			tok = token.HASH
 		case eof:
 			tok = token.EOF
 		default:
