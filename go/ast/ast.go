@@ -80,8 +80,8 @@ func (t *Token) EndOffset() int {
 type File struct {
 	// Name is the name of the file. It is not used when printing.
 	Name string
-	// Block is the top-level block of the file.
-	Block Block
+	// Body is the top-level block of the file.
+	Body Block
 	// EOFToken is the EOF token at the end of the file.
 	EOFToken Token
 }
@@ -195,8 +195,8 @@ func (VarArg) exprNode() {}
 type UnopExpr struct {
 	// UnopToken is the unary operator token.
 	UnopToken Token
-	// Expr is the expression being operated on.
-	Expr Expr
+	// Operand is the expression being operated on.
+	Operand Expr
 }
 
 func (UnopExpr) exprNode() {}
@@ -217,8 +217,8 @@ func (BinopExpr) exprNode() {}
 type ParenExpr struct {
 	// LParenToken is the LPAREN token that opens the expression.
 	LParenToken Token
-	// Expr is the enclosed expression.
-	Expr Expr
+	// Value is the enclosed expression.
+	Value Expr
 	// RParenToken is the RPAREN token that closes the expression.
 	RParenToken Token
 }
@@ -323,8 +323,8 @@ type FunctionExpr struct {
 	VarArgToken Token
 	// RParenToken is the RPAREN token that closes the function's parameters.
 	RParenToken Token
-	// Block is the body of the function.
-	Block Block
+	// Body is the body of the function.
+	Body Block
 	// EndToken is the END token that ends the function.
 	EndToken Token
 }
@@ -334,8 +334,8 @@ func (FunctionExpr) exprNode() {}
 // FieldExpr represents an expression that indexes a value from another
 // expression, by field.
 type FieldExpr struct {
-	// Expr is the expression being operated on.
-	Expr Expr
+	// Value is the expression being operated on.
+	Value Expr
 	// DotToken is the DOT token that separates the field.
 	DotToken Token
 	// Field is the name of the field.
@@ -347,8 +347,8 @@ func (FieldExpr) exprNode() {}
 // IndexExpr represents an expression that indexes a value from another
 // expression, by key.
 type IndexExpr struct {
-	// Expr is the expression being operated on.
-	Expr Expr
+	// Value is the expression being operated on.
+	Value Expr
 	// LBrackToken is the LBRACK token opening the key expression.
 	LBrackToken Token
 	// Index is the expression evaluating to the key.
@@ -362,8 +362,8 @@ func (IndexExpr) exprNode() {}
 // MethodExpr represents an expression that gets and calls a method on another
 // expression.
 type MethodExpr struct {
-	// Expr is the expression being operated on.
-	Expr Expr
+	// Value is the expression being operated on.
+	Value Expr
 	// ColonToken is the COLON token that separates the method name.
 	ColonToken Token
 	// Name is the name of the method.
@@ -377,8 +377,8 @@ func (MethodExpr) exprNode() {}
 // CallExpr represents an expression that calls another expression as a
 // function.
 type CallExpr struct {
-	// Expr is the expression being operated on.
-	Expr Expr
+	// Value is the expression being operated on.
+	Value Expr
 	// Args holds the arguments of the function call.
 	Args CallArgs
 }
@@ -408,8 +408,8 @@ func (ArgsCall) callArgsNode() {}
 // TableCall represents the arguments of a function call, in the form of a
 // single table constructor.
 type TableCall struct {
-	// TableExpr is the table constructor expression.
-	TableExpr TableCtor
+	// Arg is the table constructor expression.
+	Arg TableCtor
 }
 
 func (TableCall) callArgsNode() {}
@@ -417,8 +417,8 @@ func (TableCall) callArgsNode() {}
 // StringCall represents the arguments of a function call, in the form of a
 // single string expression.
 type StringCall struct {
-	// StringExpr is the string expression.
-	StringExpr String
+	// Arg is the string expression.
+	Arg String
 }
 
 func (StringCall) callArgsNode() {}
@@ -433,8 +433,8 @@ type Stmt interface {
 type DoStmt struct {
 	// DoToken is the DO token that begins the do statement.
 	DoToken Token
-	// Block is the body of the do statement.
-	Block Block
+	// Body is the body of the do statement.
+	Body Block
 	// EndToken is the END token that ends the do statement.
 	EndToken Token
 }
@@ -468,18 +468,16 @@ func (CallExprStmt) stmtNode() {}
 type IfStmt struct {
 	// IfToken is the IF token that begins the if statement.
 	IfToken Token
-	// Expr is the condition of the if statement.
-	Expr Expr
+	// Cond is the condition of the if statement.
+	Cond Expr
 	// ThenToken is the THEN token that begins the body of the if statement.
 	ThenToken Token
-	// Block is the body of the if statement.
-	Block Block
-	// ElseIfClauses is a list of zero or more elseif clauses of the if
-	// statement.
-	ElseIfClauses []ElseIfClause
-	// ElseClause is the else clause of the if statement. It is nil if not
-	// present.
-	ElseClause *ElseClause // nil if not present
+	// Body is the body of the if statement.
+	Body Block
+	// ElseIf is a list of zero or more elseif clauses of the if statement.
+	ElseIf []ElseIfClause
+	// Else is the else clause of the if statement. It is nil if not present.
+	Else *ElseClause // nil if not present
 	// EndToken is the END token that ends the if statement.
 	EndToken Token
 }
@@ -491,20 +489,20 @@ func (IfStmt) stmtNode() {}
 type ElseIfClause struct {
 	// ElseIfToken is th ELSEIF token that begins the elseif clause.
 	ElseIfToken Token
-	// Expr is the condition of the elseif clause.
-	Expr Expr
+	// Cond is the condition of the elseif clause.
+	Cond Expr
 	// ThenToken is the THEN token that begins the body of the elseif clause.
 	ThenToken Token
-	// Block is the body of the elseif clause.
-	Block Block
+	// Body is the body of the elseif clause.
+	Body Block
 }
 
 // ElseClause represents an `else` clause within an `if` statement.
 type ElseClause struct {
 	// ElseToken is the ELSE token that begins the body of the else clause.
 	ElseToken Token
-	// Block is the body of the else clause.
-	Block Block
+	// Body is the body of the else clause.
+	Body Block
 }
 
 // NumericForStmt represents a numeric `for` statement.
@@ -533,8 +531,8 @@ type NumericForStmt struct {
 	Step Expr
 	// DoToken is the DO token that begins the body of the for statement.
 	DoToken Token
-	// Block is the body of the for statement.
-	Block Block
+	// Body is the body of the for statement.
+	Body Block
 	// EndToken is the END token that ends the for statement.
 	EndToken Token
 }
@@ -551,14 +549,13 @@ type GenericForStmt struct {
 	// InToken is the IN token that separates the variables from the iterator
 	// expressions.
 	InToken Token
-	// ExprList is the list of expressions that evaluate to the iterator of
-	// the
-	// for statement.
-	ExprList ExprList
+	// Iterator is the list of expressions that evaluate to the iterator of
+	// the for statement.
+	Iterator ExprList
 	// DoToken is the DO token that begins the body of the for statement.
 	DoToken Token
-	// Block is the body of the for statement.
-	Block Block
+	// Body is the body of the for statement.
+	Body Block
 	// EndToken is the END token that ends the for statement.
 	EndToken Token
 }
@@ -569,12 +566,12 @@ func (GenericForStmt) stmtNode() {}
 type WhileStmt struct {
 	// WhileToken is the WHILE token that begins a while statement.
 	WhileToken Token
-	// Expr is the condition of the while statement.
-	Expr Expr
+	// Cond is the condition of the while statement.
+	Cond Expr
 	// DoToken is the DO token that begins the body of the while statement.
 	DoToken Token
-	// Block is body of the while statement.
-	Block Block
+	// Body is body of the while statement.
+	Body Block
 	// EndToken is the END token that ends the while statement.
 	EndToken Token
 }
@@ -585,13 +582,13 @@ func (WhileStmt) stmtNode() {}
 type RepeatStmt struct {
 	// RepeatToken is the REPEAT token that begins the repeat statement.
 	RepeatToken Token
-	// Block is the body of the repeat statement.
-	Block Block
+	// Body is the body of the repeat statement.
+	Body Block
 	// UntilToken is the UNTIL token that ends the body of the repeat
 	// statement.
 	UntilToken Token
-	// Expr is the condition of the repeat statement.
-	Expr Expr
+	// Cond is the condition of the repeat statement.
+	Cond Expr
 }
 
 func (RepeatStmt) stmtNode() {}
@@ -669,9 +666,9 @@ func (BreakStmt) stmtNode() {}
 type ReturnStmt struct {
 	// ReturnToken is the RETURN token of the return statement.
 	ReturnToken Token
-	// ExprList is the list of expressions that evaluate to the values being
+	// Values is the list of expressions that evaluate to the values being
 	// returned. Will be nil if there are no values.
-	ExprList *ExprList
+	Values *ExprList
 }
 
 func (ReturnStmt) stmtNode() {}

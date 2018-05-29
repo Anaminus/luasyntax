@@ -276,7 +276,7 @@ func (p *parser) parseSubexpr(limit int) (expr ast.Expr) {
 	if p.tok.IsUnary() {
 		e := &ast.UnopExpr{}
 		e.UnopToken = p.tokenNext()
-		e.Expr = p.parseSubexpr(token.UnaryPrecedence)
+		e.Operand = p.parseSubexpr(token.UnaryPrecedence)
 		expr = e
 	} else {
 		expr = p.parseSimpleExpr()
@@ -325,7 +325,7 @@ func (p *parser) parseBlockBody(term token.Type) ast.Block {
 func (p *parser) parseDoStmt() ast.Stmt {
 	stmt := &ast.DoStmt{}
 	stmt.DoToken = p.expectToken(token.DO)
-	stmt.Block = p.parseBlockBody(token.END)
+	stmt.Body = p.parseBlockBody(token.END)
 	stmt.EndToken = p.expectToken(token.END)
 	return stmt
 }
@@ -334,9 +334,9 @@ func (p *parser) parseDoStmt() ast.Stmt {
 func (p *parser) parseWhileStmt() ast.Stmt {
 	stmt := &ast.WhileStmt{}
 	stmt.WhileToken = p.expectToken(token.WHILE)
-	stmt.Expr = p.parseExpr()
+	stmt.Cond = p.parseExpr()
 	stmt.DoToken = p.expectToken(token.DO)
-	stmt.Block = p.parseBlockBody(token.END)
+	stmt.Body = p.parseBlockBody(token.END)
 	stmt.EndToken = p.expectToken(token.END)
 	return stmt
 }
@@ -345,9 +345,9 @@ func (p *parser) parseWhileStmt() ast.Stmt {
 func (p *parser) parseRepeatStmt() ast.Stmt {
 	stmt := &ast.RepeatStmt{}
 	stmt.RepeatToken = p.expectToken(token.REPEAT)
-	stmt.Block = p.parseBlockBody(token.UNTIL)
+	stmt.Body = p.parseBlockBody(token.UNTIL)
 	stmt.UntilToken = p.expectToken(token.UNTIL)
-	stmt.Expr = p.parseExpr()
+	stmt.Cond = p.parseExpr()
 	return stmt
 }
 
@@ -355,21 +355,21 @@ func (p *parser) parseRepeatStmt() ast.Stmt {
 func (p *parser) parseIfStmt() ast.Stmt {
 	stmt := &ast.IfStmt{}
 	stmt.IfToken = p.expectToken(token.IF)
-	stmt.Expr = p.parseExpr()
+	stmt.Cond = p.parseExpr()
 	stmt.ThenToken = p.expectToken(token.THEN)
-	stmt.Block = p.parseBlock()
+	stmt.Body = p.parseBlock()
 	for p.tok == token.ELSEIF {
 		clause := ast.ElseIfClause{}
 		clause.ElseIfToken = p.expectToken(token.ELSEIF)
-		clause.Expr = p.parseExpr()
+		clause.Cond = p.parseExpr()
 		clause.ThenToken = p.expectToken(token.THEN)
-		clause.Block = p.parseBlock()
-		stmt.ElseIfClauses = append(stmt.ElseIfClauses, clause)
+		clause.Body = p.parseBlock()
+		stmt.ElseIf = append(stmt.ElseIf, clause)
 	}
 	if p.tok == token.ELSE {
-		stmt.ElseClause = &ast.ElseClause{}
-		stmt.ElseClause.ElseToken = p.expectToken(token.ELSE)
-		stmt.ElseClause.Block = p.parseBlock()
+		stmt.Else = &ast.ElseClause{}
+		stmt.Else.ElseToken = p.expectToken(token.ELSE)
+		stmt.Else.Body = p.parseBlock()
 	}
 	stmt.EndToken = p.expectToken(token.END)
 	return stmt
@@ -393,7 +393,7 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 			st.Step = p.parseExpr()
 		}
 		st.DoToken = p.expectToken(token.DO)
-		st.Block = p.parseBlockBody(token.END)
+		st.Body = p.parseBlockBody(token.END)
 		st.EndToken = p.expectToken(token.END)
 		stmt = st
 	case token.COMMA, token.IN:
@@ -405,9 +405,9 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 			st.NameList.Names = append(st.NameList.Names, p.parseName())
 		}
 		st.InToken = p.expectToken(token.IN)
-		st.ExprList = *p.parseExprList()
+		st.Iterator = *p.parseExprList()
 		st.DoToken = p.expectToken(token.DO)
-		st.Block = p.parseBlockBody(token.END)
+		st.Body = p.parseBlockBody(token.END)
 		st.EndToken = p.expectToken(token.END)
 		stmt = st
 	default:
@@ -457,7 +457,7 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 		expr.VarArgToken = p.tokenNext()
 	}
 	expr.RParenToken = p.expectToken(token.RPAREN)
-	expr.Block = p.parseBlockBody(token.END)
+	expr.Body = p.parseBlockBody(token.END)
 	expr.EndToken = p.expectToken(token.END)
 	return expr, names
 }
@@ -503,7 +503,7 @@ func (p *parser) parseReturnStmt() ast.Stmt {
 	if p.isBlockFollow() || p.tok == token.SEMICOLON {
 		return stmt
 	}
-	stmt.ExprList = p.parseExprList()
+	stmt.Values = p.parseExprList()
 	return stmt
 }
 
@@ -521,7 +521,7 @@ func (p *parser) parsePrefixExpr() (expr ast.Expr) {
 	case token.LPAREN:
 		e := &ast.ParenExpr{}
 		e.LParenToken = p.tokenNext()
-		e.Expr = p.parseExpr()
+		e.Value = p.parseExpr()
 		e.RParenToken = p.expectToken(token.RPAREN)
 		expr = e
 	case token.NAME:
@@ -591,11 +591,11 @@ func (p *parser) parseFuncArgs() (args ast.CallArgs) {
 		args = a
 	case token.LBRACE:
 		a := &ast.TableCall{}
-		a.TableExpr = *p.parseTableCtor()
+		a.Arg = *p.parseTableCtor()
 		args = a
 	case token.STRING, token.LONGSTRING:
 		a := &ast.StringCall{}
-		a.StringExpr = *p.parseString()
+		a.Arg = *p.parseString()
 		args = a
 	default:
 		p.error(p.off, "function arguments expected")
@@ -611,27 +611,27 @@ loop:
 		switch p.tok {
 		case token.DOT:
 			e := &ast.FieldExpr{}
-			e.Expr = expr
+			e.Value = expr
 			e.DotToken = p.tokenNext()
 			e.Field = p.parseName()
 			expr = e
 		case token.COLON:
 			e := &ast.MethodExpr{}
-			e.Expr = expr
+			e.Value = expr
 			e.ColonToken = p.tokenNext()
 			e.Name = p.parseName()
 			e.Args = p.parseFuncArgs()
 			expr = e
 		case token.LBRACK:
 			e := &ast.IndexExpr{}
-			e.Expr = expr
+			e.Value = expr
 			e.LBrackToken = p.tokenNext()
 			e.Index = p.parseExpr()
 			e.RBrackToken = p.expectToken(token.RBRACK)
 			expr = e
 		case token.LBRACE, token.LPAREN:
 			e := &ast.CallExpr{}
-			e.Expr = expr
+			e.Value = expr
 			e.Args = p.parseFuncArgs()
 			expr = e
 		default:
@@ -709,7 +709,7 @@ func (p *parser) parseBlock() (block ast.Block) {
 func (p *parser) parseFile() *ast.File {
 	return &ast.File{
 		Name:     p.file.Name(),
-		Block:    p.parseBlock(),
+		Body:     p.parseBlock(),
 		EOFToken: p.tokenNext(),
 	}
 }

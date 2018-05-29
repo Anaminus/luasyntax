@@ -93,7 +93,7 @@ func (e *VarArg) IsValid() bool {
 
 func (e *UnopExpr) IsValid() bool {
 	return e.UnopToken.Type.IsUnary() &&
-		isv(e.Expr)
+		isv(e.Operand)
 }
 
 func (e *BinopExpr) IsValid() bool {
@@ -104,7 +104,7 @@ func (e *BinopExpr) IsValid() bool {
 
 func (e *ParenExpr) IsValid() bool {
 	return ist(e.LParenToken, token.LPAREN) &&
-		isv(e.Expr) &&
+		isv(e.Value) &&
 		ist(e.RParenToken, token.RPAREN)
 }
 
@@ -171,27 +171,27 @@ func (e *FunctionExpr) IsValid() bool {
 }
 
 func (e *FieldExpr) IsValid() bool {
-	return isv(e.Expr) &&
+	return isv(e.Value) &&
 		ist(e.DotToken, token.DOT) &&
 		ist(e.Field.Token, token.NAME)
 }
 
 func (e *IndexExpr) IsValid() bool {
-	return isv(e.Expr) &&
+	return isv(e.Value) &&
 		ist(e.LBrackToken, token.LBRACK) &&
 		isv(e.Index) &&
 		ist(e.RBrackToken, token.RBRACK)
 }
 
 func (e *MethodExpr) IsValid() bool {
-	return isv(e.Expr) &&
+	return isv(e.Value) &&
 		ist(e.ColonToken, token.COLON) &&
 		ist(e.Name.Token, token.NAME) &&
 		isv(e.Args)
 }
 
 func (e *CallExpr) IsValid() bool {
-	return isv(e.Expr) &&
+	return isv(e.Value) &&
 		isv(e.Args)
 }
 
@@ -205,7 +205,7 @@ func (c *TableCall) IsValid() bool {
 }
 
 func (c *StringCall) IsValid() bool {
-	return c.StringExpr.Type.IsString()
+	return c.Arg.Type.IsString()
 }
 
 func (s *DoStmt) IsValid() bool {
@@ -223,14 +223,14 @@ func (s *CallExprStmt) IsValid() bool {
 
 func (s *IfStmt) IsValid() bool {
 	return ist(s.IfToken, token.IF) &&
-		isv(s.Expr) &&
+		isv(s.Cond) &&
 		ist(s.ThenToken, token.THEN) &&
 		ist(s.EndToken, token.END)
 }
 
 func (c *ElseIfClause) IsValid() bool {
 	return ist(c.ElseIfToken, token.ELSEIF) &&
-		isv(c.Expr) &&
+		isv(c.Cond) &&
 		ist(c.ThenToken, token.THEN)
 }
 
@@ -267,7 +267,7 @@ func (s *GenericForStmt) IsValid() bool {
 
 func (s *WhileStmt) IsValid() bool {
 	return ist(s.WhileToken, token.WHILE) &&
-		isv(s.Expr) &&
+		isv(s.Cond) &&
 		ist(s.DoToken, token.DO) &&
 		ist(s.EndToken, token.END)
 }
@@ -275,7 +275,7 @@ func (s *WhileStmt) IsValid() bool {
 func (s *RepeatStmt) IsValid() bool {
 	return ist(s.RepeatToken, token.REPEAT) &&
 		ist(s.UntilToken, token.UNTIL) &&
-		isv(s.Expr)
+		isv(s.Cond)
 }
 
 func (s *LocalVarStmt) IsValid() bool {

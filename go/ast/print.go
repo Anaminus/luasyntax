@@ -60,7 +60,7 @@ func (t Token) WriteTo(w io.Writer) (n int64, err error) {
 
 func (f *File) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, &f.Block)
+	c.writeTo(w, &f.Body)
 	c.writeTo(w, f.EOFToken)
 	return c.finish()
 }
@@ -98,7 +98,7 @@ func (l *NameList) WriteTo(w io.Writer) (n int64, err error) {
 func (e *UnopExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.UnopToken)
-	c.writeTo(w, e.Expr)
+	c.writeTo(w, e.Operand)
 	return c.finish()
 }
 
@@ -113,7 +113,7 @@ func (e *BinopExpr) WriteTo(w io.Writer) (n int64, err error) {
 func (e *ParenExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.LParenToken)
-	c.writeTo(w, e.Expr)
+	c.writeTo(w, e.Value)
 	c.writeTo(w, e.RParenToken)
 	return c.finish()
 }
@@ -181,14 +181,14 @@ func (e *FunctionExpr) WriteTo(w io.Writer) (n int64, err error) {
 		c.writeTo(w, e.VarArgToken)
 	}
 	c.writeTo(w, e.RParenToken)
-	c.writeTo(w, &e.Block)
+	c.writeTo(w, &e.Body)
 	c.writeTo(w, e.EndToken)
 	return c.finish()
 }
 
 func (e *FieldExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Expr)
+	c.writeTo(w, e.Value)
 	c.writeTo(w, e.DotToken)
 	c.writeTo(w, e.Field)
 	return c.finish()
@@ -196,7 +196,7 @@ func (e *FieldExpr) WriteTo(w io.Writer) (n int64, err error) {
 
 func (e *IndexExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Expr)
+	c.writeTo(w, e.Value)
 	c.writeTo(w, e.LBrackToken)
 	c.writeTo(w, e.Index)
 	c.writeTo(w, e.RBrackToken)
@@ -205,7 +205,7 @@ func (e *IndexExpr) WriteTo(w io.Writer) (n int64, err error) {
 
 func (e *MethodExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Expr)
+	c.writeTo(w, e.Value)
 	c.writeTo(w, e.ColonToken)
 	c.writeTo(w, e.Name)
 	c.writeTo(w, e.Args)
@@ -214,7 +214,7 @@ func (e *MethodExpr) WriteTo(w io.Writer) (n int64, err error) {
 
 func (e *CallExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Expr)
+	c.writeTo(w, e.Value)
 	c.writeTo(w, e.Args)
 	return c.finish()
 }
@@ -230,11 +230,11 @@ func (ac *ArgsCall) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 func (tc *TableCall) WriteTo(w io.Writer) (n int64, err error) {
-	return tc.TableExpr.WriteTo(w)
+	return tc.Arg.WriteTo(w)
 }
 
 func (sc *StringCall) WriteTo(w io.Writer) (n int64, err error) {
-	return sc.StringExpr.WriteTo(w)
+	return sc.Arg.WriteTo(w)
 }
 
 func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
@@ -255,7 +255,7 @@ func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
 func (s *DoStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.DoToken)
-	c.writeTo(w, &s.Block)
+	c.writeTo(w, &s.Body)
 	c.writeTo(w, s.EndToken)
 	return c.finish()
 }
@@ -275,16 +275,16 @@ func (s *CallExprStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *IfStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.IfToken)
-	c.writeTo(w, s.Expr)
+	c.writeTo(w, s.Cond)
 	c.writeTo(w, s.ThenToken)
-	c.writeTo(w, &s.Block)
-	for _, elif := range s.ElseIfClauses {
+	c.writeTo(w, &s.Body)
+	for _, elif := range s.ElseIf {
 		if !c.writeTo(w, &elif) {
 			break
 		}
 	}
-	if s.ElseClause != nil {
-		c.writeTo(w, s.ElseClause)
+	if s.Else != nil {
+		c.writeTo(w, s.Else)
 	}
 	c.writeTo(w, s.EndToken)
 	return c.finish()
@@ -293,16 +293,16 @@ func (s *IfStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (cl *ElseIfClause) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, cl.ElseIfToken)
-	c.writeTo(w, cl.Expr)
+	c.writeTo(w, cl.Cond)
 	c.writeTo(w, cl.ThenToken)
-	c.writeTo(w, &cl.Block)
+	c.writeTo(w, &cl.Body)
 	return c.finish()
 }
 
 func (cl *ElseClause) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, cl.ElseToken)
-	c.writeTo(w, &cl.Block)
+	c.writeTo(w, &cl.Body)
 	return c.finish()
 }
 
@@ -319,7 +319,7 @@ func (s *NumericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 		c.writeTo(w, s.Step)
 	}
 	c.writeTo(w, s.DoToken)
-	c.writeTo(w, &s.Block)
+	c.writeTo(w, &s.Body)
 	c.writeTo(w, s.EndToken)
 	return c.finish()
 }
@@ -329,9 +329,9 @@ func (s *GenericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 	c.writeTo(w, s.ForToken)
 	c.writeTo(w, &s.NameList)
 	c.writeTo(w, s.InToken)
-	c.writeTo(w, &s.ExprList)
+	c.writeTo(w, &s.Iterator)
 	c.writeTo(w, s.DoToken)
-	c.writeTo(w, &s.Block)
+	c.writeTo(w, &s.Body)
 	c.writeTo(w, s.EndToken)
 	return c.finish()
 }
@@ -339,9 +339,9 @@ func (s *GenericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *WhileStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.WhileToken)
-	c.writeTo(w, s.Expr)
+	c.writeTo(w, s.Cond)
 	c.writeTo(w, s.DoToken)
-	c.writeTo(w, &s.Block)
+	c.writeTo(w, &s.Body)
 	c.writeTo(w, s.EndToken)
 	return c.finish()
 }
@@ -349,9 +349,9 @@ func (s *WhileStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *RepeatStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.RepeatToken)
-	c.writeTo(w, &s.Block)
+	c.writeTo(w, &s.Body)
 	c.writeTo(w, s.UntilToken)
-	c.writeTo(w, s.Expr)
+	c.writeTo(w, s.Cond)
 	return c.finish()
 }
 
@@ -382,7 +382,7 @@ func (s *LocalFunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 		c.writeTo(w, s.Func.VarArgToken)
 	}
 	c.writeTo(w, s.Func.RParenToken)
-	c.writeTo(w, &s.Func.Block)
+	c.writeTo(w, &s.Func.Body)
 	c.writeTo(w, s.Func.EndToken)
 	return c.finish()
 }
@@ -402,7 +402,7 @@ func (s *FunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 		c.writeTo(w, s.Func.VarArgToken)
 	}
 	c.writeTo(w, s.Func.RParenToken)
-	c.writeTo(w, &s.Func.Block)
+	c.writeTo(w, &s.Func.Body)
 	c.writeTo(w, s.Func.EndToken)
 	return c.finish()
 }
@@ -429,8 +429,8 @@ func (s *BreakStmt) WriteTo(w io.Writer) (n int64, err error) {
 func (s *ReturnStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.ReturnToken)
-	if s.ExprList != nil {
-		c.writeTo(w, s.ExprList)
+	if s.Values != nil {
+		c.writeTo(w, s.Values)
 	}
 	return c.finish()
 }

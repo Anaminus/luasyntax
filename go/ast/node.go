@@ -1,6 +1,6 @@
 package ast
 
-func (f *File) FirstToken() *Token { return f.Block.FirstToken() }
+func (f *File) FirstToken() *Token { return f.Body.FirstToken() }
 func (f *File) LastToken() *Token  { return &f.EOFToken }
 
 func (b *Block) FirstToken() *Token {
@@ -44,7 +44,7 @@ func (e *VarArg) FirstToken() *Token { return &e.Token }
 func (e *VarArg) LastToken() *Token  { return &e.Token }
 
 func (e *UnopExpr) FirstToken() *Token { return &e.UnopToken }
-func (e *UnopExpr) LastToken() *Token  { return e.Expr.LastToken() }
+func (e *UnopExpr) LastToken() *Token  { return e.Operand.LastToken() }
 
 func (e *BinopExpr) FirstToken() *Token { return e.Left.FirstToken() }
 func (e *BinopExpr) LastToken() *Token  { return e.Right.LastToken() }
@@ -83,26 +83,26 @@ func (e *ValueEntry) LastToken() *Token  { return e.Value.LastToken() }
 func (s *FunctionExpr) FirstToken() *Token { return &s.FuncToken }
 func (s *FunctionExpr) LastToken() *Token  { return &s.EndToken }
 
-func (e *FieldExpr) FirstToken() *Token { return e.Expr.FirstToken() }
+func (e *FieldExpr) FirstToken() *Token { return e.Value.FirstToken() }
 func (e *FieldExpr) LastToken() *Token  { return &e.Field.Token }
 
-func (e *IndexExpr) FirstToken() *Token { return e.Expr.FirstToken() }
+func (e *IndexExpr) FirstToken() *Token { return e.Value.FirstToken() }
 func (e *IndexExpr) LastToken() *Token  { return &e.RBrackToken }
 
-func (e *MethodExpr) FirstToken() *Token { return e.Expr.FirstToken() }
+func (e *MethodExpr) FirstToken() *Token { return e.Value.FirstToken() }
 func (e *MethodExpr) LastToken() *Token  { return e.Args.LastToken() }
 
-func (e *CallExpr) FirstToken() *Token { return e.Expr.FirstToken() }
+func (e *CallExpr) FirstToken() *Token { return e.Value.FirstToken() }
 func (e *CallExpr) LastToken() *Token  { return e.Args.LastToken() }
 
 func (c *ArgsCall) FirstToken() *Token { return &c.LParenToken }
 func (c *ArgsCall) LastToken() *Token  { return &c.RParenToken }
 
-func (c *TableCall) FirstToken() *Token { return c.TableExpr.FirstToken() }
-func (c *TableCall) LastToken() *Token  { return c.TableExpr.LastToken() }
+func (c *TableCall) FirstToken() *Token { return c.Arg.FirstToken() }
+func (c *TableCall) LastToken() *Token  { return c.Arg.LastToken() }
 
-func (c *StringCall) FirstToken() *Token { return &c.StringExpr.Token }
-func (c *StringCall) LastToken() *Token  { return &c.StringExpr.Token }
+func (c *StringCall) FirstToken() *Token { return &c.Arg.Token }
+func (c *StringCall) LastToken() *Token  { return &c.Arg.Token }
 
 func (s *DoStmt) FirstToken() *Token { return &s.DoToken }
 func (s *DoStmt) LastToken() *Token  { return &s.EndToken }
@@ -117,10 +117,10 @@ func (s *IfStmt) FirstToken() *Token { return &s.IfToken }
 func (s *IfStmt) LastToken() *Token  { return &s.EndToken }
 
 func (c *ElseIfClause) FirstToken() *Token { return &c.ElseIfToken }
-func (c *ElseIfClause) LastToken() *Token  { return c.Block.LastToken() }
+func (c *ElseIfClause) LastToken() *Token  { return c.Body.LastToken() }
 
 func (c *ElseClause) FirstToken() *Token { return &c.ElseToken }
-func (c *ElseClause) LastToken() *Token  { return c.Block.LastToken() }
+func (c *ElseClause) LastToken() *Token  { return c.Body.LastToken() }
 
 func (s *NumericForStmt) FirstToken() *Token { return &s.ForToken }
 func (s *NumericForStmt) LastToken() *Token  { return &s.EndToken }
@@ -132,7 +132,7 @@ func (s *WhileStmt) FirstToken() *Token { return &s.WhileToken }
 func (s *WhileStmt) LastToken() *Token  { return &s.EndToken }
 
 func (s *RepeatStmt) FirstToken() *Token { return &s.RepeatToken }
-func (s *RepeatStmt) LastToken() *Token  { return s.Expr.LastToken() }
+func (s *RepeatStmt) LastToken() *Token  { return s.Cond.LastToken() }
 
 func (s *LocalVarStmt) FirstToken() *Token { return &s.LocalToken }
 func (s *LocalVarStmt) LastToken() *Token {
@@ -153,8 +153,8 @@ func (s *BreakStmt) LastToken() *Token  { return &s.BreakToken }
 
 func (s *ReturnStmt) FirstToken() *Token { return &s.ReturnToken }
 func (s *ReturnStmt) LastToken() *Token {
-	if s.ExprList.Len() == 0 {
+	if s.Values.Len() == 0 {
 		return &s.ReturnToken
 	}
-	return s.ExprList.LastToken()
+	return s.Values.LastToken()
 }
