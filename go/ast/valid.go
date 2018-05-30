@@ -4,9 +4,17 @@ import (
 	"github.com/anaminus/luasyntax/go/token"
 )
 
-// Note: A node is valid if
-//     - interface fields are non-nil.
-//     - token fields have types acceptable for the node.
+// When determining the validity of a node, there are three primary kinds of
+// fields to consider:
+//     - An interface: The underlying type is a child node.
+//     - A Node: A child node.
+//     - A Token: Not a node, and therefore not a child node. A node that
+//       embeds a Token is not considered a token.
+//
+// A node is valid
+//     - if its interface fields are non-nil.
+//     - if its token fields have types acceptable for the node.
+//     - even if its child nodes are not valid.
 
 func isv(i interface{}) bool               { return i != nil }
 func ist(tok Token, typ token.Type) bool   { return tok.Type == typ }
@@ -37,8 +45,8 @@ func (l *ExprList) IsValid() bool {
 	if len(l.Items) == 0 || len(l.Seps) != len(l.Items)-1 {
 		return false
 	}
-	for _, expr := range l.Items {
-		if !isv(expr) {
+	for _, item := range l.Items {
+		if !isv(item) {
 			return false
 		}
 	}
@@ -57,11 +65,6 @@ func (e *Name) IsValid() bool {
 func (l *NameList) IsValid() bool {
 	if len(l.Items) == 0 || len(l.Seps) != len(l.Items)-1 {
 		return false
-	}
-	for _, name := range l.Seps {
-		if !ist(name, token.NAME) {
-			return false
-		}
 	}
 	for _, sep := range l.Seps {
 		if !ist(sep, token.COMMA) {
@@ -109,7 +112,7 @@ func (e *ParenExpr) IsValid() bool {
 }
 
 func (e *VariableExpr) IsValid() bool {
-	return ist(e.Name.Token, token.NAME)
+	return true
 }
 
 func (e *TableCtor) IsValid() bool {
@@ -122,7 +125,7 @@ func (l *EntryList) IsValid() bool {
 		return false
 	}
 	for _, entry := range l.Items {
-		if entry == nil {
+		if !isv(entry) {
 			return false
 		}
 	}
@@ -143,8 +146,7 @@ func (e *IndexEntry) IsValid() bool {
 }
 
 func (e *FieldEntry) IsValid() bool {
-	return ist(e.Name.Token, token.NAME) &&
-		ist(e.AssignToken, token.ASSIGN) &&
+	return ist(e.AssignToken, token.ASSIGN) &&
 		isv(e.Value)
 }
 
@@ -172,8 +174,7 @@ func (e *FunctionExpr) IsValid() bool {
 
 func (e *FieldExpr) IsValid() bool {
 	return isv(e.Value) &&
-		ist(e.DotToken, token.DOT) &&
-		ist(e.Name.Token, token.NAME)
+		ist(e.DotToken, token.DOT)
 }
 
 func (e *IndexExpr) IsValid() bool {
@@ -186,7 +187,6 @@ func (e *IndexExpr) IsValid() bool {
 func (e *MethodExpr) IsValid() bool {
 	return isv(e.Value) &&
 		ist(e.ColonToken, token.COLON) &&
-		ist(e.Name.Token, token.NAME) &&
 		isv(e.Args)
 }
 
@@ -205,7 +205,7 @@ func (c *TableArg) IsValid() bool {
 }
 
 func (c *StringArg) IsValid() bool {
-	return c.Value.Type.IsString()
+	return true
 }
 
 func (s *DoStmt) IsValid() bool {
@@ -240,12 +240,10 @@ func (c *ElseClause) IsValid() bool {
 
 func (s *NumericForStmt) IsValid() bool {
 	if !(ist(s.ForToken, token.FOR) &&
-		ist(s.Name.Token, token.NAME) &&
 		ist(s.AssignToken, token.ASSIGN) &&
 		isv(s.Min) &&
 		ist(s.MaxSepToken, token.COMMA) &&
 		isv(s.Max) &&
-		ist2(s.StepSepToken, token.COMMA, token.INVALID) &&
 		ist(s.DoToken, token.DO) &&
 		ist(s.EndToken, token.END)) {
 		return false
@@ -291,8 +289,7 @@ func (s *LocalVarStmt) IsValid() bool {
 }
 
 func (s *LocalFunctionStmt) IsValid() bool {
-	return ist(s.LocalToken, token.LOCAL) &&
-		ist(s.Name.Token, token.NAME)
+	return ist(s.LocalToken, token.LOCAL)
 }
 
 func (s *FunctionStmt) IsValid() bool {
@@ -308,12 +305,7 @@ func (l *FuncNameList) IsValid() bool {
 			return false
 		}
 	}
-	if ist(l.ColonToken, token.COLON) {
-		return ist(l.Method.Token, token.NAME)
-	} else if ist(l.ColonToken, token.INVALID) {
-		return ist(l.Method.Token, token.INVALID)
-	}
-	return false
+	return ist2(l.ColonToken, token.COLON, token.INVALID)
 }
 
 func (s *BreakStmt) IsValid() bool {
