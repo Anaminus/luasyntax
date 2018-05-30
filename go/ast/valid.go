@@ -74,23 +74,23 @@ func (l *NameList) IsValid() bool {
 	return true
 }
 
-func (e *Number) IsValid() bool {
+func (e *NumberExpr) IsValid() bool {
 	return e.Token.Type.IsNumber()
 }
 
-func (e *String) IsValid() bool {
+func (e *StringExpr) IsValid() bool {
 	return e.Token.Type.IsString()
 }
 
-func (e *Nil) IsValid() bool {
+func (e *NilExpr) IsValid() bool {
 	return ist(e.Token, token.NIL)
 }
 
-func (e *Bool) IsValid() bool {
+func (e *BoolExpr) IsValid() bool {
 	return e.Token.Type.IsBool()
 }
 
-func (e *VarArg) IsValid() bool {
+func (e *VarArgExpr) IsValid() bool {
 	return ist(e.Token, token.VARARG)
 }
 

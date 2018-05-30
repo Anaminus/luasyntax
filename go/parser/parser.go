@@ -163,8 +163,8 @@ func (p *parser) parseName() (name ast.Name) {
 }
 
 // parseNumber creates a number node from the current state.
-func (p *parser) parseNumber() (num *ast.Number) {
-	num = &ast.Number{Token: p.token()}
+func (p *parser) parseNumber() (num *ast.NumberExpr) {
+	num = &ast.NumberExpr{Token: p.token()}
 	if p.mode&EvalConst != 0 {
 		var err error
 		switch p.tok {
@@ -251,15 +251,15 @@ func parseBlockString(b []byte) string {
 }
 
 // parseString creates a string node from the current state.
-func (p *parser) parseString() (str *ast.String) {
+func (p *parser) parseString() (str *ast.StringExpr) {
 	switch p.tok {
 	case token.STRING:
-		str = &ast.String{Token: p.token()}
+		str = &ast.StringExpr{Token: p.token()}
 		if p.mode&EvalConst != 0 {
 			str.Value = parseQuotedString(p.lit)
 		}
 	case token.LONGSTRING:
-		str = &ast.String{Token: p.token()}
+		str = &ast.StringExpr{Token: p.token()}
 		if p.mode&EvalConst != 0 {
 			str.Value = parseBlockString(p.lit)
 		}
@@ -278,13 +278,13 @@ func (p *parser) parseSimpleExpr() (expr ast.Expr) {
 	case token.STRING, token.LONGSTRING:
 		expr = p.parseString()
 	case token.NIL:
-		expr = &ast.Nil{Token: p.tokenNext()}
+		expr = &ast.NilExpr{Token: p.tokenNext()}
 	case token.TRUE:
-		expr = &ast.Bool{Token: p.tokenNext(), Value: p.mode&EvalConst != 0}
+		expr = &ast.BoolExpr{Token: p.tokenNext(), Value: p.mode&EvalConst != 0}
 	case token.FALSE:
-		expr = &ast.Bool{Token: p.tokenNext(), Value: false}
+		expr = &ast.BoolExpr{Token: p.tokenNext(), Value: false}
 	case token.VARARG:
-		expr = &ast.VarArg{Token: p.tokenNext()}
+		expr = &ast.VarArgExpr{Token: p.tokenNext()}
 	case token.LBRACE:
 		expr = p.parseTableCtor()
 	case token.FUNCTION:

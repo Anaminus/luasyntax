@@ -28,20 +28,20 @@ func (e *Name) LastToken() *Token  { return &e.Token }
 func (l *NameList) FirstToken() *Token { return &l.Items[0].Token }
 func (l *NameList) LastToken() *Token  { return &l.Items[len(l.Items)-1].Token }
 
-func (e *Number) FirstToken() *Token { return &e.Token }
-func (e *Number) LastToken() *Token  { return &e.Token }
+func (e *NumberExpr) FirstToken() *Token { return &e.Token }
+func (e *NumberExpr) LastToken() *Token  { return &e.Token }
 
-func (e *String) FirstToken() *Token { return &e.Token }
-func (e *String) LastToken() *Token  { return &e.Token }
+func (e *StringExpr) FirstToken() *Token { return &e.Token }
+func (e *StringExpr) LastToken() *Token  { return &e.Token }
 
-func (e *Nil) FirstToken() *Token { return &e.Token }
-func (e *Nil) LastToken() *Token  { return &e.Token }
+func (e *NilExpr) FirstToken() *Token { return &e.Token }
+func (e *NilExpr) LastToken() *Token  { return &e.Token }
 
-func (e *Bool) FirstToken() *Token { return &e.Token }
-func (e *Bool) LastToken() *Token  { return &e.Token }
+func (e *BoolExpr) FirstToken() *Token { return &e.Token }
+func (e *BoolExpr) LastToken() *Token  { return &e.Token }
 
-func (e *VarArg) FirstToken() *Token { return &e.Token }
-func (e *VarArg) LastToken() *Token  { return &e.Token }
+func (e *VarArgExpr) FirstToken() *Token { return &e.Token }
+func (e *VarArgExpr) LastToken() *Token  { return &e.Token }
 
 func (e *UnopExpr) FirstToken() *Token { return &e.UnopToken }
 func (e *UnopExpr) LastToken() *Token  { return e.Operand.LastToken() }

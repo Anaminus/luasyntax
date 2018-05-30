@@ -147,8 +147,8 @@ func (l *NameList) Len() int {
 	return len(l.Items) + len(l.Seps)
 }
 
-// Number represents a Lua number expression.
-type Number struct {
+// NumberExpr represents a Lua number expression.
+type NumberExpr struct {
 	// Token is the underlying number token.
 	Token
 	// Value is the evaluated form of the token. It is set only if the parser
@@ -156,10 +156,10 @@ type Number struct {
 	Value float64
 }
 
-func (Number) exprNode() {}
+func (NumberExpr) exprNode() {}
 
-// String represents a Lua string expression.
-type String struct {
+// StringExpr represents a Lua string expression.
+type StringExpr struct {
 	// Token is the underlying string token.
 	Token
 	// Value is the evaluated form of the token. It is set only if the parser
@@ -167,18 +167,18 @@ type String struct {
 	Value string
 }
 
-func (String) exprNode() {}
+func (StringExpr) exprNode() {}
 
-// Nil represents a Lua nil expression.
-type Nil struct {
+// NilExpr represents a Lua nil expression.
+type NilExpr struct {
 	// Token is the underlying NIL token.
 	Token
 }
 
-func (Nil) exprNode() {}
+func (NilExpr) exprNode() {}
 
-// Bool represents a Lua boolean expression.
-type Bool struct {
+// BoolExpr represents a Lua boolean expression.
+type BoolExpr struct {
 	// Token is the underlying boolean token.
 	Token
 	// Value is the evaluated form of the token. It is set only if the parser
@@ -186,15 +186,15 @@ type Bool struct {
 	Value bool
 }
 
-func (Bool) exprNode() {}
+func (BoolExpr) exprNode() {}
 
-// VarArg represents a Lua variable argument expression.
-type VarArg struct {
+// VarArgExpr represents a Lua variable argument expression.
+type VarArgExpr struct {
 	// Token is the underlying VARARG token.
 	Token
 }
 
-func (VarArg) exprNode() {}
+func (VarArgExpr) exprNode() {}
 
 // UnopExpr represents a unary operation.
 type UnopExpr struct {
@@ -431,7 +431,7 @@ func (TableArg) argsNode() {}
 // single string expression.
 type StringArg struct {
 	// Value is the string expression.
-	Value String
+	Value StringExpr
 }
 
 func (StringArg) argsNode() {}
