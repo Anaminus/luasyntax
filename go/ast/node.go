@@ -148,6 +148,19 @@ func (s *LocalFunctionStmt) LastToken() *Token  { return s.Func.LastToken() }
 func (s *FunctionStmt) FirstToken() *Token { return s.Func.FirstToken() }
 func (s *FunctionStmt) LastToken() *Token  { return s.Func.LastToken() }
 
+func (l *FuncNameList) FirstToken() *Token {
+	if len(l.Items) == 0 {
+		return nil
+	}
+	return l.Items[0].FirstToken()
+}
+func (l *FuncNameList) LastToken() *Token {
+	if len(l.Seps) == len(l.Items) {
+		return &l.Seps[len(l.Seps)-1]
+	}
+	return l.Items[len(l.Items)-1].LastToken()
+}
+
 func (s *BreakStmt) FirstToken() *Token { return &s.BreakToken }
 func (s *BreakStmt) LastToken() *Token  { return &s.BreakToken }
 
