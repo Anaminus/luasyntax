@@ -28,20 +28,20 @@ func (e *Name) LastToken() *Token  { return &e.Token }
 func (l *NameList) FirstToken() *Token { return &l.Items[0].Token }
 func (l *NameList) LastToken() *Token  { return &l.Items[len(l.Items)-1].Token }
 
-func (e *NumberExpr) FirstToken() *Token { return &e.Token }
-func (e *NumberExpr) LastToken() *Token  { return &e.Token }
+func (e *NumberExpr) FirstToken() *Token { return &e.NumberToken }
+func (e *NumberExpr) LastToken() *Token  { return &e.NumberToken }
 
-func (e *StringExpr) FirstToken() *Token { return &e.Token }
-func (e *StringExpr) LastToken() *Token  { return &e.Token }
+func (e *StringExpr) FirstToken() *Token { return &e.StringToken }
+func (e *StringExpr) LastToken() *Token  { return &e.StringToken }
 
-func (e *NilExpr) FirstToken() *Token { return &e.Token }
-func (e *NilExpr) LastToken() *Token  { return &e.Token }
+func (e *NilExpr) FirstToken() *Token { return &e.NilToken }
+func (e *NilExpr) LastToken() *Token  { return &e.NilToken }
 
-func (e *BoolExpr) FirstToken() *Token { return &e.Token }
-func (e *BoolExpr) LastToken() *Token  { return &e.Token }
+func (e *BoolExpr) FirstToken() *Token { return &e.BoolToken }
+func (e *BoolExpr) LastToken() *Token  { return &e.BoolToken }
 
-func (e *VarArgExpr) FirstToken() *Token { return &e.Token }
-func (e *VarArgExpr) LastToken() *Token  { return &e.Token }
+func (e *VarArgExpr) FirstToken() *Token { return &e.VarArgToken }
+func (e *VarArgExpr) LastToken() *Token  { return &e.VarArgToken }
 
 func (e *UnopExpr) FirstToken() *Token { return &e.UnopToken }
 func (e *UnopExpr) LastToken() *Token  { return e.Operand.LastToken() }
@@ -101,8 +101,8 @@ func (c *ListArgs) LastToken() *Token  { return &c.RParenToken }
 func (c *TableArg) FirstToken() *Token { return c.Value.FirstToken() }
 func (c *TableArg) LastToken() *Token  { return c.Value.LastToken() }
 
-func (c *StringArg) FirstToken() *Token { return &c.Value.Token }
-func (c *StringArg) LastToken() *Token  { return &c.Value.Token }
+func (c *StringArg) FirstToken() *Token { return &c.Value.StringToken }
+func (c *StringArg) LastToken() *Token  { return &c.Value.StringToken }
 
 func (s *DoStmt) FirstToken() *Token { return &s.DoToken }
 func (s *DoStmt) LastToken() *Token  { return &s.EndToken }

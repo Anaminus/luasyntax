@@ -75,23 +75,23 @@ func (l *NameList) IsValid() bool {
 }
 
 func (e *NumberExpr) IsValid() bool {
-	return e.Token.Type.IsNumber()
+	return e.NumberToken.Type.IsNumber()
 }
 
 func (e *StringExpr) IsValid() bool {
-	return e.Token.Type.IsString()
+	return e.StringToken.Type.IsString()
 }
 
 func (e *NilExpr) IsValid() bool {
-	return ist(e.Token, token.NIL)
+	return ist(e.NilToken, token.NIL)
 }
 
 func (e *BoolExpr) IsValid() bool {
-	return e.Token.Type.IsBool()
+	return e.BoolToken.Type.IsBool()
 }
 
 func (e *VarArgExpr) IsValid() bool {
-	return ist(e.Token, token.VARARG)
+	return ist(e.VarArgToken, token.VARARG)
 }
 
 func (e *UnopExpr) IsValid() bool {

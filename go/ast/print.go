@@ -95,6 +95,26 @@ func (l *NameList) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
+func (e *NumberExpr) WriteTo(w io.Writer) (n int64, err error) {
+	return e.NumberToken.WriteTo(w)
+}
+
+func (e *StringExpr) WriteTo(w io.Writer) (n int64, err error) {
+	return e.StringToken.WriteTo(w)
+}
+
+func (e *NilExpr) WriteTo(w io.Writer) (n int64, err error) {
+	return e.NilToken.WriteTo(w)
+}
+
+func (e *BoolExpr) WriteTo(w io.Writer) (n int64, err error) {
+	return e.BoolToken.WriteTo(w)
+}
+
+func (e *VarArgExpr) WriteTo(w io.Writer) (n int64, err error) {
+	return e.VarArgToken.WriteTo(w)
+}
+
 func (e *UnopExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.UnopToken)

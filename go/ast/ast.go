@@ -149,8 +149,8 @@ func (l *NameList) Len() int {
 
 // NumberExpr represents a Lua number expression.
 type NumberExpr struct {
-	// Token is the underlying number token.
-	Token
+	// NumberToken is the number token holding the content of the expression.
+	NumberToken Token
 	// Value is the evaluated form of the token. It is set only if the parser
 	// has the EvalConst mode set, and is not used when printing.
 	Value float64
@@ -160,8 +160,8 @@ func (NumberExpr) exprNode() {}
 
 // StringExpr represents a Lua string expression.
 type StringExpr struct {
-	// Token is the underlying string token.
-	Token
+	// StringToken is the string token holding the content the expression.
+	StringToken Token
 	// Value is the evaluated form of the token. It is set only if the parser
 	// has the EvalConst mode set, and is not used when printing.
 	Value string
@@ -171,16 +171,16 @@ func (StringExpr) exprNode() {}
 
 // NilExpr represents a Lua nil expression.
 type NilExpr struct {
-	// Token is the underlying NIL token.
-	Token
+	// NilToken is the NIL token holding the content the expression.
+	NilToken Token
 }
 
 func (NilExpr) exprNode() {}
 
 // BoolExpr represents a Lua boolean expression.
 type BoolExpr struct {
-	// Token is the underlying boolean token.
-	Token
+	// BoolToken is the bool token holding the content the expression.
+	BoolToken Token
 	// Value is the evaluated form of the token. It is set only if the parser
 	// has the EvalConst mode set, and is not used when printing.
 	Value bool
@@ -190,8 +190,8 @@ func (BoolExpr) exprNode() {}
 
 // VarArgExpr represents a Lua variable argument expression.
 type VarArgExpr struct {
-	// Token is the underlying VARARG token.
-	Token
+	// VarArgToken is the VARARG token holding the content the expression.
+	VarArgToken Token
 }
 
 func (VarArgExpr) exprNode() {}
