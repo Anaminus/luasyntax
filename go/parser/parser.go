@@ -149,17 +149,6 @@ func (p *parser) isBlockFollow() bool {
 	return false
 }
 
-// parseName creates a name node from the current state.
-func (p *parser) parseName() (name ast.Name) {
-	p.expect(token.NAME)
-	name = ast.Name{Token: p.token()}
-	if p.mode&EvalConst != 0 {
-		name.Value = string(p.lit)
-	}
-	p.next()
-	return
-}
-
 // parseNumber creates a number node from the current state.
 func (p *parser) parseNumber() (num *ast.NumberExpr) {
 	switch p.tok {
@@ -314,12 +303,12 @@ func (p *parser) parseIfStmt() ast.Stmt {
 // parseIfStmt creates a `for` statement node.
 func (p *parser) parseForStmt() (stmt ast.Stmt) {
 	forToken := p.expectToken(token.FOR)
-	name := p.parseName()
+	name := p.expectToken(token.NAME)
 	switch p.tok {
 	case token.ASSIGN:
 		st := &ast.NumericForStmt{}
 		st.ForToken = forToken
-		st.Name = name
+		st.NameToken = name
 		st.AssignToken = p.expectToken(token.ASSIGN)
 		st.Min = p.parseExpr()
 		st.MaxSepToken = p.expectToken(token.COMMA)
@@ -338,7 +327,7 @@ func (p *parser) parseForStmt() (stmt ast.Stmt) {
 		st.Names.Items = append(st.Names.Items, name)
 		for p.tok == token.COMMA {
 			st.Names.Seps = append(st.Names.Seps, p.tokenNext())
-			st.Names.Items = append(st.Names.Items, p.parseName())
+			st.Names.Items = append(st.Names.Items, p.expectToken(token.NAME))
 		}
 		st.InToken = p.expectToken(token.IN)
 		st.Iterator = *p.parseExprList()
@@ -364,21 +353,21 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 	expr = &ast.FunctionExpr{}
 	expr.FuncToken = p.expectToken(token.FUNCTION)
 	if typ > funcExpr {
-		names.Items = append(names.Items, p.parseName())
+		names.Items = append(names.Items, p.expectToken(token.NAME))
 		if typ > funcLocal {
 			for p.tok == token.DOT {
 				names.Seps = append(names.Seps, p.tokenNext())
-				names.Items = append(names.Items, p.parseName())
+				names.Items = append(names.Items, p.expectToken(token.NAME))
 			}
 			if p.tok == token.COLON {
 				names.ColonToken = p.tokenNext()
-				names.Method = p.parseName()
+				names.MethodToken = p.expectToken(token.NAME)
 			}
 		}
 	}
 	expr.LParenToken = p.expectToken(token.LPAREN)
 	if p.tok == token.NAME {
-		expr.Params = &ast.NameList{Items: []ast.Name{p.parseName()}}
+		expr.Params = &ast.NameList{Items: []ast.Token{p.expectToken(token.NAME)}}
 		for p.tok == token.COMMA {
 			sepToken := p.tokenNext()
 			if p.tok == token.VARARG {
@@ -387,7 +376,7 @@ func (p *parser) parseFunction(typ uint8) (expr *ast.FunctionExpr, names ast.Fun
 				break
 			}
 			expr.Params.Seps = append(expr.Params.Seps, sepToken)
-			expr.Params.Items = append(expr.Params.Items, p.parseName())
+			expr.Params.Items = append(expr.Params.Items, p.expectToken(token.NAME))
 		}
 	} else if p.tok == token.VARARG {
 		expr.VarArgToken = p.tokenNext()
@@ -405,16 +394,16 @@ func (p *parser) parseLocalStmt() ast.Stmt {
 		expr, names := p.parseFunction(funcLocal)
 		return &ast.LocalFunctionStmt{
 			LocalToken: localToken,
-			Name:       names.Items[0],
+			NameToken:  names.Items[0],
 			Func:       *expr,
 		}
 	}
 	stmt := &ast.LocalVarStmt{}
 	stmt.LocalToken = localToken
-	stmt.Names.Items = append(stmt.Names.Items, p.parseName())
+	stmt.Names.Items = append(stmt.Names.Items, p.expectToken(token.NAME))
 	for p.tok == token.COMMA {
 		stmt.Names.Seps = append(stmt.Names.Seps, p.tokenNext())
-		stmt.Names.Items = append(stmt.Names.Items, p.parseName())
+		stmt.Names.Items = append(stmt.Names.Items, p.expectToken(token.NAME))
 	}
 	if p.tok == token.ASSIGN {
 		stmt.AssignToken = p.tokenNext()
@@ -462,7 +451,7 @@ func (p *parser) parsePrefixExpr() (expr ast.Expr) {
 		expr = e
 	case token.NAME:
 		e := &ast.VariableExpr{}
-		e.Name = p.parseName()
+		e.NameToken = p.expectToken(token.NAME)
 		expr = e
 	default:
 		p.error(p.off, "unexpected symbol")
@@ -486,7 +475,7 @@ func (p *parser) parseTableCtor() (ctor *ast.TableCtor) {
 			entry = e
 		} else if p.lookahead(); p.tok == token.NAME && p.look.tok == token.ASSIGN {
 			e := &ast.FieldEntry{}
-			e.Name = p.parseName()
+			e.NameToken = p.expectToken(token.NAME)
 			e.AssignToken = p.expectToken(token.ASSIGN)
 			e.Value = p.parseExpr()
 			entry = e
@@ -549,13 +538,13 @@ loop:
 			e := &ast.FieldExpr{}
 			e.Value = expr
 			e.DotToken = p.tokenNext()
-			e.Name = p.parseName()
+			e.NameToken = p.expectToken(token.NAME)
 			expr = e
 		case token.COLON:
 			e := &ast.MethodExpr{}
 			e.Value = expr
 			e.ColonToken = p.tokenNext()
-			e.Name = p.parseName()
+			e.NameToken = p.expectToken(token.NAME)
 			e.Args = p.parseFuncArgs()
 			expr = e
 		case token.LBRACK:

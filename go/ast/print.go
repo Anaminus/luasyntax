@@ -139,7 +139,7 @@ func (e *ParenExpr) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 func (e *VariableExpr) WriteTo(w io.Writer) (n int64, err error) {
-	return e.Name.WriteTo(w)
+	return e.NameToken.WriteTo(w)
 }
 
 func (e *TableCtor) WriteTo(w io.Writer) (n int64, err error) {
@@ -177,7 +177,7 @@ func (e *IndexEntry) WriteTo(w io.Writer) (n int64, err error) {
 
 func (e *FieldEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
-	c.writeTo(w, e.Name)
+	c.writeTo(w, e.NameToken)
 	c.writeTo(w, e.AssignToken)
 	c.writeTo(w, e.Value)
 	return c.finish()
@@ -210,7 +210,7 @@ func (e *FieldExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.Value)
 	c.writeTo(w, e.DotToken)
-	c.writeTo(w, e.Name)
+	c.writeTo(w, e.NameToken)
 	return c.finish()
 }
 
@@ -227,7 +227,7 @@ func (e *MethodExpr) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, e.Value)
 	c.writeTo(w, e.ColonToken)
-	c.writeTo(w, e.Name)
+	c.writeTo(w, e.NameToken)
 	c.writeTo(w, e.Args)
 	return c.finish()
 }
@@ -329,7 +329,7 @@ func (cl *ElseClause) WriteTo(w io.Writer) (n int64, err error) {
 func (s *NumericForStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.ForToken)
-	c.writeTo(w, s.Name)
+	c.writeTo(w, s.NameToken)
 	c.writeTo(w, s.AssignToken)
 	c.writeTo(w, s.Min)
 	c.writeTo(w, s.MaxSepToken)
@@ -390,7 +390,7 @@ func (s *LocalFunctionStmt) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	c.writeTo(w, s.LocalToken)
 	c.writeTo(w, s.Func.FuncToken)
-	c.writeTo(w, s.Name)
+	c.writeTo(w, s.NameToken)
 	c.writeTo(w, s.Func.LParenToken)
 	if s.Func.Params != nil {
 		c.writeTo(w, s.Func.Params)
@@ -441,7 +441,7 @@ func (l *FuncNameList) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	if l.ColonToken.Type.IsValid() {
 		c.writeTo(w, l.ColonToken)
-		c.writeTo(w, l.Method)
+		c.writeTo(w, l.MethodToken)
 	}
 	return c.finish()
 }

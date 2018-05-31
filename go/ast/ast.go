@@ -122,21 +122,10 @@ func (l *ExprList) Len() int {
 	return len(l.Items) + len(l.Seps)
 }
 
-// Name represents a Lua name expression.
-type Name struct {
-	// Token is the underlying NAME token.
-	Token
-	// Value is the evaluated form of the token. It is set only if the parser
-	// has the EvalConst mode set, and is not used when printing.
-	Value string
-}
-
-func (Name) exprNode() {}
-
 // NameList represents a list of one or more name expressions.
 type NameList struct {
-	// Items contains each name in the list.
-	Items []Name
+	// Items contains each NAME in the list.
+	Items []Token
 	// Seps contains each COMMA between names. The length of Seps is one less
 	// then the length of Names.
 	Seps []Token
@@ -223,8 +212,8 @@ func (ParenExpr) exprNode() {}
 
 // VariableExpr represents a variable name used as an expression.
 type VariableExpr struct {
-	// Name is the token indicating the name of the variable.
-	Name Name
+	// NameToken is the token indicating the name of the variable.
+	NameToken Token
 }
 
 func (VariableExpr) exprNode() {}
@@ -281,8 +270,8 @@ func (IndexEntry) entryNode() {}
 // FieldEntry represents a table entry defining a value with a field as the
 // key.
 type FieldEntry struct {
-	// Name is the name of the field, evaluating to the key of the entry.
-	Name Name
+	// NameToken is the name of the field, evaluating to the key of the entry.
+	NameToken Token
 	// AssignToken is the ASSIGN token that begins the entry value.
 	AssignToken Token
 	// Value is the expression evaluating to the value of the entry.
@@ -334,8 +323,8 @@ type FieldExpr struct {
 	Value Expr
 	// DotToken is the DOT token that separates the field.
 	DotToken Token
-	// Name is the name of the field.
-	Name Name
+	// NameToken is the name of the field.
+	NameToken Token
 }
 
 func (FieldExpr) exprNode() {}
@@ -368,8 +357,8 @@ type MethodExpr struct {
 	Value Expr
 	// ColonToken is the COLON token that separates the method name.
 	ColonToken Token
-	// Name is the name of the method.
-	Name Name
+	// NameToken is the name of the method.
+	NameToken Token
 	// Args holds the arguments of the method call.
 	Args Args
 }
@@ -513,8 +502,8 @@ type ElseClause struct {
 type NumericForStmt struct {
 	// ForToken is the FOR token that begins the for statement.
 	ForToken Token
-	// Name is the name of the control variable.
-	Name Name
+	// NameToken is the name of the control variable.
+	NameToken Token
 	// AssignToken is the ASSIGN token that begins the control expressions.
 	AssignToken Token
 	// Min is the expression indicating the lower bound of the control
@@ -618,9 +607,9 @@ func (LocalVarStmt) stmtNode() {}
 type LocalFunctionStmt struct {
 	// LocalToken is the LOCAL token that begins the local statement.
 	LocalToken Token
-	// Name is the name of the function. Note that this token is located after
-	// the FuncToken of the FunctionExpr.
-	Name Name
+	// NameToken is the name of the function. Note that this token is located
+	// after the FuncToken of the FunctionExpr.
+	NameToken Token
 	// Func defines the parameters and body of the function.
 	Func FunctionExpr
 }
@@ -642,19 +631,19 @@ func (FunctionStmt) stmtNode() {}
 // statement. The list may optionally be followed by a method name, indicating
 // that the function is a method.
 type FuncNameList struct {
-	// Items contains the chain of one or more names, indicating the name of a
-	// function statement. Each successive name is a field of the previous
-	// value.
-	Items []Name
+	// Items contains the chain of one or more NAME tokens, indicating the
+	// name of a function statement. Each successive name is a field of the
+	// previous value.
+	Items []Token
 	// Seps contains each DOT between names. The length of Seps is one less
 	// than the length of Exprs.
 	Seps []Token
 	// ColonToken is the COLON token following the last Name in Items, and
 	// preceding Method. It is INVALID if the method is not present.
 	ColonToken Token
-	// Method indicates that the function name describes a method, as well as
-	// the name of the method. It is INVALID if the method is not present.
-	Method Name
+	// MethodToken is a NAME token indicating the method part of the function
+	// name. It is INVALID if the method is not present.
+	MethodToken Token
 }
 
 // Len returns the combined length of Names and Seps, and ColonToken and

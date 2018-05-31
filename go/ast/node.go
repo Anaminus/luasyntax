@@ -22,11 +22,8 @@ func (b *Block) LastToken() *Token {
 func (l *ExprList) FirstToken() *Token { return l.Items[0].FirstToken() }
 func (l *ExprList) LastToken() *Token  { return l.Items[len(l.Items)-1].LastToken() }
 
-func (e *Name) FirstToken() *Token { return &e.Token }
-func (e *Name) LastToken() *Token  { return &e.Token }
-
-func (l *NameList) FirstToken() *Token { return &l.Items[0].Token }
-func (l *NameList) LastToken() *Token  { return &l.Items[len(l.Items)-1].Token }
+func (l *NameList) FirstToken() *Token { return &l.Items[0] }
+func (l *NameList) LastToken() *Token  { return &l.Items[len(l.Items)-1] }
 
 func (e *NumberExpr) FirstToken() *Token { return &e.NumberToken }
 func (e *NumberExpr) LastToken() *Token  { return &e.NumberToken }
@@ -52,8 +49,8 @@ func (e *BinopExpr) LastToken() *Token  { return e.Right.LastToken() }
 func (e *ParenExpr) FirstToken() *Token { return &e.LParenToken }
 func (e *ParenExpr) LastToken() *Token  { return &e.RParenToken }
 
-func (e *VariableExpr) FirstToken() *Token { return &e.Name.Token }
-func (e *VariableExpr) LastToken() *Token  { return &e.Name.Token }
+func (e *VariableExpr) FirstToken() *Token { return &e.NameToken }
+func (e *VariableExpr) LastToken() *Token  { return &e.NameToken }
 
 func (e *TableCtor) FirstToken() *Token { return &e.LBraceToken }
 func (e *TableCtor) LastToken() *Token  { return &e.RBraceToken }
@@ -74,7 +71,7 @@ func (l *EntryList) LastToken() *Token {
 func (e *IndexEntry) FirstToken() *Token { return &e.LBrackToken }
 func (e *IndexEntry) LastToken() *Token  { return e.Value.LastToken() }
 
-func (e *FieldEntry) FirstToken() *Token { return &e.Name.Token }
+func (e *FieldEntry) FirstToken() *Token { return &e.NameToken }
 func (e *FieldEntry) LastToken() *Token  { return e.Value.LastToken() }
 
 func (e *ValueEntry) FirstToken() *Token { return e.Value.FirstToken() }
@@ -84,7 +81,7 @@ func (s *FunctionExpr) FirstToken() *Token { return &s.FuncToken }
 func (s *FunctionExpr) LastToken() *Token  { return &s.EndToken }
 
 func (e *FieldExpr) FirstToken() *Token { return e.Value.FirstToken() }
-func (e *FieldExpr) LastToken() *Token  { return &e.Name.Token }
+func (e *FieldExpr) LastToken() *Token  { return &e.NameToken }
 
 func (e *IndexExpr) FirstToken() *Token { return e.Value.FirstToken() }
 func (e *IndexExpr) LastToken() *Token  { return &e.RBrackToken }
@@ -152,13 +149,13 @@ func (l *FuncNameList) FirstToken() *Token {
 	if len(l.Items) == 0 {
 		return nil
 	}
-	return l.Items[0].FirstToken()
+	return &l.Items[0]
 }
 func (l *FuncNameList) LastToken() *Token {
 	if len(l.Seps) == len(l.Items) {
 		return &l.Seps[len(l.Seps)-1]
 	}
-	return l.Items[len(l.Items)-1].LastToken()
+	return &l.Items[len(l.Items)-1]
 }
 
 func (s *BreakStmt) FirstToken() *Token { return &s.BreakToken }
