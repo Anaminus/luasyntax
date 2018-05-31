@@ -13,17 +13,6 @@ import (
 	"io/ioutil"
 )
 
-// Mode defines flags that control how the parser behaves.
-type Mode int
-
-const (
-	// (0) Default behavior.
-	None Mode = iota
-	// Evaluate constant expression nodes, setting the Value field of the
-	// node.
-	EvalConst
-)
-
 // tokenstate holds information about the current token.
 type tokenstate struct {
 	off int          // Offset of token.
@@ -38,7 +27,6 @@ type parser struct {
 	file    *token.File
 	err     error //scanner.Error
 	scanner scanner.Scanner
-	mode    Mode
 
 	tokenstate // Current token state.
 
@@ -48,9 +36,8 @@ type parser struct {
 // init prepares the parser to parse a source. The info sets the file to use
 // for positional information. The src is the text to be parsed. The mode
 // configures how the parser behaves.
-func (p *parser) init(info *token.File, src []byte, mode Mode) {
+func (p *parser) init(info *token.File, src []byte) {
 	p.file = info
-	p.mode = mode
 	p.scanner.Init(p.file, src, func(pos token.Position, msg string) {
 		p.err = scanner.Error{Position: pos, Message: msg}
 	})
@@ -672,7 +659,7 @@ func readSource(filename string, src interface{}) ([]byte, error) {
 // filename.
 //
 // The mode argument controls how the parser behaves.
-func ParseFile(filename string, src interface{}, mode Mode) (f *ast.File, err error) {
+func ParseFile(filename string, src interface{}) (f *ast.File, err error) {
 	text, err := readSource(filename, src)
 	if err != nil {
 		return nil, err
@@ -694,7 +681,7 @@ func ParseFile(filename string, src interface{}, mode Mode) (f *ast.File, err er
 		err = p.err
 	}()
 
-	p.init(info, text, mode)
+	p.init(info, text)
 	f = p.parseFile()
 	return f, err
 }
