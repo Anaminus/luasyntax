@@ -151,9 +151,6 @@ func (l *NameList) Len() int {
 type NumberExpr struct {
 	// NumberToken is the number token holding the content of the expression.
 	NumberToken Token
-	// Value is the evaluated form of the token. It is set only if the parser
-	// has the EvalConst mode set, and is not used when printing.
-	Value float64
 }
 
 func (NumberExpr) exprNode() {}
@@ -162,9 +159,6 @@ func (NumberExpr) exprNode() {}
 type StringExpr struct {
 	// StringToken is the string token holding the content the expression.
 	StringToken Token
-	// Value is the evaluated form of the token. It is set only if the parser
-	// has the EvalConst mode set, and is not used when printing.
-	Value string
 }
 
 func (StringExpr) exprNode() {}
@@ -181,9 +175,6 @@ func (NilExpr) exprNode() {}
 type BoolExpr struct {
 	// BoolToken is the bool token holding the content the expression.
 	BoolToken Token
-	// Value is the evaluated form of the token. It is set only if the parser
-	// has the EvalConst mode set, and is not used when printing.
-	Value bool
 }
 
 func (BoolExpr) exprNode() {}

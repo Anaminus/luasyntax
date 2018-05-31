@@ -11,8 +11,6 @@ import (
 	"github.com/anaminus/luasyntax/go/token"
 	"io"
 	"io/ioutil"
-	"math"
-	"strconv"
 )
 
 // Mode defines flags that control how the parser behaves.
@@ -164,105 +162,21 @@ func (p *parser) parseName() (name ast.Name) {
 
 // parseNumber creates a number node from the current state.
 func (p *parser) parseNumber() (num *ast.NumberExpr) {
-	num = &ast.NumberExpr{NumberToken: p.token()}
-	if p.mode&EvalConst != 0 {
-		var err error
-		switch p.tok {
-		case token.NUMBERFLOAT:
-			// Actual parsing of the number depends on the compiler (strtod), so
-			// technically it's correct to just use Go's parser.
-			num.Value, err = strconv.ParseFloat(string(p.lit), 64)
-		case token.NUMBERHEX:
-			var i uint64
-			// Trim leading `0x`.
-			i, err = strconv.ParseUint(string(p.lit[2:]), 16, 32)
-			num.Value = float64(i)
-		default:
-			p.error(p.off, "'"+token.NUMBERFLOAT.String()+"' expected")
-		}
-		if err != nil {
-			num.Value = math.NaN()
-		}
+	switch p.tok {
+	case token.NUMBERFLOAT, token.NUMBERHEX:
+		num = &ast.NumberExpr{NumberToken: p.token()}
+	default:
+		p.error(p.off, "'"+token.NUMBERFLOAT.String()+"' expected")
 	}
 	p.next()
 	return
 }
 
-// parseQuotedString parses literal quoted string into actual text.
-func parseQuotedString(b []byte) string {
-	b = b[1 : len(b)-1]          // Trim quotes.
-	c := make([]byte, 0, len(b)) // Result will never be larger than source.
-	for i := 0; i < len(b); i++ {
-		ch := b[i]
-		if ch == '\\' {
-			i++
-			ch = b[i]
-			switch ch {
-			case 'a':
-				ch = '\a'
-			case 'b':
-				ch = '\b'
-			case 'f':
-				ch = '\f'
-			case 'n':
-				ch = '\n'
-			case 'r':
-				ch = '\r'
-			case 't':
-				ch = '\t'
-			case 'v':
-				ch = '\v'
-			default:
-				if '0' <= ch && ch <= '9' {
-					var n byte
-					for j := 0; j < 3 && '0' <= b[i] && b[i] <= '9'; j++ {
-						n = n*10 + (b[i] - '0')
-						i++
-					}
-					// Size of number was already checked by scanner.
-					ch = n
-				}
-			}
-		}
-		c = append(c, ch)
-	}
-	return string(c)
-}
-
-// parseBlockString parses a literal long string into actual text.
-func parseBlockString(b []byte) string {
-	// Assumes string is wrapped in a `[==[]==]`-like block.
-	b = b[1:] // Trim first `[`
-	for i, c := range b {
-		if c == '[' {
-			// Trim to second '[', as well as trailing block.
-			b = b[i+1 : len(b)-i-2]
-		}
-	}
-	// Skip first newline.
-	if len(b) > 0 && (b[0] == '\n' || b[0] == '\r') {
-		if len(b) > 1 && (b[1] == '\n' || b[1] == '\r') && b[1] != b[0] {
-			b = b[2:]
-		} else {
-			b = b[1:]
-		}
-	}
-	return string(b)
-}
-
 // parseString creates a string node from the current state.
 func (p *parser) parseString() (str *ast.StringExpr) {
 	switch p.tok {
-	case token.STRING:
+	case token.STRING, token.LONGSTRING:
 		str = &ast.StringExpr{StringToken: p.token()}
-		if p.mode&EvalConst != 0 {
-			str.Value = parseQuotedString(p.lit)
-		}
-	case token.LONGSTRING:
-		str = &ast.StringExpr{StringToken: p.token()}
-		if p.mode&EvalConst != 0 {
-			str.Value = parseBlockString(p.lit)
-		}
 	default:
 		p.error(p.off, "'"+token.STRING.String()+"' expected")
 	}
@@ -279,10 +193,8 @@ func (p *parser) parseSimpleExpr() (expr ast.Expr) {
 		expr = p.parseString()
 	case token.NIL:
 		expr = &ast.NilExpr{NilToken: p.tokenNext()}
-	case token.TRUE:
-		expr = &ast.BoolExpr{BoolToken: p.tokenNext(), Value: p.mode&EvalConst != 0}
-	case token.FALSE:
-		expr = &ast.BoolExpr{BoolToken: p.tokenNext(), Value: false}
+	case token.TRUE, token.FALSE:
+		expr = &ast.BoolExpr{BoolToken: p.tokenNext()}
 	case token.VARARG:
 		expr = &ast.VarArgExpr{VarArgToken: p.tokenNext()}
 	case token.LBRACE:
