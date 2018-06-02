@@ -218,6 +218,7 @@ func Walk(v Visitor, node Node) {
 		Walk(v, &node.Func)
 
 	case *FunctionStmt:
+		Walk(v, &node.Name)
 		Walk(v, &node.Func)
 
 	case *FuncNameList:
