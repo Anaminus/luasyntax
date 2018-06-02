@@ -93,6 +93,13 @@ func (f *File) SetLinesForContent(content []byte) {
 	f.mutex.Unlock()
 }
 
+// ClearLines resets the line offsets for a file.
+func (f *File) ClearLines() {
+	f.mutex.Lock()
+	f.lines = f.lines[:0]
+	f.mutex.Unlock()
+}
+
 // searchInts performs a binary search for the nearest position of an int
 // within a slice of ints.
 func searchInts(a []int, x int) int {
