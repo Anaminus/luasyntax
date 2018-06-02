@@ -65,6 +65,21 @@ func (f *File) WriteTo(w io.Writer) (n int64, err error) {
 	return c.finish()
 }
 
+func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
+	var c copier
+	for i, stmt := range b.Items {
+		if !c.writeTo(w, stmt) {
+			break
+		}
+		if i < len(b.Seps) && b.Seps[i].Type.IsValid() {
+			if !c.writeTo(w, b.Seps[i]) {
+				break
+			}
+		}
+	}
+	return c.finish()
+}
+
 func (l *ExprList) WriteTo(w io.Writer) (n int64, err error) {
 	var c copier
 	for i, item := range l.Items {
@@ -255,21 +270,6 @@ func (tc *TableArg) WriteTo(w io.Writer) (n int64, err error) {
 
 func (sc *StringArg) WriteTo(w io.Writer) (n int64, err error) {
 	return sc.Value.WriteTo(w)
-}
-
-func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
-	var c copier
-	for i, stmt := range b.Items {
-		if !c.writeTo(w, stmt) {
-			break
-		}
-		if i < len(b.Seps) && b.Seps[i].Type.IsValid() {
-			if !c.writeTo(w, b.Seps[i]) {
-				break
-			}
-		}
-	}
-	return c.finish()
 }
 
 func (s *DoStmt) WriteTo(w io.Writer) (n int64, err error) {
