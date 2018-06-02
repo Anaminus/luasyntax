@@ -234,3 +234,349 @@ func Walk(v Visitor, node Node) {
 		panic(fmt.Sprintf("unexpected node type %T", node))
 	}
 }
+
+// A TokenVisitor's Visit method is called for each node encountered by
+// WalkTokens. If the result visitor w is not nil, WalkTokens visits each
+// child of the node with w, followed by a call of w.Visit(nil). Each token
+// encountered along the way is called with w.VisitToken(node, n, token),
+// where n indicates the nth token of the current node.
+type TokenVisitor interface {
+	Visit(node Node) (w TokenVisitor)
+	VisitToken(node Node, n int, tok *Token)
+}
+
+// WalkTokens traverses an AST, visiting each token in depth-first, lexical
+// order. It starts by calling v.Visit(node); node must not be nil. If the
+// returned visitor w is not nil, then WalkTokens is called recursively with w
+// for each non-nil child of the node, followed by a call of w.Visit(nil).
+// Each token encountered along the way is called with w.VisitToken(node, n,
+// token), where n indicates the nth token of the current node. Tokens are
+// guaranteed to be visited in lexical order.
+//
+// Note that a node or token will be visited even if it is not valid.
+func WalkTokens(v TokenVisitor, node Node) {
+	if v = v.Visit(node); v == nil {
+		return
+	}
+
+	switch node := node.(type) {
+	case *File:
+		WalkTokens(v, &node.Body)
+		v.VisitToken(node, 0, &node.EOFToken)
+
+	case *Block:
+		for i, item := range node.Items {
+			if item != nil {
+				WalkTokens(v, item)
+			}
+			if i < len(node.Seps) {
+				v.VisitToken(node, i, &node.Seps[i])
+			}
+		}
+
+	case *ExprList:
+		for i, item := range node.Items {
+			if item != nil {
+				WalkTokens(v, item)
+			}
+			if i < len(node.Seps) {
+				v.VisitToken(node, i, &node.Seps[i])
+			}
+		}
+
+	case *NameList:
+		n := 0
+		for i := range node.Items {
+			v.VisitToken(node, n, &node.Items[i])
+			n++
+			if i < len(node.Seps) {
+				v.VisitToken(node, n, &node.Seps[i])
+				n++
+			}
+		}
+
+	case *NumberExpr:
+		v.VisitToken(node, 0, &node.NumberToken)
+
+	case *StringExpr:
+		v.VisitToken(node, 0, &node.StringToken)
+
+	case *NilExpr:
+		v.VisitToken(node, 0, &node.NilToken)
+
+	case *BoolExpr:
+		v.VisitToken(node, 0, &node.BoolToken)
+
+	case *VarArgExpr:
+		v.VisitToken(node, 0, &node.VarArgToken)
+
+	case *UnopExpr:
+		v.VisitToken(node, 0, &node.UnopToken)
+		if node.Operand != nil {
+			WalkTokens(v, node.Operand)
+		}
+
+	case *BinopExpr:
+		if node.Left != nil {
+			WalkTokens(v, node.Left)
+		}
+		v.VisitToken(node, 0, &node.BinopToken)
+		if node.Right != nil {
+			WalkTokens(v, node.Right)
+		}
+
+	case *ParenExpr:
+		v.VisitToken(node, 0, &node.LParenToken)
+		if node.Value != nil {
+			WalkTokens(v, node.Value)
+		}
+		v.VisitToken(node, 1, &node.RParenToken)
+
+	case *VariableExpr:
+		v.VisitToken(node, 0, &node.NameToken)
+
+	case *TableCtor:
+		v.VisitToken(node, 0, &node.LBraceToken)
+		WalkTokens(v, &node.Entries)
+		v.VisitToken(node, 1, &node.RBraceToken)
+
+	case *EntryList:
+		for i, item := range node.Items {
+			if item != nil {
+				WalkTokens(v, item)
+			}
+			if i < len(node.Seps) {
+				v.VisitToken(node, i, &node.Seps[i])
+			}
+		}
+
+	case *IndexEntry:
+		v.VisitToken(node, 0, &node.LBrackToken)
+		if node.Key != nil {
+			WalkTokens(v, node.Key)
+		}
+		v.VisitToken(node, 1, &node.RBrackToken)
+		v.VisitToken(node, 2, &node.AssignToken)
+		if node.Value != nil {
+			WalkTokens(v, node.Value)
+		}
+
+	case *FieldEntry:
+		v.VisitToken(node, 0, &node.NameToken)
+		v.VisitToken(node, 1, &node.AssignToken)
+		if node.Value != nil {
+			WalkTokens(v, node.Value)
+		}
+
+	case *ValueEntry:
+		if node.Value != nil {
+			WalkTokens(v, node.Value)
+		}
+
+	case *FunctionExpr:
+		v.VisitToken(node, 0, &node.FuncToken)
+		v.VisitToken(node, 1, &node.LParenToken)
+		if node.Params != nil {
+			WalkTokens(v, node.Params)
+		}
+		v.VisitToken(node, 2, &node.VarArgSepToken)
+		v.VisitToken(node, 3, &node.VarArgToken)
+		v.VisitToken(node, 4, &node.RParenToken)
+		WalkTokens(v, &node.Body)
+		v.VisitToken(node, 5, &node.EndToken)
+
+	case *FieldExpr:
+		if node.Value != nil {
+			WalkTokens(v, node.Value)
+		}
+		v.VisitToken(node, 0, &node.DotToken)
+		v.VisitToken(node, 1, &node.NameToken)
+
+	case *IndexExpr:
+		if node.Value != nil {
+			WalkTokens(v, node.Value)
+		}
+		v.VisitToken(node, 0, &node.LBrackToken)
+		if node.Index != nil {
+			WalkTokens(v, node.Index)
+		}
+		v.VisitToken(node, 1, &node.RBrackToken)
+
+	case *MethodExpr:
+		if node.Value != nil {
+			WalkTokens(v, node.Value)
+		}
+		v.VisitToken(node, 0, &node.ColonToken)
+		v.VisitToken(node, 1, &node.NameToken)
+		if node.Args != nil {
+			WalkTokens(v, node.Args)
+		}
+
+	case *CallExpr:
+		if node.Value != nil {
+			WalkTokens(v, node.Value)
+		}
+		if node.Args != nil {
+			WalkTokens(v, node.Args)
+		}
+
+	case *ListArgs:
+		v.VisitToken(node, 0, &node.LParenToken)
+		if node.Values != nil {
+			WalkTokens(v, node.Values)
+		}
+		v.VisitToken(node, 1, &node.RParenToken)
+
+	case *TableArg:
+		WalkTokens(v, &node.Value)
+
+	case *StringArg:
+		WalkTokens(v, &node.Value)
+
+	case *DoStmt:
+		v.VisitToken(node, 0, &node.DoToken)
+		WalkTokens(v, &node.Body)
+		v.VisitToken(node, 1, &node.EndToken)
+
+	case *AssignStmt:
+		WalkTokens(v, &node.Left)
+		v.VisitToken(node, 0, &node.AssignToken)
+		WalkTokens(v, &node.Right)
+
+	case *CallStmt:
+		if node.Call != nil {
+			WalkTokens(v, node.Call)
+		}
+
+	case *IfStmt:
+		v.VisitToken(node, 0, &node.IfToken)
+		if node.Cond != nil {
+			WalkTokens(v, node.Cond)
+		}
+		v.VisitToken(node, 1, &node.ThenToken)
+		WalkTokens(v, &node.Body)
+		for _, elif := range node.ElseIf {
+			WalkTokens(v, &elif)
+		}
+		if node.Else != nil {
+			WalkTokens(v, node.Else)
+		}
+
+	case *ElseIfClause:
+		v.VisitToken(node, 0, &node.ElseIfToken)
+		if node.Cond != nil {
+			WalkTokens(v, node.Cond)
+		}
+		v.VisitToken(node, 1, &node.ThenToken)
+		WalkTokens(v, &node.Body)
+
+	case *ElseClause:
+		v.VisitToken(node, 0, &node.ElseToken)
+		WalkTokens(v, &node.Body)
+
+	case *NumericForStmt:
+		v.VisitToken(node, 0, &node.ForToken)
+		v.VisitToken(node, 1, &node.NameToken)
+		v.VisitToken(node, 2, &node.AssignToken)
+		if node.Min != nil {
+			WalkTokens(v, node.Min)
+		}
+		v.VisitToken(node, 3, &node.MaxSepToken)
+		if node.Max != nil {
+			WalkTokens(v, node.Max)
+		}
+		v.VisitToken(node, 4, &node.StepSepToken)
+		if node.Step != nil {
+			WalkTokens(v, node.Step)
+		}
+		v.VisitToken(node, 5, &node.DoToken)
+		WalkTokens(v, &node.Body)
+		v.VisitToken(node, 6, &node.EndToken)
+
+	case *GenericForStmt:
+		v.VisitToken(node, 0, &node.ForToken)
+		WalkTokens(v, &node.Names)
+		v.VisitToken(node, 1, &node.InToken)
+		WalkTokens(v, &node.Iterator)
+		v.VisitToken(node, 2, &node.DoToken)
+		WalkTokens(v, &node.Body)
+		v.VisitToken(node, 3, &node.EndToken)
+
+	case *WhileStmt:
+		v.VisitToken(node, 0, &node.WhileToken)
+		if node.Cond != nil {
+			WalkTokens(v, node.Cond)
+		}
+		v.VisitToken(node, 1, &node.DoToken)
+		WalkTokens(v, &node.Body)
+		v.VisitToken(node, 2, &node.EndToken)
+
+	case *RepeatStmt:
+		v.VisitToken(node, 0, &node.RepeatToken)
+		WalkTokens(v, &node.Body)
+		v.VisitToken(node, 1, &node.UntilToken)
+		if node.Cond != nil {
+			WalkTokens(v, node.Cond)
+		}
+
+	case *LocalVarStmt:
+		v.VisitToken(node, 0, &node.LocalToken)
+		WalkTokens(v, &node.Names)
+		v.VisitToken(node, 1, &node.AssignToken)
+		if node.Values != nil {
+			WalkTokens(v, node.Values)
+		}
+
+	case *LocalFunctionStmt:
+		v.VisitToken(node, 0, &node.LocalToken)
+		v.VisitToken(node, 1, &node.Func.FuncToken)
+		v.VisitToken(node, 2, &node.NameToken)
+		v.VisitToken(node, 3, &node.Func.LParenToken)
+		if node.Func.Params != nil {
+			WalkTokens(v, node.Func.Params)
+		}
+		v.VisitToken(node, 4, &node.Func.VarArgSepToken)
+		v.VisitToken(node, 5, &node.Func.VarArgToken)
+		v.VisitToken(node, 6, &node.Func.RParenToken)
+		WalkTokens(v, &node.Func.Body)
+		v.VisitToken(node, 7, &node.Func.EndToken)
+
+	case *FunctionStmt:
+		v.VisitToken(node, 0, &node.Func.FuncToken)
+		WalkTokens(v, &node.Name)
+		v.VisitToken(node, 2, &node.Func.LParenToken)
+		if node.Func.Params != nil {
+			WalkTokens(v, node.Func.Params)
+		}
+		v.VisitToken(node, 3, &node.Func.VarArgSepToken)
+		v.VisitToken(node, 4, &node.Func.VarArgToken)
+		v.VisitToken(node, 5, &node.Func.RParenToken)
+		WalkTokens(v, &node.Func.Body)
+		v.VisitToken(node, 6, &node.Func.EndToken)
+
+	case *FuncNameList:
+		n := 0
+		for i := range node.Items {
+			v.VisitToken(node, n, &node.Items[i])
+			n++
+			if i < len(node.Seps) {
+				v.VisitToken(node, n, &node.Seps[i])
+				n++
+			}
+		}
+		v.VisitToken(node, n+1, &node.ColonToken)
+		v.VisitToken(node, n+2, &node.MethodToken)
+
+	case *BreakStmt:
+		v.VisitToken(node, 0, &node.BreakToken)
+
+	case *ReturnStmt:
+		v.VisitToken(node, 0, &node.ReturnToken)
+		if node.Values != nil {
+			WalkTokens(v, node.Values)
+		}
+
+	default:
+		panic(fmt.Sprintf("unexpected node type %T", node))
+	}
+}
