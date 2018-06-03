@@ -62,7 +62,7 @@ const (
 	MINUS             // `-` binary / unary operator
 	binop_end         // BINARY OPERATORS ]
 	HASH              // `#` unary operator
-	op_end            /// OPERATORS ]
+	op_end            // OPERATORS ]
 	key_start         // [ KEYWORDS
 	NOT               // `not` keyword / unary operator
 	unop_end          // UNARY ]
