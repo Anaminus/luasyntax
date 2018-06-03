@@ -64,32 +64,34 @@ const (
 	HASH              // `#` unary operator
 	op_end            // OPERATORS ]
 	key_start         // [ KEYWORDS
+	ekey_start        // [ EXPRESSION KEYWORDS
 	NOT               // `not` keyword / unary operator
 	unop_end          // UNARY ]
-	DO                // `do` keyword
-	END               // `end` keyword
 	WHILE             // `while` keyword
-	REPEAT            // `repeat` keyword
 	UNTIL             // `until` keyword
 	IF                // `if` keyword
-	THEN              // `then` keyword
 	ELSEIF            // `elseif` keyword
+	IN                // `in` keyword
+	RETURN            // `return` keyword
+	binkey_start      // [ BINARY KEYWORDS
+	AND               // `and` keyword / binary operator
+	OR                // `or` keyword / binary operator
+	binkey_end        // BINARY KEYWORDS ]
+	ekey_end          // EXPRESSION KEYWORDS ]
+	DO                // `do` keyword
+	END               // `end` keyword
+	REPEAT            // `repeat` keyword
+	THEN              // `then` keyword
 	ELSE              // `else` keyword
 	FOR               // `for` keyword
-	IN                // `in` keyword
 	LOCAL             // `local` keyword
 	FUNCTION          // `function` keyword
-	RETURN            // `return` keyword
 	BREAK             // `break` keyword
 	NIL               // `nil` keyword
 	bool_start        // [ BOOLEANS
 	FALSE             // `false` keyword / boolean
 	TRUE              // `true` keyword / boolean
 	bool_end          // BOOLEANS ]
-	binkey_start      // [ BINARY KEYWORDS
-	AND               // `and` keyword / binary operator
-	OR                // `or` keyword / binary operator
-	binkey_end        // BINARY KEYWORDS ]
 	key_end           // KEYWORDS ]
 	valid_end         // VALID ]
 )
@@ -153,11 +155,13 @@ var tokens = [...]string{
 	OR:          "or",
 	NOT:         "not",
 	// So that we don't get errors when iterating keywords.
+	ekey_start:   "",
 	unop_end:     "",
-	bool_start:   "",
-	bool_end:     "",
 	binkey_start: "",
 	binkey_end:   "",
+	ekey_end:     "",
+	bool_start:   "",
+	bool_end:     "",
 }
 
 // String returns a string representation of the token type, when possible.
