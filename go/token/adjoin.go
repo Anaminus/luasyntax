@@ -54,7 +54,9 @@ func (left Type) AdjoinSeparator(right Type) rune {
 			right > key_start:
 			return space
 		}
-	case left == ASSIGN:
+	case left == ASSIGN,
+		left == LT,
+		left == GT:
 		switch {
 		case right == ASSIGN,
 			right == EQ:
@@ -80,13 +82,6 @@ func (left Type) AdjoinSeparator(right Type) rune {
 			// Insert space only if number begins with '.' character.
 			return cond
 		case right == DOT:
-			return space
-		}
-	case left == LT,
-		left == GT:
-		switch {
-		case right == ASSIGN,
-			right == EQ:
 			return space
 		}
 	case left == EQ,
