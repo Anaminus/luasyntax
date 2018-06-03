@@ -13,87 +13,88 @@ type Type int
 // tokens.
 
 const (
-	INVALID      Type = iota
-	valid_start       // [ VALID
-	EOF               // End of file marker
-	pre_start         // [ PREFIXES
-	SPACE             // Whitespace sequence
-	comm_start        // [ COMMENTS
-	COMMENT           // Line-style comment
-	LONGCOMMENT       // Block-style comment
-	comm_end          // COMMENTS ]
-	pre_end           // PREFIXES ]
-	NAME              // Identifier
-	num_start         // [ NUMBER
-	NUMBERFLOAT       // Float number
-	NUMBERHEX         // Hexadecimal number
-	num_end           // NUMBER ]
-	str_start         // [ STRINGS
-	STRING            // Quote-style string
-	LONGSTRING        // Block-style string
-	str_end           // STRINGS ]
-	op_start          // [ OPERATORS
-	SEMICOLON         // `;` operator
-	ASSIGN            // `=` operator
-	COMMA             // `,` operator
-	DOT               // `.` operator
-	COLON             // `:` operator
-	LBRACK            // `[` operator
-	RBRACK            // `]` operator
-	VARARG            // `...` operator
-	LPAREN            // `(` operator
-	RPAREN            // `)` operator
-	LBRACE            // `{` operator
-	RBRACE            // `}` operator
-	binop_start       // [ BINARY OPERATORS
-	PLUS              // `+` binary operator
-	ASTERISK          // `*` binary operator
-	SLASH             // `/` binary operator
-	PERCENT           // `%` binary operator
-	CARET             // `^` binary operator
-	CONCAT            // `..` binary operator
-	LT                // `<` binary operator
-	LEQ               // `<=` binary operator
-	GT                // `>` binary operator
-	GEQ               // `>=` binary operator
-	EQ                // `==` binary operator
-	NEQ               // `~=` binary operator
-	unop_start        // [ UNARY
-	MINUS             // `-` binary / unary operator
-	binop_end         // BINARY OPERATORS ]
-	HASH              // `#` unary operator
-	op_end            // OPERATORS ]
-	key_start         // [ KEYWORDS
-	ekey_start        // [ EXPRESSION KEYWORDS
-	NOT               // `not` keyword / unary operator
-	unop_end          // UNARY ]
-	WHILE             // `while` keyword
-	UNTIL             // `until` keyword
-	IF                // `if` keyword
-	ELSEIF            // `elseif` keyword
-	IN                // `in` keyword
-	RETURN            // `return` keyword
-	binkey_start      // [ BINARY KEYWORDS
-	AND               // `and` keyword / binary operator
-	OR                // `or` keyword / binary operator
-	binkey_end        // BINARY KEYWORDS ]
-	ekey_end          // EXPRESSION KEYWORDS ]
-	DO                // `do` keyword
-	END               // `end` keyword
-	REPEAT            // `repeat` keyword
-	THEN              // `then` keyword
-	ELSE              // `else` keyword
-	FOR               // `for` keyword
-	LOCAL             // `local` keyword
-	FUNCTION          // `function` keyword
-	BREAK             // `break` keyword
-	NIL               // `nil` keyword
-	bool_start        // [ BOOLEANS
-	FALSE             // `false` keyword / boolean
-	TRUE              // `true` keyword / boolean
-	bool_end          // BOOLEANS ]
-	key_end           // KEYWORDS ]
-	valid_end         // VALID ]
+	INVALID Type = iota
+
+	valid_start  // [ VALID
+	EOF          // End of file marker
+	pre_start    // [ PREFIXES
+	SPACE        // Whitespace sequence
+	comm_start   // [ COMMENTS
+	COMMENT      // Line-style comment
+	LONGCOMMENT  // Block-style comment
+	comm_end     // COMMENTS ]
+	pre_end      // PREFIXES ]
+	NAME         // Identifier
+	num_start    // [ NUMBER
+	NUMBERFLOAT  // Float number
+	NUMBERHEX    // Hexadecimal number
+	num_end      // NUMBER ]
+	str_start    // [ STRINGS
+	STRING       // Quote-style string
+	LONGSTRING   // Block-style string
+	str_end      // STRINGS ]
+	op_start     // [ OPERATORS
+	SEMICOLON    // `;` operator
+	ASSIGN       // `=` operator
+	COMMA        // `,` operator
+	DOT          // `.` operator
+	COLON        // `:` operator
+	LBRACK       // `[` operator
+	RBRACK       // `]` operator
+	VARARG       // `...` operator
+	LPAREN       // `(` operator
+	RPAREN       // `)` operator
+	LBRACE       // `{` operator
+	RBRACE       // `}` operator
+	binop_start  // [ BINARY OPERATORS
+	PLUS         // `+` binary operator
+	ASTERISK     // `*` binary operator
+	SLASH        // `/` binary operator
+	PERCENT      // `%` binary operator
+	CARET        // `^` binary operator
+	CONCAT       // `..` binary operator
+	LT           // `<` binary operator
+	LEQ          // `<=` binary operator
+	GT           // `>` binary operator
+	GEQ          // `>=` binary operator
+	EQ           // `==` binary operator
+	NEQ          // `~=` binary operator
+	unop_start   // [ UNARY
+	MINUS        // `-` binary / unary operator
+	binop_end    // BINARY OPERATORS ]
+	HASH         // `#` unary operator
+	op_end       // OPERATORS ]
+	key_start    // [ KEYWORDS
+	ekey_start   // [ EXPRESSION KEYWORDS
+	NOT          // `not` keyword / unary operator
+	unop_end     // UNARY ]
+	WHILE        // `while` keyword
+	UNTIL        // `until` keyword
+	IF           // `if` keyword
+	ELSEIF       // `elseif` keyword
+	IN           // `in` keyword
+	RETURN       // `return` keyword
+	binkey_start // [ BINARY KEYWORDS
+	AND          // `and` keyword / binary operator
+	OR           // `or` keyword / binary operator
+	binkey_end   // BINARY KEYWORDS ]
+	ekey_end     // EXPRESSION KEYWORDS ]
+	DO           // `do` keyword
+	END          // `end` keyword
+	REPEAT       // `repeat` keyword
+	THEN         // `then` keyword
+	ELSE         // `else` keyword
+	FOR          // `for` keyword
+	LOCAL        // `local` keyword
+	FUNCTION     // `function` keyword
+	BREAK        // `break` keyword
+	NIL          // `nil` keyword
+	bool_start   // [ BOOLEANS
+	FALSE        // `false` keyword / boolean
+	TRUE         // `true` keyword / boolean
+	bool_end     // BOOLEANS ]
+	key_end      // KEYWORDS ]
+	valid_end    // VALID ]
 )
 
 var tokens = [...]string{
