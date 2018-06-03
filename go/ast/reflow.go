@@ -1,7 +1,6 @@
-package extend
+package ast
 
 import (
-	"github.com/anaminus/luasyntax/go/ast"
 	"github.com/anaminus/luasyntax/go/token"
 )
 
@@ -20,11 +19,11 @@ func (r *reflowVisitor) scanNewlines(b []byte) {
 	}
 }
 
-func (r *reflowVisitor) Visit(ast.Node) ast.Visitor {
+func (r *reflowVisitor) Visit(Node) Visitor {
 	return r
 }
 
-func (r *reflowVisitor) VisitToken(_ ast.Node, _ int, tok *ast.Token) {
+func (r *reflowVisitor) VisitToken(_ Node, _ int, tok *Token) {
 	for _, prefix := range tok.Prefix {
 		r.scanNewlines(prefix.Bytes)
 		r.off += len(prefix.Bytes)
@@ -36,8 +35,8 @@ func (r *reflowVisitor) VisitToken(_ ast.Node, _ int, tok *ast.Token) {
 
 // Reflow walks through a syntax tree, adjusting the offset of each token so
 // that it is correct for the current bytes of the token.
-func Reflow(file *ast.File) {
+func Reflow(file *File) {
 	var r reflowVisitor
 	file.Info.ClearLines()
-	ast.Walk(&r, file)
+	Walk(&r, file)
 }
