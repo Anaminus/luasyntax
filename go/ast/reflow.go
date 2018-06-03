@@ -24,7 +24,13 @@ func (r *reflowVisitor) Visit(Node) Visitor {
 }
 
 func (r *reflowVisitor) VisitToken(_ Node, _ int, tok *Token) {
+	if !tok.Type.IsValid() {
+		return
+	}
 	for _, prefix := range tok.Prefix {
+		if !prefix.Type.IsValid() {
+			continue
+		}
 		r.scanNewlines(prefix.Bytes)
 		r.off += len(prefix.Bytes)
 	}
