@@ -77,7 +77,7 @@ func (left Type) AdjoinSeparator(right Type) rune {
 	case left == CONCAT:
 		switch {
 		case right == NUMBERFLOAT:
-			// Valid only if number does not begin with '.' character.
+			// Insert space only if number begins with '.' character.
 			return cond
 		case right == DOT:
 			return space
@@ -107,7 +107,8 @@ func (left Type) AdjoinSeparator(right Type) rune {
 			return space
 		case right == NUMBERFLOAT:
 			if left < ekey_end {
-				// Valid only if number does not begin with '.' character.
+				// Insert space only if number does not begin with '.'
+				// character.
 				return cond
 			}
 		}
