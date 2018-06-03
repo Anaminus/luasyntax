@@ -327,6 +327,9 @@ func Walk(v Visitor, node Node) {
 		if node.Else != nil {
 			Walk(v, node.Else)
 		}
+		if tvok {
+			tv.VisitToken(node, 1, &node.EndToken)
+		}
 
 	case *ElseIfClause:
 		if tvok {
