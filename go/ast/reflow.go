@@ -4,13 +4,14 @@ import (
 	"github.com/anaminus/luasyntax/go/token"
 )
 
-// reflowVisitor maintains the current offset while reflowing a syntax tree.
-type reflowVisitor struct {
+// offsetFixer maintains the current offset while fixing the token offsets of
+// a syntax tree.
+type offsetFixer struct {
 	info *token.File
 	off  int
 }
 
-func (r *reflowVisitor) scanNewlines(b []byte) {
+func (r *offsetFixer) scanNewlines(b []byte) {
 	for i := 0; i < len(b); i++ {
 		if b[i] == '\n' {
 			r.info.AddLine(r.off + i)
@@ -18,11 +19,11 @@ func (r *reflowVisitor) scanNewlines(b []byte) {
 	}
 }
 
-func (r *reflowVisitor) Visit(Node) Visitor {
+func (r *offsetFixer) Visit(Node) Visitor {
 	return r
 }
 
-func (r *reflowVisitor) VisitToken(_ Node, _ int, tok *Token) {
+func (r *offsetFixer) VisitToken(_ Node, _ int, tok *Token) {
 	if !tok.Type.IsValid() {
 		return
 	}
@@ -40,13 +41,13 @@ func (r *reflowVisitor) VisitToken(_ Node, _ int, tok *Token) {
 	r.off += len(tok.Bytes)
 }
 
-// Reflow walks through a syntax tree, adjusting the offset of each token so
-// that it is correct for the current bytes of the token. The offset argument
-// specifies the starting offset.
+// FixTokenOffsets walks through a syntax tree, adjusting the offset of each
+// token so that it is correct for the current bytes of the token. The offset
+// argument specifies the starting offset.
 //
 // If the node is a File, then the file's line information will be rewritten.
-func Reflow(node Node, offset int) {
-	r := reflowVisitor{off: offset}
+func FixTokenOffsets(node Node, offset int) {
+	r := offsetFixer{off: offset}
 	if file, ok := node.(*File); ok {
 		r.info = file.Info
 		r.info.ClearLines()
