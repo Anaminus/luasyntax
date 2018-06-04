@@ -32,7 +32,10 @@ type TokenVisitor interface {
 // then Walk is called recursively with w for each non-nil child of the node,
 // followed by a call of w.Visit(nil).
 //
-// Note that a node will be traversed even if it is not valid.
+// If w implements a TokenVisitor, then w.VisitToken(node, n, token) will be
+// called with each token of the node.
+//
+// Note that a node or token will be traversed even if it is not valid.
 func Walk(v Visitor, node Node) {
 	if v = v.Visit(node); v == nil {
 		return
