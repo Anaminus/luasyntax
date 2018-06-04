@@ -42,6 +42,7 @@ func (r *reflowVisitor) VisitToken(_ Node, _ int, tok *Token) {
 // that it is correct for the current bytes of the token.
 func Reflow(file *File) {
 	var r reflowVisitor
+	r.info = file.Info
 	file.Info.ClearLines()
 	Walk(&r, file)
 }
