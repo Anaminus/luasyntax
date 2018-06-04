@@ -4,8 +4,7 @@ import (
 	"github.com/anaminus/luasyntax/go/token"
 )
 
-// reflowVisitor maintains the current offset while the reflowing a syntax
-// tree.
+// reflowVisitor maintains the current offset while reflowing a syntax tree.
 type reflowVisitor struct {
 	info *token.File
 	off  int
