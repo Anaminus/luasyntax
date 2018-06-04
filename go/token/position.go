@@ -26,7 +26,7 @@ func (pos *Position) IsValid() bool {
 // line:column         No filename with valid position.
 // file                Filename with invalid position.
 // -                   No filename with invalid position.
-func (pos *Position) String() string {
+func (pos Position) String() string {
 	s := pos.Filename
 	if pos.IsValid() {
 		s += ":" + strconv.Itoa(pos.Line) + ":" + strconv.Itoa(pos.Column)
