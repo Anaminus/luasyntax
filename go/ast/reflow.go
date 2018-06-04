@@ -30,7 +30,9 @@ func (r *reflowVisitor) VisitToken(_ Node, _ int, tok *Token) {
 		if !prefix.Type.IsValid() {
 			continue
 		}
-		r.scanNewlines(prefix.Bytes)
+		if r.info != nil {
+			r.scanNewlines(prefix.Bytes)
+		}
 		r.off += len(prefix.Bytes)
 	}
 	r.scanNewlines(tok.Bytes)
@@ -39,10 +41,15 @@ func (r *reflowVisitor) VisitToken(_ Node, _ int, tok *Token) {
 }
 
 // Reflow walks through a syntax tree, adjusting the offset of each token so
-// that it is correct for the current bytes of the token.
-func Reflow(file *File) {
-	var r reflowVisitor
-	r.info = file.Info
-	file.Info.ClearLines()
-	Walk(&r, file)
+// that it is correct for the current bytes of the token. The offset argument
+// specifies the starting offset.
+//
+// If the node is a File, then the file's line information will be rewritten.
+func Reflow(node Node, offset int) {
+	r := reflowVisitor{off: offset}
+	if file, ok := node.(*File); ok {
+		r.info = file.Info
+		r.info.ClearLines()
+	}
+	Walk(&r, node)
 }
