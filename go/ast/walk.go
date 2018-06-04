@@ -324,8 +324,8 @@ func Walk(v Visitor, node Node) {
 			tv.VisitToken(node, 1, &node.ThenToken)
 		}
 		Walk(v, &node.Body)
-		for _, elif := range node.ElseIf {
-			Walk(v, &elif)
+		for i := range node.ElseIf {
+			Walk(v, &node.ElseIf[i])
 		}
 		if node.Else != nil {
 			Walk(v, node.Else)
