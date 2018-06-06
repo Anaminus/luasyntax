@@ -4,6 +4,39 @@ import (
 	"github.com/anaminus/luasyntax/go/token"
 )
 
+// AdjoinSeparator calls left.Type.AdjoinSeparator(right.Type) to get a
+// separating character that allows the left token to precede the right.
+//
+// Returns -1 if the two tokens are allowed to be adjacent.
+//
+// When a CONCAT precedes a NUMBERFLOAT, -1 is returned if the bytes of the
+// number token do not start with a '.' character, and a space is returned
+// otherwise.
+//
+// When a keyword precedes a NUMBERFLOAT, -1 is returned if the bytes of the
+// number token starts with a '.' character, and a space is returned
+// otherwise.
+func AdjoinSeparator(left, right Token) rune {
+	c := left.Type.AdjoinSeparator(right.Type)
+	if c == -2 {
+		switch {
+		case left.Type == token.CONCAT && right.Type == token.NUMBERFLOAT:
+			// Adjacency is allowed only if number does not begin with a '.'.
+			if len(right.Bytes) == 0 || right.Bytes[0] != '.' {
+				return -1
+			}
+		case left.Type.IsKeyword() && right.Type == token.NUMBERFLOAT:
+			// Adjacency is allowed only if number begins with a '.'.
+			if len(right.Bytes) > 0 && right.Bytes[0] == '.' {
+				return -1
+			}
+		}
+		// Insert space otherwise.
+		c = ' '
+	}
+	return c
+}
+
 // adjoinFixer keeps track of the previous token while processing adjoined
 // tokens.
 type adjoinFixer struct {
@@ -13,29 +46,6 @@ type adjoinFixer struct {
 // Visit implements the Visitor interface.
 func (v *adjoinFixer) Visit(Node) Visitor {
 	return v
-}
-
-// getSep returns the character that separates the two adjoined token types,
-// handing the cases where the result depends on the content of the tokens.
-func (v *adjoinFixer) getSep(lt, rt token.Type, rb []byte) rune {
-	c := lt.AdjoinSeparator(rt)
-	if c == -2 {
-		switch {
-		case lt == token.CONCAT && rt == token.NUMBERFLOAT:
-			// Adjacency is allowed only if number does not begin with a '.'.
-			if len(rb) == 0 || rb[0] != '.' {
-				return -1
-			}
-		case lt.IsKeyword() && rt == token.NUMBERFLOAT:
-			// Adjacency is allowed only if number begins with a '.'.
-			if len(rb) > 0 && rb[0] == '.' {
-				return -1
-			}
-		}
-		// Insert space otherwise.
-		c = ' '
-	}
-	return c
 }
 
 // VisitToken implements the TokenVisitor interface.
@@ -50,11 +60,14 @@ func (v *adjoinFixer) VisitToken(_ Node, _ int, tok *Token) {
 		return
 	}
 
-	prevType := v.prevToken.Type
+	left := *v.prevToken
+	var right Token
 
 	// Walk through prefixes as though they were tokens.
 	for i := 0; i < len(tok.Prefix); i++ {
-		if c := v.getSep(prevType, tok.Prefix[i].Type, tok.Prefix[i].Bytes); c >= 0 {
+		right.Type = tok.Prefix[i].Type
+		right.Bytes = tok.Prefix[i].Bytes
+		if c := AdjoinSeparator(left, right); c >= 0 {
 			if tok.Prefix[i].Type == token.SPACE {
 				// Prepend directly to bytes.
 				tok.Prefix[i].Bytes = append(tok.Prefix[i].Bytes, 0)
@@ -69,12 +82,13 @@ func (v *adjoinFixer) VisitToken(_ Node, _ int, tok *Token) {
 				i++
 			}
 		}
-		prevType = tok.Prefix[i].Type
+		left.Type = tok.Prefix[i].Type
+		left.Bytes = tok.Prefix[i].Bytes
 	}
 
 	// Handle actual token, which appears after either the token's last
 	// prefix, or the previous token.
-	if c := v.getSep(prevType, tok.Type, tok.Bytes); c >= 0 {
+	if c := AdjoinSeparator(left, *tok); c >= 0 {
 		if n := len(tok.Prefix); n > 0 && tok.Prefix[n-1].Type == token.SPACE {
 			// Append after last SPACE prefix so that it appears directly
 			// before token. This will happen if the SPACE prefix is empty.
