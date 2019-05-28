@@ -1,4 +1,4 @@
-package ast
+package tree
 
 import (
 	"github.com/anaminus/luasyntax/go/token"
@@ -107,9 +107,9 @@ func (v *adjoinFixer) VisitToken(_ Node, _ int, tok *Token) {
 	v.prevToken = tok
 }
 
-// FixAdjoinedTokens walks through a syntax tree and ensures that adjacent
-// tokens have the minimum amount of spacing required to prevent them from
-// being parsed incorrectly.
+// FixAdjoinedTokens walks through a parse tree and ensures that adjacent tokens
+// have the minimum amount of spacing required to prevent them from being parsed
+// incorrectly.
 func FixAdjoinedTokens(node Node) {
 	var v adjoinFixer
 	Walk(&v, node)

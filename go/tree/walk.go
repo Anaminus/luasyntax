@@ -1,4 +1,4 @@
-package ast
+package tree
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ type TokenVisitor interface {
 	VisitToken(node Node, n int, tok *Token)
 }
 
-// Walk traverses an AST in depth-first, lexical order. It starts by calling
+// Walk traverses a tree in depth-first, lexical order. It starts by calling
 // v.Visit(node); node must not be nil. If the returned visitor w is not nil,
 // then Walk is called recursively with w for each non-nil child of the node,
 // followed by a call of w.Visit(nil).

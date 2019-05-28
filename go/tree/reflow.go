@@ -1,11 +1,11 @@
-package ast
+package tree
 
 import (
 	"github.com/anaminus/luasyntax/go/token"
 )
 
-// offsetFixer maintains the current offset while fixing the token offsets of
-// a syntax tree.
+// offsetFixer maintains the current offset while fixing the token offsets of a
+// parse tree.
 type offsetFixer struct {
 	info *token.File
 	off  int
@@ -41,7 +41,7 @@ func (r *offsetFixer) VisitToken(_ Node, _ int, tok *Token) {
 	r.off += len(tok.Bytes)
 }
 
-// FixTokenOffsets walks through a syntax tree, adjusting the offset of each
+// FixTokenOffsets walks through a parse tree, adjusting the offset of each
 // token so that it is correct for the current bytes of the token. The offset
 // argument specifies the starting offset.
 //

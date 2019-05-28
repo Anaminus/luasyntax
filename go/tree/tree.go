@@ -1,5 +1,6 @@
-// The ast package declares the types used to represent Lua syntax trees.
-package ast
+// The tree package declares the types used to represent parse trees for the Lua
+// syntax.
+package tree
 
 import (
 	"github.com/anaminus/luasyntax/go/token"
@@ -14,7 +15,7 @@ import (
 //
 // Methods assume that *<node> is not nil
 
-// Node is the interface that all AST nodes implement.
+// Node is the interface that all tree nodes implement.
 type Node interface {
 	// IsValid returns whether the node is well-formed (child nodes excluded).
 	IsValid() bool
@@ -24,8 +25,8 @@ type Node interface {
 	// LastToken returns the last Token in the node. Assumes that the node is
 	// valid.
 	LastToken() *Token
-	// Implements the WriteTo interface by writing the source-code equivalent
-	// of the node. Assumes that the node is valid.
+	// Implements the io.WriterTo interface by writing the source-code
+	// equivalent of the node. Assumes that the node is valid.
 	io.WriterTo
 }
 
@@ -480,7 +481,7 @@ func (IfStmt) stmtNode() {}
 // ElseIfClause represents an `elseif .. then` clause within an `if`
 // statement.
 type ElseIfClause struct {
-	// ElseIfToken is th ELSEIF token that begins the elseif clause.
+	// ElseIfToken is the ELSEIF token that begins the elseif clause.
 	ElseIfToken Token
 	// Cond is the condition of the elseif clause.
 	Cond Expr

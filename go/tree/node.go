@@ -1,4 +1,4 @@
-package ast
+package tree
 
 func (f *File) FirstToken() *Token { return f.Body.FirstToken() }
 func (f *File) LastToken() *Token  { return &f.EOFToken }
