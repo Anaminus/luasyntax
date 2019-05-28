@@ -657,8 +657,6 @@ func readSource(filename string, src interface{}) ([]byte, error) {
 // these cases, the filename is used only when recording positional
 // information. If src is nil, the source is read from the file specified by
 // filename.
-//
-// The mode argument controls how the parser behaves.
 func ParseFile(filename string, src interface{}) (f *tree.File, err error) {
 	text, err := readSource(filename, src)
 	if err != nil {
