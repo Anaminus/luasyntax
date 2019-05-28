@@ -66,6 +66,9 @@ func (p *parser) next() {
 // lookahead looks at the next token without consuming current state. The
 // lookahead state is stored in p.look, and is consumed on the next call to
 // p.next().
+//
+// This is used exactly once in the parser: within a table constructor, to tell
+// the difference between a field entry and a variable entry.
 func (p *parser) lookahead() {
 	// Save current state.
 	prev := p.tokenstate
@@ -459,17 +462,24 @@ func (p *parser) parseTableCtor() (ctor *tree.TableCtor) {
 			e.AssignToken = p.expectToken(token.ASSIGN)
 			e.Value = p.parseExpr()
 			entry = e
-		} else if p.lookahead(); p.tok == token.NAME && p.look.tok == token.ASSIGN {
-			e := &tree.FieldEntry{}
-			e.NameToken = p.expectToken(token.NAME)
-			e.AssignToken = p.expectToken(token.ASSIGN)
-			e.Value = p.parseExpr()
-			entry = e
-		} else {
+			goto finishEntry
+		} else if p.tok == token.NAME {
+			if p.lookahead(); p.look.tok == token.ASSIGN {
+				e := &tree.FieldEntry{}
+				e.NameToken = p.expectToken(token.NAME)
+				e.AssignToken = p.expectToken(token.ASSIGN)
+				e.Value = p.parseExpr()
+				entry = e
+				goto finishEntry
+			}
+		}
+		{
 			e := &tree.ValueEntry{}
 			e.Value = p.parseExpr()
 			entry = e
 		}
+
+	finishEntry:
 		ctor.Entries.Items = append(ctor.Entries.Items, entry)
 		if p.tok == token.COMMA || p.tok == token.SEMICOLON {
 			ctor.Entries.Seps = append(ctor.Entries.Seps, p.tokenNext())
