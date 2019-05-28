@@ -22,10 +22,10 @@ func (pos *Position) IsValid() bool {
 // String returns a formatted representation of the position, which may be one
 // of several forms:
 //
-// file:line:column    Filename with valid position.
-// line:column         No filename with valid position.
-// file                Filename with invalid position.
-// -                   No filename with invalid position.
+//     file:line:column    Filename with valid position.
+//     line:column         No filename with valid position.
+//     file                Filename with invalid position.
+//     -                   No filename with invalid position.
 func (pos Position) String() string {
 	s := pos.Filename
 	if pos.IsValid() {
