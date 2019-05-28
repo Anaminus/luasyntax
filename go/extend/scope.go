@@ -136,6 +136,7 @@ func (p *scopeParser) referenceVariable(name *tree.Token) *Variable {
 	v := p.getLocalVar(name)
 	if v != nil {
 		v.References = append(v.References, name)
+		p.fileScope.VariableMap[name] = v
 	} else {
 		v = p.addGlobalVar(name)
 	}
