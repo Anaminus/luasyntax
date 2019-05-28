@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-// A Visitor's Visit method is called for each node encountered by Walk. If
-// the result visitor w is not nil, Walk visits each child of the node with w,
+// A Visitor's Visit method is called for each node encountered by Walk. If the
+// result visitor w is not nil, Walk visits each child of the node with w,
 // followed by a call of w.Visit(nil).
 type Visitor interface {
 	Visit(node Node) (w Visitor)
@@ -17,9 +17,9 @@ type Visitor interface {
 // The n argument indicates nth token of the current node. Combined with the
 // node type, this can be used to identify the token field being referred to.
 // For example, (DoStmt, 0) refers to DoStmt.DoToken, which is a DO token, and
-// (DoStmt, 1) refers to DoStmt.EndToken, which is an END token. For nodes
-// like NameList, an even value indicates a NAME token in the Items field,
-// while an odd value indicates a COMMA token in the Seps field.
+// (DoStmt, 1) refers to DoStmt.EndToken, which is an END token. For nodes like
+// NameList, an even value indicates a NAME token in the Items field, while an
+// odd value indicates a COMMA token in the Seps field.
 //
 // Tokens are guaranteed to be visited in lexical order.
 type TokenVisitor interface {

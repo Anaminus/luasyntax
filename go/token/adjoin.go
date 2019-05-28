@@ -1,16 +1,15 @@
 package token
 
-// AdjoinSeparator returns the character that would allow a token of type
-// 'left' to precede a token of type 'right', if placed as a SPACE token
-// between the two. Currently, this is '\n' for COMMENTs, and a space for
-// everything else.
+// AdjoinSeparator returns the character that would allow a token of type 'left'
+// to precede a token of type 'right', if placed as a SPACE token between the
+// two. Currently, this is '\n' for COMMENTs, and a space for everything else.
 //
 // Returns -1 if the two tokens are allowed to be adjacent. Note that this is
 // returned by tokens that will never be adjacent while being syntactically
 // correct.
 //
-// Returns -2 if the allowed adjacency of the two tokens depends on the
-// content of the tokens.
+// Returns -2 if the allowed adjacency of the two tokens depends on the content
+// of the tokens.
 func (left Type) AdjoinSeparator(right Type) rune {
 	// Tokens must be separated by a space (at minimum).
 	const space = ' '
@@ -29,8 +28,8 @@ func (left Type) AdjoinSeparator(right Type) rune {
 		return okay
 	case !left.IsValid(),
 		!right.IsValid():
-		// Once again, no character can make these correct, so they're
-		// allowed. Undefined types also need to be detected.
+		// Once again, no character can make these correct, so they're allowed.
+		// Undefined types also need to be detected.
 		return okay
 	case left == COMMENT:
 		if right > comm_start {

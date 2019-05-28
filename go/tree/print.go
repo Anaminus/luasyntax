@@ -11,8 +11,8 @@ type copier struct {
 	err error
 }
 
-// writeTo calls wt.WriteTo(w), and acculumates the results. Returns whether
-// an error occurred.
+// writeTo calls wt.WriteTo(w), and acculumates the results. Returns whether an
+// error occurred.
 func (c *copier) writeTo(w io.Writer, wt io.WriterTo) bool {
 	if c.err != nil {
 		return false
@@ -26,8 +26,8 @@ func (c *copier) writeTo(w io.Writer, wt io.WriterTo) bool {
 	return c.err == nil
 }
 
-// write writes p to the Writer w, and accumulates the results. Returns
-// whether can error occurred.
+// write writes p to the Writer w, and accumulates the results. Returns whether
+// can error occurred.
 func (c *copier) write(w io.Writer, p []byte) bool {
 	if c.err != nil {
 		return false

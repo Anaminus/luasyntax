@@ -26,8 +26,8 @@ func (e *NumberExpr) ParseValue() (v float64, err error) {
 	return
 }
 
-// FormatValue formats the absolute value of a given number, setting the
-// result to the bytes of the token.
+// FormatValue formats the absolute value of a given number, setting the result
+// to the bytes of the token.
 //
 // When fmt is 'e', 'E', 'f', 'g', or 'G', the number is formatted as a float
 // with the NUMBERFLOAT type, and fmt and prec follow the same rules as in
@@ -36,8 +36,8 @@ func (e *NumberExpr) ParseValue() (v float64, err error) {
 // When fmt is 'd', 'i', or 'u', the number is formatted as a base-10 integer
 // with the NUMBERFLOAT type. The prec argument is unused.
 //
-// When fmt is 'x' or 'X', the number is formatted as a base-16 number with
-// the NUMBERHEX type. The prec argument is unused.
+// When fmt is 'x' or 'X', the number is formatted as a base-16 number with the
+// NUMBERHEX type. The prec argument is unused.
 //
 // When fmt is 0, the format is determined by the current token type, and uses
 // the shortest representation of the number. The prec argument is unused.
@@ -263,16 +263,16 @@ loop:
 	return
 }
 
-// FormatValue receives a string and formats it, setting it to the bytes of
-// the token. The format is determined by the current token type.
+// FormatValue receives a string and formats it, setting it to the bytes of the
+// token. The format is determined by the current token type.
 //
-// When the token is a STRING, the result is the same as the "%q" verb in
-// Lua's string.format.
+// When the token is a STRING, the result is the same as the "%q" verb in Lua's
+// string.format.
 //
 // When the token is a LONGSTRING, the result is enclosed in the shortest
 // possible set of long brackets. If the newline argument is true, then the
-// result will be formatted with a newline at the start, which is ignored by
-// the parser.
+// result will be formatted with a newline at the start, which is ignored by the
+// parser.
 func (e *StringExpr) FormatValue(v string, newline bool) {
 	switch e.StringToken.Type {
 	case token.STRING:
@@ -284,8 +284,8 @@ func (e *StringExpr) FormatValue(v string, newline bool) {
 	}
 }
 
-// ParseValue parses the content of the boolean token and returns the
-// resulting value, or an error explaining why the value could not be parsed.
+// ParseValue parses the content of the boolean token and returns the resulting
+// value, or an error explaining why the value could not be parsed.
 func (e *BoolExpr) ParseValue() (v bool, err error) {
 	switch e.BoolToken.Type {
 	case token.TRUE:

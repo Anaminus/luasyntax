@@ -8,8 +8,8 @@ import (
 // fields to consider:
 //     - An interface: The underlying type is a child node.
 //     - A Node: A child node.
-//     - A Token: Not a node, and therefore not a child node. A node that
-//       embeds a Token is not considered a token.
+//     - A Token: Not a node, and therefore not a child node. A node that embeds
+//       a Token is not considered a token.
 //
 // A node is valid
 //     - if its interface fields are non-nil.

@@ -14,8 +14,7 @@ import (
 // otherwise.
 //
 // When a keyword precedes a NUMBERFLOAT, -1 is returned if the bytes of the
-// number token starts with a '.' character, and a space is returned
-// otherwise.
+// number token starts with a '.' character, and a space is returned otherwise.
 func AdjoinSeparator(left, right Token) rune {
 	c := left.Type.AdjoinSeparator(right.Type)
 	if c == -2 {
@@ -86,12 +85,12 @@ func (v *adjoinFixer) VisitToken(_ Node, _ int, tok *Token) {
 		left.Bytes = tok.Prefix[i].Bytes
 	}
 
-	// Handle actual token, which appears after either the token's last
-	// prefix, or the previous token.
+	// Handle actual token, which appears after either the token's last prefix,
+	// or the previous token.
 	if c := AdjoinSeparator(left, *tok); c >= 0 {
 		if n := len(tok.Prefix); n > 0 && tok.Prefix[n-1].Type == token.SPACE {
-			// Append after last SPACE prefix so that it appears directly
-			// before token. This will happen if the SPACE prefix is empty.
+			// Append after last SPACE prefix so that it appears directly before
+			// token. This will happen if the SPACE prefix is empty.
 			tok.Prefix[n-1].Bytes = append(tok.Prefix[n-1].Bytes, byte(c))
 		} else {
 			// Insert a SPACE between the last prefix and the token. If there

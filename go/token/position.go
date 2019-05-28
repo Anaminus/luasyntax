@@ -5,8 +5,8 @@ import (
 	"sync"
 )
 
-// A Position describes a position with a file, including the name of the
-// file, the line, and the column.
+// A Position describes a position with a file, including the name of the file,
+// the line, and the column.
 type Position struct {
 	Filename string // The name of the file, if specified.
 	Offset   int    // The offset within the file, starting at 0.
@@ -100,8 +100,8 @@ func (f *File) ClearLines() {
 	f.mutex.Unlock()
 }
 
-// searchInts performs a binary search for the nearest position of an int
-// within a slice of ints.
+// searchInts performs a binary search for the nearest position of an int within
+// a slice of ints.
 func searchInts(a []int, x int) int {
 	// return sort.Search(len(a), func(i int) bool { return a[i] > x }) - 1
 	i, j := 0, len(a)

@@ -33,9 +33,9 @@ type parser struct {
 	look *tokenstate // Store state for single-token lookaheads.
 }
 
-// init prepares the parser to parse a source. The info sets the file to use
-// for positional information. The src is the text to be parsed. The mode
-// configures how the parser behaves.
+// init prepares the parser to parse a source. The info sets the file to use for
+// positional information. The src is the text to be parsed. The mode configures
+// how the parser behaves.
 func (p *parser) init(info *token.File, src []byte) {
 	p.file = info
 	p.scanner.Init(p.file, src, func(pos token.Position, msg string) {
@@ -426,8 +426,7 @@ func (p *parser) parseBreakStmt() tree.Stmt {
 	return stmt
 }
 
-// parsePrefixExpr creates an expression node that begins a primary
-// expression.
+// parsePrefixExpr creates an expression node that begins a primary expression.
 func (p *parser) parsePrefixExpr() (expr tree.Expr) {
 	switch p.tok {
 	case token.LPAREN:
@@ -515,8 +514,8 @@ func (p *parser) parseFuncArgs() (args tree.Args) {
 	return args
 }
 
-// parsePrimaryExpr creates a primary expression node that begins an
-// expression chain.
+// parsePrimaryExpr creates a primary expression node that begins an expression
+// chain.
 func (p *parser) parsePrimaryExpr() (expr tree.Expr) {
 loop:
 	for expr = p.parsePrefixExpr(); ; {
@@ -654,9 +653,8 @@ func readSource(filename string, src interface{}) ([]byte, error) {
 // occurred while parsing.
 //
 // The src argument may be a string, []byte, *bytes.Buffer, or io.Reader. In
-// these cases, the filename is used only when recording positional
-// information. If src is nil, the source is read from the file specified by
-// filename.
+// these cases, the filename is used only when recording positional information.
+// If src is nil, the source is read from the file specified by filename.
 func ParseFile(filename string, src interface{}) (f *tree.File, err error) {
 	text, err := readSource(filename, src)
 	if err != nil {

@@ -21,12 +21,12 @@ func isSpace(ch rune) bool {
 }
 
 // An ErrorHandler may be provided to Scanner.Init. If an error occurs while
-// there is a handler, the handler is called with the position of the
-// offending token and an error message.
+// there is a handler, the handler is called with the position of the offending
+// token and an error message.
 type ErrorHandler func(pos token.Position, msg string)
 
-// Scanner holds the scanner's state while processing a source file. It must
-// be initialized with Init before using.
+// Scanner holds the scanner's state while processing a source file. It must be
+// initialized with Init before using.
 type Scanner struct {
 	file *token.File
 	src  []byte
@@ -62,8 +62,8 @@ func (s *Scanner) next() {
 	}
 }
 
-// Init prepares the scanner to tokenize a given source. The file argument
-// sets the file to use for position information, and src sets the source to
+// Init prepares the scanner to tokenize a given source. The file argument sets
+// the file to use for position information, and src sets the source to
 // tokenize. The option err argument is used to handle errors.
 func (s *Scanner) Init(file *token.File, src []byte, err ErrorHandler) {
 	s.file = file
@@ -102,8 +102,7 @@ func (s *Scanner) scanName() []byte {
 	return s.src[off:s.offset]
 }
 
-// scanNumber scans for a number. The result may not evaluate to a valid
-// number.
+// scanNumber scans for a number. The result may not evaluate to a valid number.
 func (s *Scanner) scanNumber() token.Type {
 	off := s.offset
 	for isDigit(s.ch) || s.ch == '.' {
@@ -225,8 +224,8 @@ func (s *Scanner) scanComment(off int) token.Type {
 }
 
 // Scan scans the next token and returns its offset, type, and the bytes
-// represented by the token. The end of the source is indicated by token.EOF
-// as the type.
+// represented by the token. The end of the source is indicated by token.EOF as
+// the type.
 //
 // Scan adds line information to the token.File specified by Init.
 func (s *Scanner) Scan() (off int, tok token.Type, lit []byte) {

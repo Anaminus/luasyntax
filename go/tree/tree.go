@@ -19,8 +19,8 @@ import (
 type Node interface {
 	// IsValid returns whether the node is well-formed (child nodes excluded).
 	IsValid() bool
-	// FirstToken returns the first Token in the node. Assumes that the node
-	// is valid.
+	// FirstToken returns the first Token in the node. Assumes that the node is
+	// valid.
 	FirstToken() *Token
 	// LastToken returns the last Token in the node. Assumes that the node is
 	// valid.
@@ -50,8 +50,8 @@ type Prefix struct {
 	Bytes []byte
 }
 
-// StartOffset returns the offset at the start of the token, which includes
-// the prefix.
+// StartOffset returns the offset at the start of the token, which includes the
+// prefix.
 func (t *Token) StartOffset() int {
 	if t == nil {
 		return 0
@@ -268,8 +268,7 @@ type IndexEntry struct {
 
 func (IndexEntry) entryNode() {}
 
-// FieldEntry represents a table entry defining a value with a field as the
-// key.
+// FieldEntry represents a table entry defining a value with a field as the key.
 type FieldEntry struct {
 	// NameToken is the name of the field, evaluating to the key of the entry.
 	NameToken Token
@@ -399,8 +398,8 @@ type ListArgs struct {
 
 func (ListArgs) argsNode() {}
 
-// TableArg represents the arguments of a function call, in the form of a
-// single table constructor.
+// TableArg represents the arguments of a function call, in the form of a single
+// table constructor.
 type TableArg struct {
 	// Value is the table constructor expression.
 	Value TableCtor
@@ -478,8 +477,7 @@ type IfStmt struct {
 
 func (IfStmt) stmtNode() {}
 
-// ElseIfClause represents an `elseif .. then` clause within an `if`
-// statement.
+// ElseIfClause represents an `elseif .. then` clause within an `if` statement.
 type ElseIfClause struct {
 	// ElseIfToken is the ELSEIF token that begins the elseif clause.
 	ElseIfToken Token
@@ -507,21 +505,17 @@ type NumericForStmt struct {
 	NameToken Token
 	// AssignToken is the ASSIGN token that begins the control expressions.
 	AssignToken Token
-	// Min is the expression indicating the lower bound of the control
-	// variable.
+	// Min is the expression indicating the lower bound of the control variable.
 	Min Expr
-	// MaxSepToken is the COMMA token that separates the lower and upper
-	// bound.
+	// MaxSepToken is the COMMA token that separates the lower and upper bound.
 	MaxSepToken Token
-	// Max is the expression indicating the upper bound of the control
-	// variable.
+	// Max is the expression indicating the upper bound of the control variable.
 	Max Expr
-	// StepSepToken is the separator token between the upper bound and the
-	// step expressions. It is a COMMA if the step is present, and INVALID
-	// otherwise.
+	// StepSepToken is the separator token between the upper bound and the step
+	// expressions. It is a COMMA if the step is present, and INVALID otherwise.
 	StepSepToken Token
-	// Step is the expression indicating the step of the control variable. It
-	// is nil if not present.
+	// Step is the expression indicating the step of the control variable. It is
+	// nil if not present.
 	Step Expr
 	// DoToken is the DO token that begins the body of the for statement.
 	DoToken Token
@@ -543,8 +537,8 @@ type GenericForStmt struct {
 	// InToken is the IN token that separates the variables from the iterator
 	// expressions.
 	InToken Token
-	// Iterator is the list of expressions that evaluate to the iterator of
-	// the for statement.
+	// Iterator is the list of expressions that evaluate to the iterator of the
+	// for statement.
 	Iterator ExprList
 	// DoToken is the DO token that begins the body of the for statement.
 	DoToken Token
@@ -578,8 +572,7 @@ type RepeatStmt struct {
 	RepeatToken Token
 	// Body is the body of the repeat statement.
 	Body Block
-	// UntilToken is the UNTIL token that ends the body of the repeat
-	// statement.
+	// UntilToken is the UNTIL token that ends the body of the repeat statement.
 	UntilToken Token
 	// Cond is the condition of the repeat statement.
 	Cond Expr
@@ -596,15 +589,15 @@ type LocalVarStmt struct {
 	// AssignToken is the ASSIGN token that separates the variables from the
 	// values. It is INVALID if not present.
 	AssignToken Token
-	// Values is the list of expressions that are assigned to each variable.
-	// It is nil if not present.
+	// Values is the list of expressions that are assigned to each variable. It
+	// is nil if not present.
 	Values *ExprList
 }
 
 func (LocalVarStmt) stmtNode() {}
 
-// LocalFunctionStmt represents the statement that assigns a function to a
-// local variable.
+// LocalFunctionStmt represents the statement that assigns a function to a local
+// variable.
 type LocalFunctionStmt struct {
 	// LocalToken is the LOCAL token that begins the local statement.
 	LocalToken Token
@@ -619,8 +612,8 @@ func (LocalFunctionStmt) stmtNode() {}
 
 // FunctionStmt represents the statement that assigns a function.
 type FunctionStmt struct {
-	// Name contains the name of the function. Note that tokens within this
-	// are located after the FuncToken of the FunctionExpr.
+	// Name contains the name of the function. Note that tokens within this are
+	// located after the FuncToken of the FunctionExpr.
 	Name FuncNameList
 	// Func defines the parameters and body of the function.
 	Func FunctionExpr
@@ -632,12 +625,12 @@ func (FunctionStmt) stmtNode() {}
 // statement. The list may optionally be followed by a method name, indicating
 // that the function is a method.
 type FuncNameList struct {
-	// Items contains the chain of one or more NAME tokens, indicating the
-	// name of a function statement. Each successive name is a field of the
-	// previous value.
+	// Items contains the chain of one or more NAME tokens, indicating the name
+	// of a function statement. Each successive name is a field of the previous
+	// value.
 	Items []Token
-	// Seps contains each DOT between names. The length of Seps is one less
-	// than the length of Exprs.
+	// Seps contains each DOT between names. The length of Seps is one less than
+	// the length of Exprs.
 	Seps []Token
 	// ColonToken is the COLON token following the last Name in Items, and
 	// preceding Method. It is INVALID if the method is not present.
@@ -647,8 +640,8 @@ type FuncNameList struct {
 	MethodToken Token
 }
 
-// Len returns the combined length of Names and Seps, and ColonToken and
-// Method, if present.
+// Len returns the combined length of Names and Seps, and ColonToken and Method,
+// if present.
 func (l *FuncNameList) Len() int {
 	n := len(l.Items) + len(l.Seps)
 	if l.ColonToken.Type.IsValid() {
