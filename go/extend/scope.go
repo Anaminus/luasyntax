@@ -188,7 +188,6 @@ func (p *scopeParser) Visit(node tree.Node) tree.Visitor {
 		return nil
 
 	case *tree.FunctionExpr:
-		// Also handles body of LocalFunctionStmt and FunctionStmt.
 		p.openScope(node)
 		if node.Params != nil {
 			tree.Walk(p, node.Params)
@@ -286,12 +285,13 @@ func (p *scopeParser) Visit(node tree.Node) tree.Visitor {
 		return nil
 
 	case *tree.LocalFunctionStmt:
-		// Add local variable assignment.
 		p.addLocalVar(&node.NameToken)
-		// Body handled by FunctionExpr.
+		tree.Walk(p, &node.Func)
+		return nil
 
 	case *tree.FunctionStmt:
-		// Body handled by FunctionExpr.
+		tree.Walk(p, &node.Func)
+		return nil
 
 	case *tree.FuncNameList:
 		// Refer to first name in list.
