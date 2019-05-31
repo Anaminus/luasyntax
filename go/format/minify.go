@@ -132,34 +132,64 @@ func Minify(file *tree.File) {
 	visited := map[*extend.Variable]struct{}{}
 	g := NewVarGen(nil)
 
+	// Traverse globals first.
 	descendItems(fileScope.Root.Items, func(items []interface{}, i int, item interface{}) {
 		token, ok := item.(*tree.Token)
 		if !ok {
 			return
 		}
 
-		variable, ok := fileScope.VariableMap[token]
+		variable := fileScope.VariableMap[token]
+		if variable.Type != extend.GlobalVar {
+			return
+		}
+
 		if _, ok := visited[variable]; ok {
 			return
 		}
 		visited[variable] = struct{}{}
-		if variable.Type == extend.LocalVar {
-			g.Reset()
-			for {
-				name := g.Next()
-				v, ok := used[K{variable.Scopes[0], name}]
-				if !ok || !variable.VisiblityOverlapsWith(v) {
-					variable.Name = name
-					name := []byte(variable.Name)
-					for _, r := range variable.References {
-						r.Bytes = name
-					}
-					break
+
+		used[K{variable.Scopes[0], variable.Name}] = variable
+		descendItems(items, func(_ []interface{}, _ int, item interface{}) {
+			if scope, ok := item.(*extend.Scope); ok {
+				if scopeContains(fileScope, scope, variable) {
+					used[K{scope, variable.Name}] = variable
 				}
 			}
+		})
+	})
+	// Local variables.
+	descendItems(fileScope.Root.Items, func(items []interface{}, i int, item interface{}) {
+		token, ok := item.(*tree.Token)
+		if !ok {
+			return
 		}
-		used[K{variable.Scopes[0], variable.Name}] = variable
 
+		variable := fileScope.VariableMap[token]
+		if variable.Type != extend.LocalVar {
+			return
+		}
+
+		if _, ok := visited[variable]; ok {
+			return
+		}
+		visited[variable] = struct{}{}
+
+		g.Reset()
+		for {
+			name := g.Next()
+			v, ok := used[K{variable.Scopes[0], name}]
+			if !ok || !variable.VisiblityOverlapsWith(v) {
+				variable.Name = name
+				name := []byte(variable.Name)
+				for _, r := range variable.References {
+					r.Bytes = name
+				}
+				break
+			}
+		}
+
+		used[K{variable.Scopes[0], variable.Name}] = variable
 		descendItems(items[i+1:], func(_ []interface{}, _ int, item interface{}) {
 			if scope, ok := item.(*extend.Scope); ok {
 				if scopeContains(fileScope, scope, variable) {

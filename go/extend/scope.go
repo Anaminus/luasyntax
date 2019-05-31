@@ -370,5 +370,10 @@ func BuildFileScope(file *tree.File) *FileScope {
 	if p.currentScope != nil {
 		panic("unbalanced scopes")
 	}
+	for _, g := range p.fileScope.Globals {
+		g.LifeStart = p.fileScope.Root.Start
+		g.LifeEnd = p.fileScope.Root.End
+		g.ScopeEnd = p.fileScope.Root.End
+	}
 	return p.fileScope
 }
