@@ -29,6 +29,16 @@ type Scope struct {
 	// Node is the tree node that opens or is otherwise associated with the
 	// scope. May be nil.
 	Node tree.Node
+	// Items is a list of NAME tokens and Scopes, ordered semantically.
+	Items []interface{}
+	// Start indicates the start of the lifetime of the scope. The value has no
+	// objective meaning, and should be used only for comparing with other
+	// lifetimes within the same generated FileScope.
+	Start int
+	// End indicates the end of the lifetime of the scope. The value has no
+	// objective meaning, and should be used only for comparing with other
+	// lifetimes within the same generated FileScope.
+	End int
 }
 
 // NewScope creates an inner scope, optionally associating the scope with the
@@ -37,6 +47,7 @@ func NewScope(parent *Scope, node tree.Node) *Scope {
 	scope := &Scope{Parent: parent, Node: node}
 	if parent != nil {
 		parent.Children = append(parent.Children, scope)
+		parent.Items = append(parent.Items, scope)
 	}
 	return scope
 }
@@ -70,6 +81,28 @@ type Variable struct {
 	// References is a list of NAME tokens that refer to the entity. When the
 	// variable is local, the first value is the declaration of the variable.
 	References []*tree.Token
+	// Scopes is a list of scopes corresponding to entries in References.
+	Scopes []*Scope
+	// Positions is a list of positions corresponding to entries in References.
+	Positions []int
+	// LifeStart indicates the start of the lifetime and visiblity of the
+	// variable. The value has no objective meaning, and should be used only for
+	// comparing with other lifetimes within the same generated FileScope.
+	LifeStart int
+	// LifeEnd indicates the end of the lifetime of the variable. The value has
+	// no objective meaning, and should be used only for comparing with other
+	// lifetimes within the same generated FileScope.
+	LifeEnd int
+	// ScopeEnd indicates the end of the visibility of the variable. The value
+	// has no objective meaning, and should be used only for comparing with
+	// other lifetimes within the same generated FileScope.
+	ScopeEnd int
+}
+
+// VisiblityOverlapsWith returns whether the visiblity of v overlaps with the
+// visiblity of w.
+func (v *Variable) VisiblityOverlapsWith(w *Variable) bool {
+	return v.ScopeEnd >= w.LifeStart && v.LifeStart <= w.ScopeEnd
 }
 
 // scopeParser holds the scope state while walking a parse tree. It must be
@@ -77,6 +110,7 @@ type Variable struct {
 type scopeParser struct {
 	fileScope    *FileScope
 	currentScope *Scope
+	position     int
 }
 
 // init prepares the parser to walk a parse tree.
@@ -88,11 +122,19 @@ func (p *scopeParser) init() {
 	}
 }
 
+// mark marks the current position of the parser with a unique value.
+func (p *scopeParser) mark() int {
+	pos := p.position + 1
+	p.position = pos
+	return pos
+}
+
 // openScope creates a new scope, setting it as an inner scope of the current
 // scope, and then sets it as the current scope. The scope can optionally be
 // associated with a node.
 func (p *scopeParser) openScope(node tree.Node) {
 	p.currentScope = NewScope(p.currentScope, node)
+	p.currentScope.Start = p.mark()
 	if node != nil {
 		p.fileScope.ScopeMap[node] = p.currentScope
 	}
@@ -100,19 +142,37 @@ func (p *scopeParser) openScope(node tree.Node) {
 
 // closeScope sets the current scope to its parent.
 func (p *scopeParser) closeScope() {
+	p.currentScope.End = p.mark()
+	for _, v := range p.currentScope.Variables {
+		v.ScopeEnd = p.currentScope.End
+	}
 	p.currentScope = p.currentScope.Parent
+}
+
+func (p *scopeParser) addVariableName(v *Variable, name *tree.Token) {
+	v.References = append(v.References, name)
+	v.Scopes = append(v.Scopes, p.currentScope)
+	v.LifeEnd = p.mark()
+	v.Positions = append(v.Positions, v.LifeEnd)
+	p.currentScope.Items = append(p.currentScope.Items, name)
+	p.fileScope.VariableMap[name] = v
+}
+
+func (p *scopeParser) newVariable(name *tree.Token) *Variable {
+	v := &Variable{
+		Name:      string(name.Bytes),
+		LifeStart: p.mark(),
+	}
+	p.addVariableName(v, name)
+	return v
 }
 
 // AddLocalVar creates a new Variable, named by the given NAME token, and adds
 // it to the current scope.
 func (p *scopeParser) addLocalVar(name *tree.Token) {
-	v := &Variable{
-		Type:       LocalVar,
-		Name:       string(name.Bytes),
-		References: []*tree.Token{name},
-	}
+	v := p.newVariable(name)
+	v.Type = LocalVar
 	p.currentScope.Variables = append(p.currentScope.Variables, v)
-	p.fileScope.VariableMap[name] = v
 }
 
 // getLocalVar retrieves a variable, named by the given NAME token, from the
@@ -135,8 +195,7 @@ func (p *scopeParser) getLocalVar(name *tree.Token) *Variable {
 func (p *scopeParser) referenceVariable(name *tree.Token) *Variable {
 	v := p.getLocalVar(name)
 	if v != nil {
-		v.References = append(v.References, name)
-		p.fileScope.VariableMap[name] = v
+		p.addVariableName(v, name)
 	} else {
 		v = p.addGlobalVar(name)
 	}
@@ -152,15 +211,13 @@ func (p *scopeParser) addGlobalVar(name *tree.Token) (v *Variable) {
 			break
 		}
 	}
-	if v == nil {
-		v = &Variable{
-			Type: GlobalVar,
-			Name: string(name.Bytes),
-		}
+	if v != nil {
+		p.addVariableName(v, name)
+	} else {
+		v = p.newVariable(name)
+		v.Type = GlobalVar
 		p.fileScope.Globals = append(p.fileScope.Globals, v)
 	}
-	v.References = append(v.References, name)
-	p.fileScope.VariableMap[name] = v
 	return v
 }
 
@@ -290,6 +347,7 @@ func (p *scopeParser) Visit(node tree.Node) tree.Visitor {
 		return nil
 
 	case *tree.FunctionStmt:
+		tree.Walk(p, &node.Name)
 		tree.Walk(p, &node.Func)
 		return nil
 
